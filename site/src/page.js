@@ -222,43 +222,86 @@ for (const id of ["ver", "foot-ver"]) {
 // The mark's colour, for the visitor to move. Every emblem on the page reads
 // --emblem, so one property drives the header, the hero and both demo marks.
 //
-// AUTO is the default and is pure CSS — a class on <html> that turns on the
-// @property interpolation in page.css. Keeping the rotation out of JS means it
-// survives with scripting off, and means reduced-motion is handled by the same
-// sweep that handles everything else rather than by a second code path here.
+// ⚠️ THE ROTATION IS DRIVEN FROM HERE RATHER THAN FROM CSS, AND THAT IS A BUG
+// WORKAROUND RATHER THAN A PREFERENCE. The CSS version — an @property-registered
+// custom property interpolated by @keyframes — was wrong on screen in a way
+// computed style could not see: the hero mark tracked it, the small mark in the
+// header painted its pre-animation colour while getComputedStyle reported the
+// animated one. Sticky positioning, backdrop-filter, and the compositing layer
+// the heartbeat creates were each ruled out separately, and animating --emblem
+// directly instead of substituting var(--aura) did not help. Chrome does not
+// re-rasterise that element for an animated custom property it inherits.
+// Setting the property from script is an ordinary style mutation, so everything
+// that reads it invalidates. See the aura block in page.css.
 //
-// A FIXED choice sets --emblem inline on <html> and removes the class. The two
-// are mutually exclusive by construction: the class defines --emblem, and an
-// inline style outranks it, so leaving both on would silently pin the mark and
-// leave a rotation running underneath that nothing could see.
+// A FIXED choice sets --emblem and stops the loop; AUTO restarts it. The two
+// are mutually exclusive by construction — one writer, one property.
 
 const auraBox = document.getElementById("aura");
 const auraNow = document.getElementById("aura-now");
 
-// Diamond is offered but is NOT in the rotation — see the aura block in
-// page.css. Near-white is luminous on the dark ground and invisible on the
-// light one, and a rotation that blinks out for a sixth of its cycle in one
-// theme is a bug that only shows up in one theme.
+// Diamond is offered but is NOT in the rotation — near-white is luminous on the
+// dark ground and invisible on the light one, and a rotation that blinks out
+// for a sixth of its cycle in one theme is a bug that only shows up in one
+// theme. The stops come from the generated palette, so they cannot drift.
+const ROTATION = tokens.gems.filter((g) => g.name !== "diamond").map((g) => g.hex);
+
 const AURA_CHOICES = [
     { id: "auto", label: "Auto — the six saturated gems, rotating", cls: "auto" },
     ...tokens.gems.map((g) => ({
         id: g.name,
         label: `${g.name.replace(/-/g, " ")} — ${g.media}`,
-        token: g.token
+        token: g.token,
+        hex: g.hex
     })),
-    { id: "site", label: "This site's accent — a site value, not a gem", token: "--accent" }
+    {
+        id: "site",
+        label: "This site's accent — a site value, not a gem",
+        token: "--accent"
+    }
 ];
 
 const root2 = document.documentElement;
+const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+const CYCLE_MS = 42000;
+let rafId = null;
+
+const hexToRgb = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+
+// A plain sRGB lerp between adjacent stops. Not oklab: the generator does the
+// perceptual mixing where the RESULT IS A TOKEN somebody will read off and use,
+// and this is an ambient sweep between six saturated hues where the difference
+// is not visible and the cost would be sixty lines shipped to every visitor.
+const rotate = (now) => {
+    const t = ((now % CYCLE_MS) / CYCLE_MS) * ROTATION.length;
+    const i = Math.floor(t);
+    const f = t - i;
+    const a = hexToRgb(ROTATION[i % ROTATION.length]);
+    const b = hexToRgb(ROTATION[(i + 1) % ROTATION.length]);
+    const mix = a.map((v, n) => Math.round(v + (b[n] - v) * f));
+    root2.style.setProperty("--emblem", `rgb(${mix.join(", ")})`);
+    rafId = requestAnimationFrame(rotate);
+};
+
+const stopRotation = () => {
+    if (rafId !== null) cancelAnimationFrame(rafId);
+    rafId = null;
+};
 
 const applyAura = (id) => {
     const choice = AURA_CHOICES.find((c) => c.id === id) || AURA_CHOICES[0];
+    stopRotation();
 
     if (choice.id === "auto") {
-        root2.style.removeProperty("--emblem");
-        root2.classList.add("aura-auto");
+        if (reduceMotion.matches) {
+            // Stop, and substitute nothing moving. The mark takes the first
+            // stop and stays there — the same posture the heartbeat takes.
+            root2.style.setProperty("--emblem", ROTATION[0]);
+        } else {
+            rafId = requestAnimationFrame(rotate);
+        }
     } else {
-        root2.classList.remove("aura-auto");
         root2.style.setProperty("--emblem", `var(${choice.token})`);
     }
 
@@ -268,7 +311,9 @@ const applyAura = (id) => {
 
     auraNow.textContent =
         choice.id === "auto"
-            ? "--emblem: var(--aura) — rotating"
+            ? reduceMotion.matches
+                ? "--emblem: the six gems, held still for reduced motion"
+                : "--emblem: rotating through the six saturated gems"
             : `--emblem: var(${choice.token})`;
 
     try {
@@ -291,6 +336,14 @@ for (const choice of AURA_CHOICES) {
     b.addEventListener("click", () => applyAura(choice.id));
     auraBox.append(b);
 }
+
+// A visitor who turns Reduce Motion on mid-visit should not have to reload.
+reduceMotion.addEventListener("change", () => {
+    const current = [...auraBox.children].find(
+        (b) => b.getAttribute("aria-pressed") === "true"
+    );
+    applyAura(current ? current.dataset.id : "auto");
+});
 
 let storedAura = null;
 try {

@@ -231,30 +231,6 @@ header.bar {
     flex: 1;
 }
 
-/* ------------------------------------------------------------------- marks ---
-   ™ ℠ ® set as true superscripts. The Unicode glyphs are already drawn raised
-   in most faces, which is why this is easy to skip — but at the wordmark's size
-   they sit on the baseline and read as full-size letters. Scoped to a class
-   rather than applied to the character globally: the corpus and the legal
-   instruments want the plain glyph, and a stylesheet that rewrote every mark on
-   sight would be deciding that for them.
-
-   line-height: 0 keeps the raised glyph from adding to the line box, which
-   would otherwise nudge a wordmark off-centre inside a flex row. */
-.tm {
-    font-size: 0.58em;
-    vertical-align: 0.46em;
-    line-height: 0;
-    letter-spacing: 0;
-    /* The wordmark is set in IBM Plex Mono, where ™ occupies a full character
-       cell and lands a visible space away from the word it belongs to. Forcing
-       the proportional face closes that gap — and is right on its own terms: a
-       trademark symbol is not code, and it is the one glyph in the wordmark
-       that should not be on the mono grid. */
-    font-family: var(--font-text);
-    margin-inline-start: -0.06em;
-}
-
 button.ghost {
     font-family: var(--font-mono);
     font-size: var(--text-micro);
@@ -265,7 +241,9 @@ button.ghost {
     height: var(--control-h-sm);
     padding-inline: 0.9rem;
     cursor: pointer;
-    transition: color var(--dur-base), border-color var(--dur-base);
+    transition:
+        color var(--dur-base),
+        border-color var(--dur-base);
 }
 
 button.ghost:hover {
@@ -631,8 +609,26 @@ footer p {
 
 /* ------------------------------------------------------------------- aura ---
    THE B-EMBLEM'S COLOUR, ROTATING. Every mark on the page reads --emblem, which
-   the vendored layer defines as var(--accent); this section lets a visitor
-   redirect it, and rotates it by default.
+   the vendored layer defines as var(--accent); the control in the hero
+   redirects it, and by default it rotates.
+
+   ⚠️ THE ROTATION IS DRIVEN FROM JS, AND IT IS NOT A TASTE DECISION. It was
+   built first as pure CSS — an @property-registered custom property
+   interpolated by @keyframes, the same technique metta-light.html uses — and
+   that version was WRONG ON SCREEN in a way computed style could not see. The
+   hero mark tracked the rotation; the small mark in the header stayed on its
+   pre-animation colour, painting the site accent while getComputedStyle
+   reported the animated one. It was not the sticky positioning, not the
+   backdrop-filter, and not the compositing layer the heartbeat creates: each
+   was ruled out on its own, and animating --emblem directly rather than
+   substituting var(--aura) did not fix it either. Chrome simply did not
+   re-rasterise that element for an animated custom property it inherits.
+
+   Setting --emblem from script is an ordinary style mutation, so every element
+   that reads it invalidates and repaints. The cost is honest and small: with
+   scripting off the mark is the site accent and does not rotate — which is the
+   same thing that happens to the picker, since a control nobody can click is
+   not a feature either.
 
    ⚠️ WHICH PALETTE, AND WHY IT IS THE GEMS RATHER THAN A VIOLATION OF THEM.
    The standing warning is that a gem must not become a SITE ACCENT — amethyst
@@ -650,74 +646,36 @@ footer p {
    see what happened. This is the same reasoning that kept Diamond from being
    this site's accent.
 
-   @property is what makes the rotation a real interpolation rather than six
-   hard cuts: an unregistered custom property has no type, so the browser cannot
-   tween it. The estate has precedent — thonly.net/docs/metta-light.html
-   interpolates --metta across the seven stops the same way.
-
-   The keyframes reference the gem TOKENS, never their hexes, so this rotation
-   cannot drift from the palette it is drawn from. */
-@property --aura {
-    syntax: "<color>";
-    inherits: true;
-    initial-value: #c8102e;
-}
-
-@keyframes aura-cycle {
-    0% {
-        --aura: var(--color-ruby);
-    }
-    16.66% {
-        --aura: var(--color-fire-opal);
-    }
-    33.33% {
-        --aura: var(--color-citrine);
-    }
-    50% {
-        --aura: var(--color-emerald);
-    }
-    66.66% {
-        --aura: var(--color-sapphire);
-    }
-    83.33% {
-        --aura: var(--color-amethyst);
-    }
-    100% {
-        --aura: var(--color-ruby);
-    }
-}
-
-/* Slow on purpose. This is ambient, not a demo that needs to prove itself: at
-   42s a reader notices the mark is a different colour than when they arrived,
-   which is the whole idea, and never watches it change. */
-:root.aura-auto {
-    animation: aura-cycle 42s linear infinite;
-    --emblem: var(--aura);
-}
-
-/* Under reduced motion the estate-wide sweep already collapses this to a single
-   frame, which leaves the mark on ruby rather than mid-tween. Stated here so
-   the outcome is a decision and not a side effect. */
+   The stops come from dist/tokens.json, so the rotation cannot drift from the
+   palette it is drawn from. Under prefers-reduced-motion it does not run at
+   all; the mark takes the first stop and stays there. */
 
 /* ------------------------------------------------------------ aura control --- */
 
-.aura {
-    margin-top: 1.75rem;
-    padding: 1.1rem 1.25rem 1.25rem;
-    border: 1px solid var(--line);
-    border-radius: var(--r-card);
-    background: var(--surface);
-    max-width: var(--measure-prose);
+/* In the hero the picker carries NO card. A bordered control box competing
+   with the wordmark for the first screen would read as a settings panel; here
+   the mark is the preview and the swatches are a row beneath it, so the group
+   is legible as one object without being drawn as one. */
+.aura-hero {
+    margin-bottom: clamp(2rem, 6vw, 2.75rem);
 }
 
-.aura-label {
-    display: block;
-    font-family: var(--font-mono);
-    font-size: var(--text-micro);
-    letter-spacing: var(--track-spelt);
-    text-transform: uppercase;
-    color: var(--ink-faint);
-    margin-bottom: 0.8rem;
+.aura-hero .hero-mark {
+    margin-bottom: 1.35rem;
+}
+
+/* The group still needs an accessible name; it just does not need a visible
+   one, because the mark above it says what is being coloured. */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
 }
 
 .aura-swatches {
@@ -773,7 +731,7 @@ footer p {
 }
 
 .aura-now {
-    margin: 0.85rem 0 0;
+    margin: 0.9rem 0 0;
     font-family: var(--font-mono);
     font-size: var(--text-micro);
     color: var(--ink-faint);
