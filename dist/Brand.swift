@@ -14,7 +14,7 @@
 import SwiftUI
 
 public enum Brand {
-    public static let version = "1.2.0"
+    public static let version = "1.3.0"
 
     /// The B-Gem media-type palette. A colour here MEANS a medium.
     /// ⚠️ Not a site palette, and not the six-TLD rainbow. Using a gem as an
@@ -131,7 +131,7 @@ public enum Brand {
     /// signature, not the cadence: a 72 BPM variant was built and rejected.
     public enum Beat {
         public static let duration: Double = 1.5
-        public static let delay: Double = 1.5
+        public static let delay: Double = 0
         /// (keyTime, scale) — drive a keyframe animation from these.
         public static let steps: [(Double, Double)] = [
             (0, 1),

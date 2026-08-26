@@ -27,7 +27,15 @@
    most of the period at rest. THAT MORPHOLOGY is what a counterfeit gets wrong
    at any tempo, which is why it, and not the cadence, is the signature.
    (~40 BPM here. A 72 BPM variant was built and rejected — see --beat-duration
-   in tokens.css. Do not "correct" either.) */
+   in tokens.css. Do not "correct" either.)
+
+   ⚠️ THE REST LIVES HERE, at 70% -> 100%: 450ms of stillness in every 1500ms
+   cycle, recurring forever. Do not go looking for it in --beat-delay, which is
+   an animation-delay and therefore fires once before the first iteration and
+   never again. The two are easy to confuse because both produce silence; only
+   this one is part of the rhythm. If the pause ever wants to be LONGER, move
+   the 70% stop earlier — that changes the waveform, which is the signature, so
+   it is a deliberate act and not a tuning knob. */
 @keyframes heartbeat {
     0%,
     100% {

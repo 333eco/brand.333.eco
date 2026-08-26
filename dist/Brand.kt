@@ -18,7 +18,7 @@ import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.unit.dp
 
 object Brand {
-    const val VERSION = "1.2.0"
+    const val VERSION = "1.3.0"
 
     /** The B-Gem media-type palette. A colour here MEANS a medium.
      *  Not a site palette, and not the six-TLD rainbow. */
@@ -95,7 +95,7 @@ object Brand {
      *  rejected. Under reduced motion: stop, and substitute nothing. */
     object Beat {
         const val DURATION_MS = 1500
-        const val DELAY_MS = 1500
+        const val DELAY_MS = 0
         val STEPS = listOf(
             0f to 1f,
             0.14f to 1.3f,
