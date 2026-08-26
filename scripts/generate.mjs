@@ -125,6 +125,8 @@ const tokensCss = readFileSync(join(ROOT, "css", "tokens.css"), "utf8");
 const T = parseTokens(tokensCss);
 const brand = JSON.parse(readFileSync(join(ROOT, "data", "brand.json"), "utf8"));
 const gemData = JSON.parse(readFileSync(join(ROOT, "data", "gems.json"), "utf8"));
+const auraData = JSON.parse(readFileSync(join(ROOT, "data", "auras.json"), "utf8"));
+const tldData = JSON.parse(readFileSync(join(ROOT, "data", "tlds.json"), "utf8"));
 
 const need = (name) => {
     const v = T.get(name);
@@ -144,6 +146,39 @@ const need = (name) => {
 // Gems: semantics from gems.json, hex from tokens.css. The join is the point.
 const gems = gemData.gems.map((g) => ({ ...g, hex: need(g.token) }));
 const siteValues = gemData.siteValues.map((s) => ({ ...s, hex: need(s.token) }));
+
+// The aura ramp joins the same way, for the same reason. Its thresholds are NOT
+// joined: COLOR_BUCKETS in the app's compute.ts is canonical for those, and
+// copying them here would create the second typing this repo exists to prevent.
+// What is emitted is the boundary as data/auras.json states it, labelled as a
+// mirror of that file and not as a source.
+const auras = auraData.buckets.map((b) => ({ ...b, hex: need(b.token) }));
+
+// ⚠️ THE SIX-TLD RAINBOW IS EMITTED WITHOUT VALUES, ON PURPOSE. There is no
+// need() call in this block and there must not be one: the corpus fixes six
+// colour WORDS and no file in the estate fixes a value, so the honest emission
+// is the word plus `pinned: false`. A generator that invented six hexes here
+// would be manufacturing canon, which is the one thing it is not for.
+const tlds = tldData.tlds.map((t) => ({ ...t, hex: null }));
+
+// THE METTA RAMP, SAMPLED. The web mixes in OKLab; a native lerp between two
+// stops in sRGB is a DIFFERENT COLOUR through the middle of every segment, so
+// emitting only the seven stops would hand the native targets a ramp that
+// quietly disagrees with the web one. This generator already speaks OKLab, so
+// it resolves the curve here and ships the samples. Native code then lerps
+// between adjacent samples in sRGB, where the residual error across 1/24 of the
+// ramp is far below a perceptible step.
+//
+// 25 samples = 4 per gem segment. Raise it if a segment ever visibly banded;
+// nothing downstream hard-codes the count.
+const METTA_SAMPLES = 25;
+const mettaRamp = Array.from({ length: METTA_SAMPLES }, (_, i) => {
+    const p = (i / (METTA_SAMPLES - 1)) * (gems.length - 1);
+    const lo = Math.min(Math.floor(p), gems.length - 2);
+    const f = p - lo;
+    // mixOklab(A, pct, B) takes A's share, so the far stop carries f.
+    return mixOklab(gems[lo + 1].hex, f * 100, gems[lo].hex);
+});
 
 // ⚠️ clamp() does not port. Emit the rungs a native platform can actually use
 // and keep the fluid middle term visible as prose rather than silently dropping
@@ -225,6 +260,23 @@ const tokensJson = {
     gems,
     reserved: gemData.reserved,
     siteValues,
+    auras: {
+        $comment: auraData.$comment,
+        meaning: auraData.meaning,
+        source: auraData.source,
+        twoRings: auraData.twoRings,
+        buckets: auras,
+        reserved: auraData.reserved,
+        collisions: auraData.collisions
+    },
+    tlds: {
+        $comment: tldData.$comment,
+        order: tldData.order,
+        scope: tldData.scope,
+        pinned: tldData.pinned,
+        tlds,
+        reserved: tldData.reserved
+    },
     typeScale,
     tracking: Object.fromEntries(
         ["hero", "title", "spelt"].map((k) => [k, need(`--track-${k}`)])
@@ -258,12 +310,25 @@ const tokensJson = {
         soft: mixOklab(need("--danger"), 80, "#ffffff"),
         edge: alphaOf(need("--danger"), 45)
     },
+    // The Metta Light is CONTRACT ONLY here, and deliberately carries no values:
+    // its seven stops ARE the gems above, so emitting them again would be the
+    // second typing this repo exists to prevent. A native port reads `gems` in
+    // order and interpolates at t.
+    mettaLight: {
+        ...brand.mettaLight,
+        samples: METTA_SAMPLES,
+        ramp: mettaRamp
+    },
     accentRule: brand.accentRule,
     sites: sites.map((s) => ({
         ...s,
         alphaFamily: { dark: alphaFamily(s.accent, "d"), light: alphaFamily(s.accent, "l") }
     })),
     mark: brand.mark,
+    // The path itself, so a consumer can BUILD a mark rather than re-type one.
+    // viewBox 0 0 24 24; the 45-degree rotation is baked into the coordinates,
+    // so never re-apply a rotation transform.
+    emblemPath: readFileSync(join(ROOT, "emblem", "emblem.path.txt"), "utf8").trim(),
     wordmark: brand.wordmark
 };
 
@@ -321,6 +386,14 @@ ${gems.map((g) => `            case .${g.name.replace(/-([a-z])/g, (_, c) => c.t
 
     /// Pink is ABSENT BY CONSTRUCTION — reserved for B-Dating. Not an oversight.
 
+    /// TWO OTHER PALETTES ARE DELIBERATELY NOT EMITTED HERE, and are named as
+    /// absent rather than forgotten. The AURA RAMP (seven ROYGBIV stops meaning
+    /// circulation rate) has one consumer and it is a web app; it lives in
+    /// dist/tokens.json and comes here when a native surface renders an aura.
+    /// The SIX-TLD RAINBOW has no pinned values anywhere in the estate — six
+    /// colour words and nothing else — so there is nothing to emit. See
+    /// the auras and tlds blocks in dist/tokens.json.
+
     public struct Palette {
 ${ROLES.map((r) => `        public let ${r.replace(/-([a-z0-9])/g, (_, c) => c.toUpperCase())}: Color`).join("\n")}
     }
@@ -357,6 +430,31 @@ ${tokensJson.motion.keyframes.map((k) => `            (${parseFloat(k.at) / 100}
         ]
     }
 
+    /// THE METTA LIGHT — the session descent. One scalar in, one colour out:
+    /// t is 0 at session start and 1 at session end, passing through the seven
+    /// gems in order. Guards travel with it — no numerals, no totals, no
+    /// streaks, no ranks; the light is the whole signal. The breath is NOT the
+    /// heartbeat and carries no claim.
+    ///
+    /// ⚠️ Samples of an OKLAB curve, not the seven stops. Lerping two gems in
+    /// sRGB gives a different colour through the middle of every segment than
+    /// the web does; these are pre-resolved so both agree.
+    public static let mettaRamp: [(r: Double, g: Double, b: Double)] = [
+${mettaRamp.map((h) => { const [r, g, b] = hexToRgb(h); return `        (${r.toFixed(4)}, ${g.toFixed(4)}, ${b.toFixed(4)})`; }).join(",\n")}
+    ]
+
+    public static func metta(_ t: Double) -> Color {
+        let p = min(max(t, 0), 1) * Double(mettaRamp.count - 1)
+        let i = min(Int(p), mettaRamp.count - 2)
+        let f = p - Double(i)
+        let a = mettaRamp[i], b = mettaRamp[i + 1]
+        return Color(
+            red: a.r + (b.r - a.r) * f,
+            green: a.g + (b.g - a.g) * f,
+            blue: a.b + (b.b - a.b) * f
+        )
+    }
+
     /// ⚠️ PLACEMENT RULE. \`beating\` goes on CHROME — a wordmark, an
     /// attribution line — and NEVER on a mark drawn beside a person's name,
     /// where an unverified pulse would be claiming something about them.
@@ -377,6 +475,7 @@ const kotlin = `${banner("//")}
 package eco.three33.brand
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.unit.dp
 
 object Brand {
@@ -389,6 +488,11 @@ ${gems.map((g) => `        ${g.name.toUpperCase().replace(/-/g, "_")}("${g.hex}"
     }
 
     // Pink is ABSENT BY CONSTRUCTION — reserved for B-Dating. Not an oversight.
+
+    // The AURA RAMP and the SIX-TLD RAINBOW are deliberately not emitted here:
+    // the first has only a web consumer so far, the second has no pinned values
+    // anywhere. Named as absent rather than forgotten. See the auras and
+    // tlds blocks in dist/tokens.json.
 
     data class Palette(
 ${ROLES.map((r) => `        val ${kotlinName(r)}: Color`).join(",\n")}
@@ -423,6 +527,23 @@ ${ROLES.map((r) => `        ${kotlinName(r)} = ${kotlinColor(tokensJson.palettes
         val STEPS = listOf(
 ${tokensJson.motion.keyframes.map((k) => `            ${parseFloat(k.at) / 100}f to ${k.scale}f`).join(",\n")}
         )
+    }
+
+    /** THE METTA LIGHT — the session descent. One scalar in, one colour out:
+     *  t is 0 at session start and 1 at session end, passing through the seven
+     *  gems in order. Guards travel with it: no numerals, no totals, no
+     *  streaks, no ranks. The breath is NOT the heartbeat, and carries no
+     *  claim. */
+    /** ⚠️ Samples of an OKLAB curve, not the seven stops — lerping two gems in
+     *  sRGB differs from the web through the middle of every segment. */
+    val METTA_RAMP = listOf(
+${mettaRamp.map((h) => `        ${kotlinColor(h)}`).join(",\n")}
+    )
+
+    fun metta(t: Float): Color {
+        val p = t.coerceIn(0f, 1f) * (METTA_RAMP.size - 1)
+        val i = p.toInt().coerceAtMost(METTA_RAMP.size - 2)
+        return lerp(METTA_RAMP[i], METTA_RAMP[i + 1], p - i)
     }
 
     /** ⚠️ PLACEMENT RULE: a beating mark goes on CHROME and never beside a

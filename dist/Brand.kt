@@ -14,10 +14,11 @@
 package eco.three33.brand
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.unit.dp
 
 object Brand {
-    const val VERSION = "1.0.0"
+    const val VERSION = "1.2.0"
 
     /** The B-Gem media-type palette. A colour here MEANS a medium.
      *  Not a site palette, and not the six-TLD rainbow. */
@@ -32,6 +33,11 @@ object Brand {
     }
 
     // Pink is ABSENT BY CONSTRUCTION — reserved for B-Dating. Not an oversight.
+
+    // The AURA RAMP and the SIX-TLD RAINBOW are deliberately not emitted here:
+    // the first has only a web consumer so far, the second has no pinned values
+    // anywhere. Named as absent rather than forgotten. See the auras and
+    // tlds blocks in dist/tokens.json.
 
     data class Palette(
         val bg: Color,
@@ -98,6 +104,47 @@ object Brand {
             0.7f to 1f,
             1f to 1f
         )
+    }
+
+    /** THE METTA LIGHT — the session descent. One scalar in, one colour out:
+     *  t is 0 at session start and 1 at session end, passing through the seven
+     *  gems in order. Guards travel with it: no numerals, no totals, no
+     *  streaks, no ranks. The breath is NOT the heartbeat, and carries no
+     *  claim. */
+    /** ⚠️ Samples of an OKLAB curve, not the seven stops — lerping two gems in
+     *  sRGB differs from the web through the middle of every segment. */
+    val METTA_RAMP = listOf(
+        Color(0xFFC8102E),
+        Color(0xFFD02C2A),
+        Color(0xFFD83F23),
+        Color(0xFFE04E19),
+        Color(0xFFE85D04),
+        Color(0xFFEB750F),
+        Color(0xFFEE8B19),
+        Color(0xFFEFA021),
+        Color(0xFFF0B429),
+        Color(0xFFC7B246),
+        Color(0xFF9CAE57),
+        Color(0xFF69A963),
+        Color(0xFF00A36C),
+        Color(0xFF009285),
+        Color(0xFF007F99),
+        Color(0xFF006BAA),
+        Color(0xFF0F52BA),
+        Color(0xFF4159BF),
+        Color(0xFF615EC3),
+        Color(0xFF7E63C8),
+        Color(0xFF9966CC),
+        Color(0xFFAF8BDA),
+        Color(0xFFC6AFE7),
+        Color(0xFFDDD3F4),
+        Color(0xFFF4F7FF)
+    )
+
+    fun metta(t: Float): Color {
+        val p = t.coerceIn(0f, 1f) * (METTA_RAMP.size - 1)
+        val i = p.toInt().coerceAtMost(METTA_RAMP.size - 2)
+        return lerp(METTA_RAMP[i], METTA_RAMP[i + 1], p - i)
     }
 
     /** ⚠️ PLACEMENT RULE: a beating mark goes on CHROME and never beside a

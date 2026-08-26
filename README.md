@@ -34,13 +34,16 @@ css/
   theme-3block.css    dark-default cascade with the :not() guard   ─┐ pick
   theme-2state.css    light-default + .dark stamp                  ─┘ exactly one
   motion.css          @keyframes heartbeat + .beating + the scoped reduce guard
+  metta.css           the Metta Light session descent (OPT-IN)
   reduce-global.css   the estate-wide reduced-motion sweep (OPT-IN)
 emblem/
   emblem.svg          reference copy + the home of the rotation warning
   emblem.ts           Lit template function
   emblem.path.txt     the path `d` string, alone, for generators
 data/
-  gems.json           gem semantics. NO hex — those live in tokens.css
+  gems.json           gem semantics (MEDIUM). NO hex — those live in tokens.css
+  auras.json          aura-ramp semantics (RATE). NO hex — same rule
+  tlds.json           the six-TLD rainbow (DOMAIN). No hex ANYWHERE — see below
   brand.json          version, wordmark, mark rules, the accent rule, site map
 dist/                 GENERATED, committed: tokens.json · Brand.swift · Brand.kt
 scripts/
@@ -50,13 +53,21 @@ site/                 the guidelines page -> brand.333.eco (an installable PWA)
 brand.lock            every package file -> sha256, plus a version
 ```
 
-The page is also **the aura playground**: every mark on it reads `--emblem`, and
-a visitor can point that at any gem or leave it rotating. Rotation is pure CSS —
-an `@property`-registered `--aura` interpolated across the six saturated gems, so
-it survives with scripting off and is stopped by the same reduced-motion sweep
-as everything else. Diamond is in the picker but **not** in the rotation: a cool
-near-white blinks out on the light ground, and a rotation that disappears for a
-sixth of its cycle in one theme is a bug that only shows up in one theme.
+The page is also **the mark's colour playground**: every mark on it reads
+`--emblem`, and a visitor can point that at any gem or leave it rotating.
+Diamond is in the picker but **not** in the rotation: a cool near-white blinks
+out on the light ground, and a rotation that disappears for a sixth of its cycle
+in one theme is a bug that only shows up in one theme.
+
+⚠️ **The rotation is driven from JS, and this paragraph used to say otherwise.**
+It was built first as pure CSS — an `@property`-registered custom property
+interpolated by `@keyframes` — and that version was wrong on screen in a way
+`getComputedStyle` could not see: the hero mark tracked it while the header mark
+painted its pre-animation colour. Chrome does not re-rasterise an element for an
+animated custom property it *inherits*. The code changed and this file did not,
+so it claimed a property the page does not have — the rotation does **not**
+survive with scripting off. Recorded here because the same technique is the
+obvious way to build the Metta Light, and it will fail the same way.
 
 ⚠️ **Rendering the MARK in gem colours is not the thing the gem rule forbids.**
 The rule is that a gem must not become a SITE ACCENT. Hearts in gem colours is
@@ -123,9 +134,31 @@ fine: a bare specifier the Tailwind plugin resolves. Verified to reach `dist`.
 - **A site's accent is DERIVED**, never picked: take the gem whose media type
   *is* that product's medium. Two values cannot derive — `--accent-ink`, and
   `--accent-soft` on a light ground. Measure and pin them per site.
-- **The gem map is a MEDIA-TYPE map, not a site palette**, and it is not the
-  six-TLD rainbow either. Three different things.
-- **Pink is absent by construction.** Reserved for B-Dating. Not an oversight.
+- **THERE ARE THREE PALETTES AND THEY ARE NOT ONE SYSTEM.** A gem means a
+  **medium** (7, `gems.json`); an aura stop means a **rate** (7, `auras.json`);
+  a rainbow hue means a **domain** (6, `tlds.json`). The hues rhyme because a
+  colour wheel is small. The two sevens are *different sets* — the aura ramp
+  carries indigo and ends at violet, the gems carry no indigo and end at
+  diamond.
+- **The six-TLD rainbow has NO pinned values, anywhere.** The corpus fixes six
+  colour *words*; no file fixes a hex. Do not add six tokens to tidy that up —
+  none of the four consumers is a `heartbank.{TLD}`, so they would ship dead
+  into all four behind the lock. Pin them when the first one needs them, and
+  measure contrast then.
+- **The Metta Light chain lives on `.metta`, never on `:root`.** Custom
+  properties inherit their *computed* value, so a chain on `:root` resolves once
+  against root's `--t` and every descendant inherits the finished colour — the
+  ramp dies silently. The element that sets `--t` must carry the class.
+- **Never register `--metta` with `@property`.** It buys a type and the ability
+  to transition it, and transitioning it puts the file straight back inside the
+  Chrome inherited-animated-custom-property bug it was written to route around.
+  Move `--t` on the app's clock instead.
+- **Pink is absent by construction.** Reserved for B-Dating. Not an oversight —
+  and the aura ramp is where the reservation was actually being broken: four
+  shipped Phase-1 surfaces were rendering the `indigo` bucket in pink.
+- **Two aura hexes collide with other tokens** — `--color-aura-red` with
+  `--danger`, `--color-aura-violet` with `--color-violet-sey`. Coincidence, not
+  kinship. Never alias them into each other.
 - **`.beating` goes on CHROME**, never beside a person's name.
 - **The 45° rotation is baked into the path coordinates.** Never a `transform`.
 - **The two theme files are peers.** Converting a site between them is a
@@ -139,8 +172,19 @@ CSS or the build:
 ```bash
 # @theme tokens are tree-shaken unless the AUTHOR'S own CSS references them.
 # A token referenced only from runtime JS vanishes and the element renders bare.
-grep -o -- '--color-ruby' site/dist/assets/*.css      # must be > 0
+grep -o -- '--color-ruby' site/dist/assets/*.css       # must be > 0
+grep -o -- '--color-aura-indigo' site/dist/assets/*.css   # must be > 0
 grep -o -- '--beat-duration' site/dist/assets/*.css   # must be > 0
+
+# The six-TLD marks are painted with CSS KEYWORDS, not tokens, because nothing
+# is pinned. If this ever returns > 0, someone invented six values — check that
+# it was a decision and not a tidy-up.
+grep -o -- '--color-tld' css/tokens.css               # must be 0
+
+# The Metta ramp dies silently if the chain is hoisted to :root — it resolves
+# once and descendants inherit a frozen colour. The chain must be class-scoped.
+grep -c '^\.metta {' css/metta.css                     # must be 1
+grep -c '^@property' css/metta.css                     # must be 0 (prose mentions it)
 
 # The custom domain unmaps if this is missing, with a green build.
 test -f site/dist/CNAME

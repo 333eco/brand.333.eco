@@ -14,7 +14,7 @@
 import SwiftUI
 
 public enum Brand {
-    public static let version = "1.0.0"
+    public static let version = "1.2.0"
 
     /// The B-Gem media-type palette. A colour here MEANS a medium.
     /// ⚠️ Not a site palette, and not the six-TLD rainbow. Using a gem as an
@@ -66,6 +66,14 @@ public enum Brand {
     }
 
     /// Pink is ABSENT BY CONSTRUCTION — reserved for B-Dating. Not an oversight.
+
+    /// TWO OTHER PALETTES ARE DELIBERATELY NOT EMITTED HERE, and are named as
+    /// absent rather than forgotten. The AURA RAMP (seven ROYGBIV stops meaning
+    /// circulation rate) has one consumer and it is a web app; it lives in
+    /// dist/tokens.json and comes here when a native surface renders an aura.
+    /// The SIX-TLD RAINBOW has no pinned values anywhere in the estate — six
+    /// colour words and nothing else — so there is nothing to emit. See
+    /// the auras and tlds blocks in dist/tokens.json.
 
     public struct Palette {
         public let bg: Color
@@ -133,6 +141,55 @@ public enum Brand {
             (0.7, 1),
             (1, 1)
         ]
+    }
+
+    /// THE METTA LIGHT — the session descent. One scalar in, one colour out:
+    /// t is 0 at session start and 1 at session end, passing through the seven
+    /// gems in order. Guards travel with it — no numerals, no totals, no
+    /// streaks, no ranks; the light is the whole signal. The breath is NOT the
+    /// heartbeat and carries no claim.
+    ///
+    /// ⚠️ Samples of an OKLAB curve, not the seven stops. Lerping two gems in
+    /// sRGB gives a different colour through the middle of every segment than
+    /// the web does; these are pre-resolved so both agree.
+    public static let mettaRamp: [(r: Double, g: Double, b: Double)] = [
+        (0.7843, 0.0627, 0.1804),
+        (0.8157, 0.1725, 0.1647),
+        (0.8471, 0.2471, 0.1373),
+        (0.8784, 0.3059, 0.0980),
+        (0.9098, 0.3647, 0.0157),
+        (0.9216, 0.4588, 0.0588),
+        (0.9333, 0.5451, 0.0980),
+        (0.9373, 0.6275, 0.1294),
+        (0.9412, 0.7059, 0.1608),
+        (0.7804, 0.6980, 0.2745),
+        (0.6118, 0.6824, 0.3412),
+        (0.4118, 0.6627, 0.3882),
+        (0.0000, 0.6392, 0.4235),
+        (0.0000, 0.5725, 0.5216),
+        (0.0000, 0.4980, 0.6000),
+        (0.0000, 0.4196, 0.6667),
+        (0.0588, 0.3216, 0.7294),
+        (0.2549, 0.3490, 0.7490),
+        (0.3804, 0.3686, 0.7647),
+        (0.4941, 0.3882, 0.7843),
+        (0.6000, 0.4000, 0.8000),
+        (0.6863, 0.5451, 0.8549),
+        (0.7765, 0.6863, 0.9059),
+        (0.8667, 0.8275, 0.9569),
+        (0.9569, 0.9686, 1.0000)
+    ]
+
+    public static func metta(_ t: Double) -> Color {
+        let p = min(max(t, 0), 1) * Double(mettaRamp.count - 1)
+        let i = min(Int(p), mettaRamp.count - 2)
+        let f = p - Double(i)
+        let a = mettaRamp[i], b = mettaRamp[i + 1]
+        return Color(
+            red: a.r + (b.r - a.r) * f,
+            green: a.g + (b.g - a.g) * f,
+            blue: a.b + (b.b - a.b) * f
+        )
     }
 
     /// ⚠️ PLACEMENT RULE. `beating` goes on CHROME — a wordmark, an

@@ -109,7 +109,14 @@
                         palette, one mark, one heartbeat, vendored into every
                         site that renders them.
                     </p>
-                    <span class="version mono" id="ver">brand v1.0.0</span>
+                    <!-- EMPTY ON PURPOSE, and filled by page.js from the generator — the same
+                         way #foot-ver already is. A hardcoded number here was a
+                         hand-typed copy of a generated one, and it had already gone
+                         stale: it read v1.0.0 while dist/tokens.json said 1.1.0, and
+                         JS quietly corrected it after paint. On a page whose whole
+                         claim is that disagreements between the files SHOW, a value
+                         that silently self-corrects is the wrong shape. -->
+                    <span class="version mono" id="ver"></span>
                 </div>
             </section>
 
@@ -271,11 +278,251 @@
                         <p>
                             <strong
                                 >This is a media-type map, not a site
-                                palette</strong
-                            >, and it is not the six-TLD rainbow either — that
-                            is a different palette with a different job. Using a
-                            gem as a site accent is only correct where the gem
-                            <em>is</em> that product's medium.
+                                palette.</strong
+                            >
+                            Using a gem as a site accent is only correct where
+                            the gem <em>is</em> that product's medium.
+                        </p>
+                        <p>
+                            <strong>There are three palettes</strong>, and the
+                            other two are below. A gem means a
+                            <strong>medium</strong>; an aura stop means a
+                            <strong>rate</strong>; a rainbow hue means a
+                            <strong>domain</strong>. Seven, seven and six. The
+                            hues rhyme because a colour wheel is small — the
+                            meanings do not, and no two of them may ever be
+                            presented as one system.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ------------------------------------------------------ metta -->
+            <section>
+                <div class="wrap wide">
+                    <p class="eyebrow">Colour · in motion</p>
+                    <h2>The Metta Light</h2>
+                    <p>
+                        The gem order above is not a list — it is a
+                        <strong>descent</strong>. A session starts at ruby and
+                        ends at diamond, and the whole API is one number: the
+                        app sets <code>--t</code> from 0 to 1, and everything
+                        downstream reads <code>--metta</code> and never learns
+                        there was a number.
+                    </p>
+
+                    <div class="metta metta-stage" id="metta-stage">
+                        <div class="metta-light"></div>
+                    </div>
+                    <div class="harness">
+                        <label class="mono" for="metta-t">scrub session</label>
+                        <input
+                            type="range"
+                            id="metta-t"
+                            min="0"
+                            max="6000"
+                            value="0" />
+                        <span class="mono" id="metta-read"></span>
+                        <span class="harness-note"
+                            >dev harness — never a product surface</span
+                        >
+                    </div>
+
+                    <div class="note warn">
+                        <p>
+                            <strong
+                                >No numerals, no totals, no streaks, no
+                                ranks.</strong
+                            >
+                            The light carries the whole signal.
+                            <code>--t</code> is an input, never a readout —
+                            rendering it as &ldquo;42%&rdquo; puts metering back
+                            into a surface built to have none. The readout
+                            beside the slider exists because this page documents
+                            the mechanism; a product surface shows the light and
+                            nothing else.
+                        </p>
+                    </div>
+
+                    <div class="note warn">
+                        <p>
+                            <strong
+                                >This is not an animated custom property, and
+                                that is the point.</strong
+                            >
+                            The obvious build — and the one the original
+                            reference for this uses — registers
+                            <code>--metta</code> with <code>@property</code> and
+                            interpolates it with <code>@keyframes</code>. This
+                            repo has already been burned by exactly that: Chrome
+                            does not reliably re-rasterise an element for an
+                            animated custom property it <em>inherits</em>, and
+                            the failure is invisible to
+                            <code>getComputedStyle</code>. Inheritance is not
+                            incidental here — it <em>is</em> the design — so
+                            that build is broken in the one configuration the
+                            feature requires.
+                        </p>
+                        <p>
+                            So the ramp computes a plain value instead of
+                            animating one: six <code>color-mix()</code> steps,
+                            each weighted by a <code>clamp()</code> window off
+                            <code>--t</code>. No registration, no keyframes, no
+                            animation engine, no JS ticker. There is no enforcer
+                            to forget.
+                        </p>
+                    </div>
+
+                    <div class="note">
+                        <p>
+                            <strong>The chain lives on a class, not
+                            <code>:root</code>.</strong>
+                            Custom properties inherit their <em>computed</em>
+                            value, so a chain declared on <code>:root</code>
+                            resolves once against root's own <code>--t</code>
+                            and every descendant inherits the finished colour —
+                            the ramp goes dead and throws no error. The element
+                            that sets <code>--t</code> must be the element that
+                            carries the chain. Put <code>.metta</code> on the
+                            session container.
+                        </p>
+                    </div>
+
+                    <p style="margin-top: 1.25rem">
+                        <strong>Breath, not heartbeat.</strong> The lamp's swell
+                        is a slow symmetrical breath with no claim attached. The
+                        heartbeat in <code>motion.css</code> is a
+                        Proof-of-Humanity signal with a placement rule. Never
+                        give the lamp <code>.beating</code>, and never give a
+                        mark the breath. Under reduced motion the breath stops
+                        and <em>the colour does not</em> — the descent is the
+                        session's real state, and freezing it would misreport
+                        where the sitter actually is.
+                    </p>
+                </div>
+            </section>
+
+            <!-- ------------------------------------------------------ auras -->
+            <section>
+                <div class="wrap wide">
+                    <p class="eyebrow">Colour · second palette</p>
+                    <h2>The aura ramp</h2>
+                    <p>
+                        A colour here means a <strong>position</strong> — how
+                        fast a person's gratitude is circulating, measured as
+                        crossings per month and bucketed server-side. Not a
+                        medium, not a domain. A rate.
+                    </p>
+                    <div class="grid" id="auras"></div>
+                    <div class="note">
+                        <p>
+                            <strong>Extracted, not invented.</strong> These
+                            seven were typed by hand in three files of the
+                            shipping Phase-1 app, and all three still agreed
+                            when they were lifted — the pre-drift state this
+                            package exists to end, caught before it diverged.
+                            Nothing here was chosen; it was moved.
+                        </p>
+                    </div>
+                    <div class="note warn">
+                        <p>
+                            <strong
+                                >Seven stops here and seven gems above are
+                                different sets.</strong
+                            >
+                            This ramp carries indigo and ends at violet; the
+                            gems carry no indigo and end at the unrefracted
+                            diamond. The shared count is a coincidence.
+                        </p>
+                        <p>
+                            <strong>And this ramp is discrete.</strong> A person
+                            sits in exactly one stop and never between two,
+                            which is why seven flat tokens are the right shape.
+                            The Metta Light — the gem order named above — is the
+                            continuous one, driven by a single scalar. Do not
+                            build this one as a gradient.
+                        </p>
+                    </div>
+                    <p style="margin-top: 1.25rem">
+                        <strong>Two of these hexes collide with tokens</strong>
+                        declared elsewhere in the layer:
+                        <code>--color-aura-red</code> is byte-identical to
+                        <code>--danger</code>, and
+                        <code>--color-aura-violet</code> to
+                        <code>--color-violet-sey</code>. Coincidence, not
+                        kinship — three names, three meanings. Do not alias
+                        them, or re-tuning one will silently move the others.
+                    </p>
+                </div>
+            </section>
+
+            <!-- ------------------------------------------------------- tlds -->
+            <section>
+                <div class="wrap wide">
+                    <p class="eyebrow">Colour · third palette</p>
+                    <h2>The six-TLD rainbow</h2>
+                    <p>
+                        A colour here means a <strong>domain</strong> — one
+                        HeartBank<sup>&reg;</sup> TLD, its product class, and
+                        the heart-idiom it was named for. The six were assigned
+                        one at a time, per domain; that they compose a complete
+                        rainbow was found afterwards, and that is the whole
+                        reason the allusion is earned rather than contrived.
+                    </p>
+                    <div class="tld-line" id="tld-marks"></div>
+                    <div class="tbl-scroll">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>TLD</th>
+                                    <th>Hue</th>
+                                    <th>Product class</th>
+                                    <th>Heart-idiom</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tlds"></tbody>
+                        </table>
+                    </div>
+                    <div class="note warn">
+                        <p>
+                            <strong>No value is pinned, and none is faked.</strong>
+                            The corpus fixes six colour <em>words</em>; no file
+                            in the estate fixes a hex. So the marks above are
+                            painted with the CSS keyword that spells the
+                            doctrine's word — a rendering of the name, never a
+                            value — which is why they look untuned beside the
+                            measured gems. They are supposed to.
+                        </p>
+                        <p>
+                            <strong>Do not add six tokens to make that go
+                            away.</strong>
+                            Nothing consumes them: not one of the four sites
+                            vendoring this layer is a
+                            <code>heartbank.{TLD}</code>. Pin them when the
+                            first one needs them, and measure contrast then.
+                        </p>
+                    </div>
+                    <div class="note">
+                        <p>
+                            <strong>Why marks and not chips.</strong> These six
+                            hues are one-for-one with the six saturated gems.
+                            Two chip grids of the same six hues on one page read
+                            as one system no matter what the caption says, so
+                            the carrier changes with the meaning: a medium is a
+                            chip, a domain is a mark. Colour is a property of
+                            the emblem here, which is also what the doctrine
+                            says an aura is.
+                        </p>
+                    </div>
+                    <div class="note">
+                        <p>
+                            <strong>This palette is body-scoped</strong>, in a
+                            way the other two are not — it belongs to
+                            HeartBank<sup>&reg;</sup>, one body of five. It is
+                            documented here because this is where the three
+                            palettes are told apart, not because the
+                            institution's colour system is one body's domain
+                            map.
                         </p>
                     </div>
                 </div>
@@ -414,6 +661,7 @@ npm run check:brand</pre>
                     <pre>tokens.css
   <b>+</b> theme-3block.css   <b>or</b>   theme-2state.css
   <b>+</b> motion.css
+  <b>+</b> metta.css          <i>opt-in — only where a session descends</i>
   <b>+</b> reduce-global.css  <b>(opt-in)</b>
   <b>+</b> brand.css          <b>(per site)</b>
   <b>+</b> site.css           <b>(per site)</b></pre>

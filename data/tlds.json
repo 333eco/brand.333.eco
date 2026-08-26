@@ -1,0 +1,79 @@
+{
+    "$comment": [
+        "The six-TLD rainbow. NAMES ONLY, AND THAT IS THE POINT — unlike gems.json",
+        "and auras.json, this file has no sibling hexes in css/tokens.css to be",
+        "joined against, because none have ever been assigned. The corpus fixes the",
+        "six COLOURS as words (brand-identity-as-architecture §6.4 and §10.1,",
+        "resolved 2026-06-30); no file in the estate fixes a value.",
+        "",
+        "⛔ DO NOT PIN HEXES HERE TO MAKE THE PAGE PRETTIER. Nothing consumes them:",
+        "the four sites that vendor this layer are sayyourname, playsey, seysays and",
+        "333.eco, and not one of them is a heartbank.{TLD}. Six tokens would ship",
+        "byte-identical into all four behind brand.lock, buy nothing, and invite",
+        "exactly the misuse the gem warning already forbids. Pin them when the first",
+        "heartbank.{TLD} surface actually needs them, and measure contrast then —",
+        "the gem palette's own hexes were proposed in a working document and lived",
+        "there for weeks before they were ratified into tokens.css.",
+        "",
+        "⚠️ THIS IS A DOMAIN MAP. A colour here means a DOMAIN's product class and",
+        "its heart-idiom — not a medium (gems.json) and not a rate (auras.json).",
+        "The six hues are one-for-one with the six saturated gems, which is exactly",
+        "why they are rendered on a different CARRIER on the guidelines page: gems",
+        "are chips, these are marks. Same hue, different object, no fusion.",
+        "",
+        "`cssNamed` below is the CSS keyword that spells the doctrine's word. It is",
+        "a RENDERING OF THE NAME, never a pinned value — that is why it is a",
+        "keyword and not a hex, and why it is allowed to look untuned beside the",
+        "measured gems."
+    ],
+    "order": "Spectrum order, red through violet. The assignments were made per-domain, one at a time, by heart-idiom — that they compose a complete rainbow was found afterwards, and showing them out of spectrum order would hide the only property that makes the allusion earned.",
+    "scope": "HeartBank® — one body of five. This palette is body-scoped in a way the gems and the aura ramp are not; it is documented here because the brand layer is where the three palettes are told apart, not because the institution's colour system is one body's domain map.",
+    "pinned": false,
+    "tlds": [
+        {
+            "tld": "heartbank.us",
+            "hue": "red",
+            "cssNamed": "red",
+            "productClass": "HeartBank® Storage — B-Storage / B-links",
+            "idiom": "the universal human heart; .us reads as \"us\" = humanity; PoH = proof of humanity"
+        },
+        {
+            "tld": "heartbank.me",
+            "hue": "orange",
+            "cssNamed": "orange",
+            "productClass": "Thank Your Future Kindness℠ — the pledge surface",
+            "idiom": "warmth and forward-looking hope; .me is personal and future-facing"
+        },
+        {
+            "tld": "heartbank.org",
+            "hue": "gold",
+            "cssNamed": "gold",
+            "productClass": "Treasury — family-scale money economy, Phase 1",
+            "idiom": "the Heart of Gold — generosity"
+        },
+        {
+            "tld": "heartbank.ceo",
+            "hue": "green",
+            "cssNamed": "green",
+            "productClass": "Franchise arm — B-Affiliate directory; the CEO surface",
+            "idiom": "commerce, growth, the greenback, local-economy revival"
+        },
+        {
+            "tld": "heartbank.net",
+            "hue": "blue",
+            "cssNamed": "blue",
+            "productClass": "Tree of Humanity — institutional output; the Phase-2 global commons",
+            "idiom": "water, for watering the Tree of Humanity; trust and the worldwide net"
+        },
+        {
+            "tld": "heartbank.com",
+            "hue": "purple",
+            "cssNamed": "purple",
+            "productClass": "Root = B-Store; Chronicle — adult-scale time economy",
+            "idiom": "the Purple Heart — honour and sacrifice; finite time given"
+        }
+    ],
+    "reserved": {
+        "pink": "Held out of the six for B-Dating and romantic contexts — the same reservation the gems and the aura ramp keep. Three palettes, one reservation."
+    }
+}

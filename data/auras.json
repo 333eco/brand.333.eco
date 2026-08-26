@@ -1,0 +1,50 @@
+{
+    "$comment": [
+        "The aura ramp. SEMANTICS ONLY — no hex values live here. The hexes are",
+        "in css/tokens.css (--color-aura-red and siblings) and are joined onto",
+        "this map by scripts/generate.mjs, exactly as gems.json is joined. Read",
+        "dist/tokens.json for the joined result.",
+        "",
+        "⚠️ THIS IS A RATE MAP. A colour here means a POSITION — how fast a",
+        "person's gratitude is circulating — not a medium (that is gems.json)",
+        "and not a domain (that is tlds.json). Three palettes; seven, seven and",
+        "six; and the hues rhyme because a colour wheel is small. Never present",
+        "any two of them as one system.",
+        "",
+        "⚠️ THE SEVENTH IS VIOLET, NOT DIAMOND. This ramp and the gem palette",
+        "both have seven stops and they are DIFFERENT SETS: this one carries",
+        "indigo and ends at violet; the gems carry no indigo and end at the",
+        "unrefracted diamond. The shared count is a coincidence.",
+        "",
+        "⚠️ DISCRETE, NOT CONTINUOUS. colorFor() returns a bucket NAME, so a",
+        "person is in exactly one stop and never between two. That is what",
+        "makes seven flat tokens the right shape here. The Metta Light — the",
+        "gem-order descent named in gems.json — is the continuous one, driven",
+        "by a single 0-to-1 scalar. Do not build this one as a gradient."
+    ],
+    "meaning": "Circulation velocity, computed as crossings per month over a rolling window and bucketed server-side.",
+    "source": "thank.heartbank.org/functions/src/auras/compute.ts — COLOR_BUCKETS is canonical for the thresholds; this file is canonical for the colours.",
+    "twoRings": "A person carries TWO auras at once — one for Kiitos (gratitude shown) and one for Kiitti (kindness given). Same ramp, two independent positions.",
+    "buckets": [
+        { "name": "red", "token": "--color-aura-red", "under": 0.5 },
+        { "name": "orange", "token": "--color-aura-orange", "under": 1.5 },
+        { "name": "yellow", "token": "--color-aura-yellow", "under": 3 },
+        { "name": "green", "token": "--color-aura-green", "under": 6 },
+        { "name": "blue", "token": "--color-aura-blue", "under": 12 },
+        {
+            "name": "indigo",
+            "token": "--color-aura-indigo",
+            "under": 24,
+            "note": "⚠️ FOUR SHIPPED SURFACES RENDERED THIS BUCKET IN PINK — members-panel.ts, seed, thank and timelog reached for bg-pink-100/text-pink-400 while the three hex maps said #4f46e5. Pink is reserved by construction for B-Dating and must not appear on a Phase-1 surface. Corrected to indigo. If the reason was that blue-indigo-violet are hard to tell apart at tint weight, the fix is to widen the ramp here, where one change reaches every surface — never to borrow the reserved hue on four of them."
+        },
+        { "name": "violet", "token": "--color-aura-violet", "unbounded": true }
+    ],
+    "reserved": {
+        "pink": "ABSENT HERE FOR THE SAME REASON IT IS ABSENT FROM THE GEMS — held for B-Dating and romantic contexts. This ramp is where the reservation was actually being violated."
+    },
+    "collisions": [
+        "--color-aura-red is byte-identical to --danger.",
+        "--color-aura-violet is byte-identical to --color-violet-sey.",
+        "Both are coincidence, not kinship. Three names, three meanings; do not alias them, or re-tuning one will silently move the others."
+    ]
+}

@@ -29,8 +29,9 @@
    shipped code. See README.md.
 
    ORDER OF CONCATENATION, and it is not arbitrary:
-       tokens.css -> theme-*.css -> motion.css -> [reduce-global.css]
-       -> brand.css (per site) -> site.css (per site)
+       tokens.css -> theme-*.css -> motion.css -> [metta.css]
+       -> [reduce-global.css] -> brand.css (per site) -> site.css (per site)
+   (bracketed files are OPT-IN; a surface with no session skips metta.css)
    Custom-property substitution is lazy, so a value declared here may reference
    one that a later file sets — which is exactly how --accent, set per site,
    reaches the derived family below.
@@ -49,7 +50,9 @@
 @custom-variant dark (:host(.dark) &, &:where(.dark, .dark *));
 
 /* ---------------------------------------------------------------- Tier A ---
-   Theme-invariant. Fonts, scale, geometry, motion timing, and the gem palette. */
+   Theme-invariant. Fonts, scale, geometry, motion timing, and two of the three
+   palettes — the gems and the aura ramp. The six-TLD rainbow is NOT here; it has
+   no pinned values, and data/tlds.json records why. */
 @theme {
     /* Set per site in brand.css; these are the fallbacks a bare page gets. */
     --font-display: ui-sans-serif, system-ui, -apple-system, sans-serif;
@@ -117,6 +120,42 @@
        are read at arm's length outdoors, and the more saturated violet is what
        survives sunlight. */
     --color-violet-sey: #7c3aed;
+
+    /* ------------------------------------------------------------------
+       THE AURA RAMP. A THIRD PALETTE, and the one with a live consumer.
+
+       A colour here means a POSITION — how fast a person's gratitude is
+       circulating (crossings per month, bucketed server-side by colorFor() in
+       thank.heartbank.org/functions/src/auras/compute.ts). It is not a medium
+       and it is not a domain. Seven stops, ROYGBIV, and the seventh is VIOLET
+       rather than diamond: the gem palette's seven and this one's seven are
+       different sets that happen to share a count.
+
+       ⚠️ THREE PALETTES, SEVEN·SEVEN·SIX, AND THEY MUST NOT BE FUSED. Gems
+       mean a MEDIUM (a colour that says "this is a voice note"). The six-TLD
+       rainbow means a DOMAIN (see data/tlds.json — names only, no values are
+       pinned anywhere yet). This one means a RATE. The hues rhyme because
+       there are only so many places on a colour wheel; the meanings do not.
+
+       ⚠️ EXTRACTED, NOT INVENTED. These seven were typed by hand in three
+       files of the shipping Phase-1 app — aura-avatar/index.ts:12,
+       chart/index.ts:20, graph/index.ts:38 — and all three still agreed when
+       they were lifted. That agreement is why this is a straight extraction
+       and not a re-derivation: nothing here was chosen, only moved.
+
+       ⚠️ TWO OF THESE HEXES COLLIDE WITH TOKENS ABOVE, and the collision is
+       coincidence rather than kinship: --color-aura-red is byte-identical to
+       --danger, and --color-aura-violet to --color-violet-sey. Three names,
+       two values, three unrelated meanings. Do NOT collapse them into
+       aliases — the day one of them is re-tuned, the other two must not move
+       with it, and a var() chain is exactly what would drag them along. */
+    --color-aura-red: #dc2626;
+    --color-aura-orange: #ea580c;
+    --color-aura-yellow: #ca8a04;
+    --color-aura-green: #16a34a;
+    --color-aura-blue: #2563eb;
+    --color-aura-indigo: #4f46e5;
+    --color-aura-violet: #7c3aed;
 
     --animate-heartbeat: heartbeat var(--beat-duration) var(--beat-delay)
         infinite;

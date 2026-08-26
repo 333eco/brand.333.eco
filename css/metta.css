@@ -1,0 +1,190 @@
+/* ============================================================================
+   THE METTA LIGHT — the session descent
+   ----------------------------------------------------------------------------
+   OPT-IN, like reduce-global.css and for the same kind of reason: most surfaces
+   have no session to descend. Load it after motion.css on the surfaces that do.
+   It is not part of tokens.css and must not be folded into it.
+
+   THE WHOLE API IS ONE NUMBER. The app sets --t, from 0 at session start to 1 at
+   session end. Everything downstream reads --metta and knows nothing about a
+   number. Seven stops, ruby to diamond — the B-Gem order, which is what gems.json
+   means when it calls that order 'the Metta Light descent'. Until this file the
+   order was asserted with nothing to show for it.
+
+       <div class='metta' style='--t: 0.42'>   <- the only line the app writes
+         <div class='metta-light'></div>
+         <svg class='mark'>...</svg>           <- fill: var(--metta)
+       </div>
+
+   ⚠️ NO NUMERALS, NO TOTALS, NO STREAKS, NO RANKS. The light carries the whole
+   signal. --t is an input, never a readout: rendering it as '42%' is the exact
+   move the guards exist to prevent, and it re-introduces metering into a surface
+   built to have none.
+
+   ──────────────────────────────────────────────────────────────────────────────
+   ⚠️⚠️ WHY THIS IS NOT AN ANIMATED CUSTOM PROPERTY, AND THAT IS THE WHOLE POINT.
+
+   The obvious build — and the one the original CSS reference for this uses — is
+   an @property-registered --metta interpolated by @keyframes across the seven
+   stops, scrubbed by hanging a negative animation-delay off --t. It demos
+   beautifully. THIS REPO HAS ALREADY BEEN BURNED BY IT: see the aura block in
+   site/src/page.css. Chrome does not reliably re-rasterise an element for an
+   animated custom property it INHERITS, and the failure is invisible to
+   getComputedStyle — the hero mark tracked the value while the header mark
+   painted its pre-animation colour and reported the animated one. Sticky
+   positioning, backdrop-filter and the compositing layer were each ruled out
+   separately. The guidelines page had to drive that rotation from JS instead.
+
+   Inheritance is not incidental here — 'one property, everything downstream reads
+   it' IS the design. So the animated-property build is broken in exactly the
+   configuration this feature requires, on some elements and not others, silently.
+
+   So the ramp below computes --metta as a plain value instead of animating one.
+   No @property registration, no @keyframes, no animation engine, no JS ticker.
+   --t is an ordinary custom property; changing it is an ordinary style mutation,
+   which every reader invalidates on, the way every other token in this layer
+   already does. There is no enforcer to forget.
+
+   ⚠️ DO NOT REGISTER --metta WITH @property TO 'TIDY THIS UP'. Registering it
+   buys a type and the ability to transition it, and the moment anyone transitions
+   it this file is back inside the bug it was written to route around. If a
+   surface wants the descent to look continuous, MOVE --t on the app's own clock
+   — it is the session's progress and the app already knows it — and never
+   transition --metta.
+   ──────────────────────────────────────────────────────────────────────────────
+
+   HOW THE RAMP WORKS. --t scales to a position on six segments, and each stop is
+   mixed in with a weight that is 0 before its segment, ramps 0->1 across it, and
+   pins at 1 after. clamp() does the windowing, so a stop that has not been
+   reached contributes a 0% mix (a no-op) and one already passed contributes 100%
+   (a full replacement). Six mixes, evaluated lazily, nothing typed twice: the
+   seven stops are the gem tokens themselves, so this file declares no colour.
+
+   Mixed in OKLAB, matching every other derived colour in this layer. Do not
+   'simplify' to sRGB — the ruby-to-fire-opal and sapphire-to-amethyst legs go
+   visibly muddy through it.
+   ========================================================================== */
+
+/* ⚠️⚠️ THE CHAIN IS DECLARED ON A CLASS, NOT ON :root, AND THAT IS LOAD-BEARING.
+   It was written on :root first and the ramp was DEAD — --metta resolved once,
+   against :root's own --t, and every descendant then inherited that finished
+   colour. Setting --t further down the tree changed nothing and threw no error.
+
+   The reason is that custom properties inherit their COMPUTED value, not their
+   declaration: a descendant does not re-evaluate a chain declared above it, it
+   receives the answer. So the element that sets --t must be the element that
+   carries the chain, which is what this class is for. Put both on the session
+   container; descendants inherit a --metta that is already correct.
+
+   Caught by measuring the seven stops against the seven gem tokens in a real
+   browser — all seven now land on their hex exactly. Do not move these
+   declarations to :root to 'make it global'. That is the bug. */
+
+.metta {
+    /* Session start. A .metta that never sets --t sits at ruby, which is a
+       meaningful state and not a broken one. */
+    --t: 0;
+
+    /* Position along six segments, clamped so out-of-range input cannot walk
+       off either end of the palette. */
+    --metta-seg: clamp(0, calc(var(--t) * 6), 6);
+
+    /* Per-stop windows. w(i) = clamp(0, seg - i, 1). */
+    --metta-w0: clamp(0, var(--metta-seg), 1);
+    --metta-w1: clamp(0, calc(var(--metta-seg) - 1), 1);
+    --metta-w2: clamp(0, calc(var(--metta-seg) - 2), 1);
+    --metta-w3: clamp(0, calc(var(--metta-seg) - 3), 1);
+    --metta-w4: clamp(0, calc(var(--metta-seg) - 4), 1);
+    --metta-w5: clamp(0, calc(var(--metta-seg) - 5), 1);
+
+    /* The descent. Each line lays the next gem over the accumulated result. */
+    --metta-0: var(--color-ruby);
+    --metta-1: color-mix(
+        in oklab,
+        var(--color-fire-opal) calc(var(--metta-w0) * 100%),
+        var(--metta-0)
+    );
+    --metta-2: color-mix(
+        in oklab,
+        var(--color-citrine) calc(var(--metta-w1) * 100%),
+        var(--metta-1)
+    );
+    --metta-3: color-mix(
+        in oklab,
+        var(--color-emerald) calc(var(--metta-w2) * 100%),
+        var(--metta-2)
+    );
+    --metta-4: color-mix(
+        in oklab,
+        var(--color-sapphire) calc(var(--metta-w3) * 100%),
+        var(--metta-3)
+    );
+    --metta-5: color-mix(
+        in oklab,
+        var(--color-amethyst) calc(var(--metta-w4) * 100%),
+        var(--metta-4)
+    );
+    --metta: color-mix(
+        in oklab,
+        var(--color-diamond) calc(var(--metta-w5) * 100%),
+        var(--metta-5)
+    );
+}
+
+/* --------------------------------------------------------------- the lamp ---
+   The light itself, as an opt-in component. A surface that only wants the COLOUR
+   takes --metta and ignores everything below.
+
+   The glow is a box-shadow stack rather than a filter because a filter on this
+   element would also blur what sits inside it, and the lamp is routinely a
+   backdrop for a mark. srgb (not oklab) wherever a mix ends at transparent: a
+   rectangular mix against transparent is premultiplied, so srgb gives the
+   predictable alpha and oklab does not. Same rule as the alpha family in
+   tokens.css. */
+
+/* Needs a --metta, so it goes INSIDE a .metta or carries the class itself. On
+   its own it inherits nothing and paints with an invalid colour. */
+.metta-light {
+    width: var(--metta-size, 12rem);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: radial-gradient(
+        circle at 50% 42%,
+        color-mix(in oklab, var(--metta) 88%, white) 0%,
+        var(--metta) 46%,
+        color-mix(in srgb, var(--metta) 62%, transparent) 74%,
+        transparent 78%
+    );
+    box-shadow:
+        0 0 3.75rem color-mix(in srgb, var(--metta) 55%, transparent),
+        0 0 8.75rem color-mix(in srgb, var(--metta) 30%, transparent),
+        0 0 15rem color-mix(in srgb, var(--metta) 16%, transparent);
+    animation: metta-breathe var(--metta-breath, 6s) ease-in-out infinite;
+}
+
+/* Breath, not heartbeat. THE TWO MUST NOT BE CONFUSED and this is a semantic
+   boundary rather than a stylistic one: the heartbeat in motion.css is a
+   Proof-of-Humanity signal with a placement rule attached, and its morphology is
+   the signature. This is a slow symmetrical swell with no claim attached to it.
+   Never give the lamp `.beating`, and never give a mark this. */
+@keyframes metta-breathe {
+    0%,
+    100% {
+        transform: scale(1);
+        filter: brightness(1);
+    }
+    50% {
+        transform: scale(1.035);
+        filter: brightness(1.09);
+    }
+}
+
+/* The colour is not motion and does not stop here. Only the breath does — the
+   descent is the session's own state, and freezing it would misreport where the
+   sitter actually is. Same principle as the static mark being Proof of
+   Coordinate: a stopped animation must never become a false reading. */
+@media (prefers-reduced-motion: reduce) {
+    .metta-light {
+        animation: none;
+    }
+}

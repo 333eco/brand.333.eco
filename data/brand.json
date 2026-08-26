@@ -8,7 +8,7 @@
         "into brand.lock, which is vendored byte-identical into every consumer,",
         "so 'which sites are on which brand version' is answerable by grep."
     ],
-    "version": "1.0.0",
+    "version": "1.2.0",
     "wordmark": {
         "line": "circulation, not accumulation",
         "division": "Bank = what accumulates is the RECORD of appreciation. Heart = what circulates is the VALUE.",
@@ -28,6 +28,16 @@
             "static": "Proof of Coordinate ℠ — a meaningful state, not a degradation.",
             "beating": "Proof of Humanity ℠ — but only where the beat can be verified. Ambient institutional beating claims 'humans run this', not 'this person is human'."
         }
+    },
+    "mettaLight": {
+        "$comment": "The session descent. css/metta.css is OPT-IN and is not vendored by a surface with no session.",
+        "api": "The app sets --t (0 at session start, 1 at session end) on an element carrying the .metta class. Everything downstream reads --metta.",
+        "stops": "The B-Gem order, ruby to diamond. Seven stops, six segments; stop i sits at t = i/6.",
+        "notAnimated": "--metta is COMPUTED, never animated. An @property-registered custom property interpolated by @keyframes is the obvious build and is broken in the configuration this feature requires: Chrome does not reliably re-rasterise an element for an animated custom property it INHERITS, and the failure is invisible to getComputedStyle. Six color-mix() steps weighted by clamp() windows instead — no registration, no keyframes, no ticker.",
+        "classScoped": "The chain is declared on .metta and NOT on :root. Custom properties inherit their computed value, so a chain on :root resolves once against root's --t and descendants inherit a frozen colour. The element that sets --t must carry the chain.",
+        "guards": "No numerals, no totals, no streaks, no ranks. The light carries the whole signal; --t is an input, never a readout.",
+        "breathNotHeartbeat": "The lamp's swell is a symmetrical breath with no claim attached. The heartbeat is a Proof-of-Humanity signal with a placement rule. Never give the lamp .beating, and never give a mark the breath. Under reduced motion the breath stops and the COLOUR DOES NOT — freezing the descent would misreport where the sitter is.",
+        "nativePorting": "Same seven stops, same single scalar: interpolate the gem list at t. That is why it belongs in platform-native animation rather than a library."
     },
     "motion": {
         "signature": "Cardiac morphology: two UNEQUAL beats then a long rest — systole, a weaker diastole, then most of the period at rest.",

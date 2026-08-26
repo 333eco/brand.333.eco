@@ -74,6 +74,120 @@ for (const sv of tokens.siteValues) {
     gemGrid.append(card);
 }
 
+/* ------------------------------------------------------------------- metta --- */
+
+// THE HARNESS WRITES ONE PROPERTY AND NOTHING ELSE, which is the whole contract
+// this section documents. There is no colour maths here and there must not be:
+// the moment this file computes a stop, the page stops demonstrating the CSS and
+// starts duplicating it, and the two can then disagree.
+//
+// The readout prints --t and the resolved --metta so a reader can check the ramp
+// against the swatches above. That is a DOCUMENTATION affordance and is exactly
+// what the no-numerals guard forbids on a product surface — the guard is about
+// what a sitter is shown, not about what a spec page may print.
+
+const mettaStage = document.getElementById("metta-stage");
+const mettaT = document.getElementById("metta-t");
+const mettaRead = document.getElementById("metta-read");
+
+if (mettaStage && mettaT && mettaRead) {
+    const paint = () => {
+        // 6000 steps, not 1000: the gem stops sit at i/6, and on a 1000-step
+        // slider the nearest integer to 4/6 is 667, which lands sapphire a bit
+        // off its own swatch further up the page. The ramp was exact; the
+        // harness was not, and a demo that misreports the thing it demonstrates
+        // is worse than no demo.
+        const t = Number(mettaT.value) / 6000;
+        mettaStage.style.setProperty("--t", String(t));
+        // Read what the CASCADE resolved, never what this file thinks it should
+        // be — same rule as the role swatches further down.
+        const resolved = getComputedStyle(
+            mettaStage.querySelector(".metta-light")
+        ).backgroundColor;
+        mettaRead.textContent = `--t: ${t.toFixed(3)}`;
+        mettaRead.title = resolved;
+    };
+    mettaT.addEventListener("input", paint);
+    paint();
+}
+
+/* ------------------------------------------------------------------- auras --- */
+
+// Same construction as the gems, for the same reason: painted by the TOKEN via
+// a class, captioned by the GENERATOR. If css/tokens.css and dist/tokens.json
+// ever disagree, the swatch contradicts its own caption on the page.
+
+const auraGrid = document.getElementById("auras");
+
+for (const bucket of tokens.auras.buckets) {
+    const card = el("div", "swatch");
+    const chip = el("span", "chip");
+    chip.classList.add(`ramp-${bucket.name}`);
+    card.append(chip);
+
+    const body = el("div", "swatch-body");
+    body.append(el("span", "swatch-name", bucket.name));
+    body.append(el("span", "swatch-meta", `${bucket.token} · ${bucket.hex}`));
+    body.append(
+        el(
+            "span",
+            "swatch-media",
+            bucket.unbounded
+                ? "24+ crossings a month"
+                : `under ${bucket.under} crossings a month`
+        )
+    );
+    card.append(body);
+    auraGrid.append(card);
+}
+
+/* -------------------------------------------------------------------- tlds --- */
+
+// THE CARRIER IS THE MARK, NOT A CHIP, and that is the load-bearing part of this
+// block rather than a flourish. These six hues are one-for-one with the six
+// saturated gems; two chip grids of the same six hues on one page fuse into one
+// palette in the reader's eye whatever the caption underneath says. Changing the
+// OBJECT is what keeps them apart — and it is what the doctrine already claims,
+// since an aura is a property of the emblem.
+//
+// The path comes from the generator rather than being re-typed, so these marks
+// cannot drift from emblem/emblem.svg. The four static marks elsewhere in this
+// page predate that and are still hand-copied.
+//
+// ⚠️ PAINTED WITH A CSS KEYWORD, NOT A TOKEN, and that is deliberate: no hex is
+// pinned for this palette anywhere in the estate. The keyword spells the
+// doctrine's WORD. Should anyone ever pin real values, this is the block that
+// changes — and `pinned` in dist/tokens.json is the flag that says whether they
+// have. Never let these marks BEAT: a rainbow of a body's domains is not a
+// liveness claim, and the placement rule in motion.css governs here too.
+
+const tldMarks = document.getElementById("tld-marks");
+const tldBody = document.getElementById("tlds");
+
+for (const t of tokens.tlds.tlds) {
+    const fig = el("figure", "tld-mark");
+    fig.innerHTML =
+        `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" ` +
+        `style="color:${t.cssNamed}">` +
+        `<path fill="currentColor" d="${tokens.emblemPath}" /></svg>` +
+        `<figcaption><b>${t.tld.replace("heartbank", "")}</b>${t.hue}</figcaption>`;
+    tldMarks.append(fig);
+
+    const tr = el("tr");
+    tr.append(el("td", "tok", t.tld));
+
+    const hueCell = el("td", "tok");
+    const dot = el("span", "dot");
+    dot.style.background = t.cssNamed;
+    hueCell.append(dot);
+    hueCell.append(document.createTextNode(t.hue));
+    tr.append(hueCell);
+
+    tr.append(el("td", null, t.productClass));
+    tr.append(el("td", "why", t.idiom));
+    tldBody.append(tr);
+}
+
 /* ------------------------------------------------------------------- sites --- */
 
 const sitesBody = document.getElementById("sites");
