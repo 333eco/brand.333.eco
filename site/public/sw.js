@@ -15,7 +15,15 @@
 // deploy — sweep() retains the previous one so a tab still running it can reach
 // its own hashed chunks — and a bare match searches EVERY cache in creation
 // order, handing back the older copy of anything not content-hashed. Go through
-// lookup(), which tries the current cache first.
+// lookup(), which tries the current cache first AND refuses to cross a
+// generation boundary for anything whose name is not content-hashed.
+//
+// ⚠️ THE CACHE NAME IS THE ONLY EXPIRY THIS FILE HAS. Nothing here revalidates,
+// so a stable-named file (the icons, the manifest, analytics.js) is fresh for
+// exactly as long as BUILD is unchanged, and is re-fetched once on the deploy
+// that changes it. That is the whole freshness story, and it works only while
+// the cross-generation fallback stays shut to stable names — reaching back for
+// one hands over yesterday's file under today's URL, forever.
 
 const BUILD = "__BUILD_ID__";
 const CACHE = "brand-" + BUILD;
@@ -41,7 +49,14 @@ self.addEventListener("activate", (event) => {
             .keys()
             .then((keys) => {
                 // Retain the immediately previous generation, drop the rest.
-                const mine = keys.filter((k) => k.indexOf("brand-") === 0).sort();
+                //
+                // ⚠️ DO NOT .sort() THIS. caches.keys() resolves in CREATION
+                // order, which is the only record of age we have; the names are
+                // hex hashes, so sorting them reorders the generations at random
+                // and slice(-2) then keeps two arbitrary old caches instead of
+                // the newest two. CACHE is itself in `mine` — install() created
+                // it — so the last two entries are [previous, current].
+                const mine = keys.filter((k) => k.indexOf("brand-") === 0);
                 const keep = mine.slice(-2).concat([CACHE]);
                 return Promise.all(
                     keys
@@ -53,10 +68,30 @@ self.addEventListener("activate", (event) => {
     );
 });
 
+// Whether an older cache generation may answer for this request. Only the
+// content-hashed build output qualifies: those names are unique per build, so
+// an old cache's copy is byte-for-byte what the old document asked for. Every
+// other URL here has a STABLE name — "/", the icons, the manifest,
+// analytics.js — and an older generation therefore holds a DIFFERENT resource
+// at the same address.
+//
+// "/" is deliberately NOT special-cased for the offline fallback: install()
+// addAll()s SHELL before the worker can activate, so a running worker always
+// has the document in its OWN cache, and a failed install never activates.
+function crossGenerationOk(request) {
+    const url = typeof request === "string" ? request : request.url;
+    try {
+        return new URL(url, self.location.origin).pathname.indexOf("/assets/") === 0;
+    } catch (e) {
+        return false;
+    }
+}
+
 function lookup(request) {
     return caches.open(CACHE).then((c) =>
         c.match(request).then((hit) => {
             if (hit) return hit;
+            if (!crossGenerationOk(request)) return undefined;
             // Fall back to an older generation explicitly, by name, rather than
             // letting a bare caches.match() pick one for us.
             return caches.keys().then((keys) =>

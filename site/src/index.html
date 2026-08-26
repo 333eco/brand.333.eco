@@ -462,6 +462,10 @@ npm run check:brand</pre>
 
         <script type="module" src="./page.js"></script>
 
+        <!-- Root-absolute, not ./ — the file is served from publicDir and is
+             never bundled or hashed, so it must not be rewritten as an asset. -->
+        <script src="/analytics.js" defer></script>
+
         <!-- Registered on load rather than immediately, so the first paint never
              competes with the worker install for the network. Dev is excluded:
              a service worker in front of the dev server serves yesterday's
