@@ -26,6 +26,19 @@
             } catch (e) {}
         </script>
 
+        <!-- PWA. theme_color is duplicated here and in the manifest by
+             necessity: the browser reads this one before the manifest arrives,
+             and CSS cannot supply either. It is the dark ground, because dark
+             is this page's unstamped default. -->
+        <link rel="manifest" href="/manifest.webmanifest" />
+        <meta name="theme-color" content="#0A0A0F" />
+        <link rel="icon" href="/favicon.ico" sizes="32x32" />
+        <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+        <!-- ⚠️ MUST be a PNG. Safari ignores an SVG here, and an ignored
+             apple-touch-icon is not a missing icon: iOS substitutes a shrunken
+             screenshot of the page. -->
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link
@@ -39,8 +52,8 @@
                 <a class="wordmark" href="/">
                     <!-- .beating is on CHROME. This is the rule the page states
                          further down, applied to the page itself. -->
-                    <span class="beating"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M3.9743 20.0257L3.8824 18.0670C3.5430 11.1232 3.3167 6.5411 5.9896 3.8683C8.1675 1.6904 11.5899 1.6904 13.7678 3.8683C14.9981 5.0986 15.6062 6.8523 15.4719 8.5281C17.1477 8.3938 18.9014 9.0019 20.1317 10.2322C22.3096 12.4101 22.3096 15.8325 20.1317 18.0104C17.4589 20.6833 12.8768 20.4570 5.9260 20.1247L3.9743 20.0257Z"/></svg></span>
-                    brand.333.eco
+                    <svg class="beating" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M3.9743 20.0257L3.8824 18.0670C3.5430 11.1232 3.3167 6.5411 5.9896 3.8683C8.1675 1.6904 11.5899 1.6904 13.7678 3.8683C14.9981 5.0986 15.6062 6.8523 15.4719 8.5281C17.1477 8.3938 18.9014 9.0019 20.1317 10.2322C22.3096 12.4101 22.3096 15.8325 20.1317 18.0104C17.4589 20.6833 12.8768 20.4570 5.9260 20.1247L3.9743 20.0257Z"/></svg>
+                    B-Emblem<span class="tm">™</span>
                 </a>
                 <span class="spacer"></span>
                 <button class="ghost" id="theme" type="button">theme</button>
@@ -51,7 +64,7 @@
             <!-- ------------------------------------------------------ hero -->
             <section class="hero">
                 <div class="wrap wide">
-                    <span class="hero-mark beating"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M3.9743 20.0257L3.8824 18.0670C3.5430 11.1232 3.3167 6.5411 5.9896 3.8683C8.1675 1.6904 11.5899 1.6904 13.7678 3.8683C14.9981 5.0986 15.6062 6.8523 15.4719 8.5281C17.1477 8.3938 18.9014 9.0019 20.1317 10.2322C22.3096 12.4101 22.3096 15.8325 20.1317 18.0104C17.4589 20.6833 12.8768 20.4570 5.9260 20.1247L3.9743 20.0257Z"/></svg></span>
+                    <svg class="hero-mark beating" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M3.9743 20.0257L3.8824 18.0670C3.5430 11.1232 3.3167 6.5411 5.9896 3.8683C8.1675 1.6904 11.5899 1.6904 13.7678 3.8683C14.9981 5.0986 15.6062 6.8523 15.4719 8.5281C17.1477 8.3938 18.9014 9.0019 20.1317 10.2322C22.3096 12.4101 22.3096 15.8325 20.1317 18.0104C17.4589 20.6833 12.8768 20.4570 5.9260 20.1247L3.9743 20.0257Z"/></svg>
                     <h1>circulation,<br />not accumulation</h1>
                     <p class="lede">
                         The canonical brand layer for the institution — one
@@ -93,7 +106,7 @@
             <section>
                 <div class="wrap wide">
                     <p class="eyebrow">The mark</p>
-                    <h2>B-Emblem™</h2>
+                    <h2>B-Emblem<span class="tm">™</span></h2>
                     <p>
                         A universal heart rotated 45° clockwise. It is
                         <strong>bistable</strong> — heart and capital B, both
@@ -129,6 +142,18 @@
                             against the mark at its shipped size.
                         </li>
                     </ul>
+
+                    <div class="aura">
+                        <span class="aura-label" id="aura-label"
+                            >The mark takes --emblem</span
+                        >
+                        <div
+                            class="aura-swatches"
+                            id="aura"
+                            role="group"
+                            aria-labelledby="aura-label"></div>
+                        <p class="aura-now" id="aura-now"></p>
+                    </div>
                 </div>
             </section>
 
@@ -147,12 +172,12 @@
                     </p>
                     <div class="spec beat-demo">
                         <figure>
-                            <span class="beating"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M3.9743 20.0257L3.8824 18.0670C3.5430 11.1232 3.3167 6.5411 5.9896 3.8683C8.1675 1.6904 11.5899 1.6904 13.7678 3.8683C14.9981 5.0986 15.6062 6.8523 15.4719 8.5281C17.1477 8.3938 18.9014 9.0019 20.1317 10.2322C22.3096 12.4101 22.3096 15.8325 20.1317 18.0104C17.4589 20.6833 12.8768 20.4570 5.9260 20.1247L3.9743 20.0257Z"/></svg></span>
-                            <figcaption>.beating — Proof of Humanity ℠</figcaption>
+                            <svg class="beating" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M3.9743 20.0257L3.8824 18.0670C3.5430 11.1232 3.3167 6.5411 5.9896 3.8683C8.1675 1.6904 11.5899 1.6904 13.7678 3.8683C14.9981 5.0986 15.6062 6.8523 15.4719 8.5281C17.1477 8.3938 18.9014 9.0019 20.1317 10.2322C22.3096 12.4101 22.3096 15.8325 20.1317 18.0104C17.4589 20.6833 12.8768 20.4570 5.9260 20.1247L3.9743 20.0257Z"/></svg>
+                            <figcaption>.beating — Proof of Humanity<span class="tm">℠</span></figcaption>
                         </figure>
                         <figure>
-                            <span><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M3.9743 20.0257L3.8824 18.0670C3.5430 11.1232 3.3167 6.5411 5.9896 3.8683C8.1675 1.6904 11.5899 1.6904 13.7678 3.8683C14.9981 5.0986 15.6062 6.8523 15.4719 8.5281C17.1477 8.3938 18.9014 9.0019 20.1317 10.2322C22.3096 12.4101 22.3096 15.8325 20.1317 18.0104C17.4589 20.6833 12.8768 20.4570 5.9260 20.1247L3.9743 20.0257Z"/></svg></span>
-                            <figcaption>static — Proof of Coordinate ℠</figcaption>
+                            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M3.9743 20.0257L3.8824 18.0670C3.5430 11.1232 3.3167 6.5411 5.9896 3.8683C8.1675 1.6904 11.5899 1.6904 13.7678 3.8683C14.9981 5.0986 15.6062 6.8523 15.4719 8.5281C17.1477 8.3938 18.9014 9.0019 20.1317 10.2322C22.3096 12.4101 22.3096 15.8325 20.1317 18.0104C17.4589 20.6833 12.8768 20.4570 5.9260 20.1247L3.9743 20.0257Z"/></svg>
+                            <figcaption>static — Proof of Coordinate<span class="tm">℠</span></figcaption>
                         </figure>
                     </div>
                     <div class="note warn">
@@ -356,13 +381,33 @@ npm run check:brand</pre>
         <footer>
             <div class="wrap wide">
                 <p>
-                    HeartBank® · B-Emblem™ · Proof of Humanity ℠ · Proof of
-                    Coordinate ℠
+                    HeartBank<span class="tm">®</span> ·
+                    B-Emblem<span class="tm">™</span> ·
+                    Proof of Humanity<span class="tm">℠</span> ·
+                    Proof of Coordinate<span class="tm">℠</span>
                 </p>
                 <p class="mono" id="foot-ver"></p>
             </div>
         </footer>
 
         <script type="module" src="./page.js"></script>
+
+        <!-- Registered on load rather than immediately, so the first paint never
+             competes with the worker install for the network. Dev is excluded:
+             a service worker in front of the dev server serves yesterday's
+             stylesheet and makes the token layer look broken for reasons that
+             have nothing to do with the tokens. -->
+        <script type="module">
+            if ("serviceWorker" in navigator && import.meta.env.PROD) {
+                window.addEventListener("load", () => {
+                    navigator.serviceWorker
+                        .register("/sw.js")
+                        .catch(() => {
+                            /* An offline shell is an enhancement. A failed
+                               registration must never break the page. */
+                        });
+                });
+            }
+        </script>
     </body>
 </html>

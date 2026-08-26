@@ -46,9 +46,22 @@ dist/                 GENERATED, committed: tokens.json · Brand.swift · Brand.
 scripts/
   generate.mjs        css/ + data/ -> dist/
   check-brand.mjs     the drift guard; copied verbatim into every consumer
-site/                 the guidelines page -> brand.333.eco
+site/                 the guidelines page -> brand.333.eco (an installable PWA)
 brand.lock            every package file -> sha256, plus a version
 ```
+
+The page is also **the aura playground**: every mark on it reads `--emblem`, and
+a visitor can point that at any gem or leave it rotating. Rotation is pure CSS —
+an `@property`-registered `--aura` interpolated across the six saturated gems, so
+it survives with scripting off and is stopped by the same reduced-motion sweep
+as everything else. Diamond is in the picker but **not** in the rotation: a cool
+near-white blinks out on the light ground, and a rotation that disappears for a
+sixth of its cycle in one theme is a bug that only shows up in one theme.
+
+⚠️ **Rendering the MARK in gem colours is not the thing the gem rule forbids.**
+The rule is that a gem must not become a SITE ACCENT. Hearts in gem colours is
+ratified doctrine — Tonsay's stream is *"7 rainbow hearts: the 6 GEM colours +
+DIAMOND"*. This page's own accent stays a site value and does not move.
 
 **No value is typed twice.** `css/tokens.css` is canonical; the JSON holds only
 what a stylesheet cannot say; `dist/` is generated from both.
@@ -131,7 +144,21 @@ grep -o -- '--beat-duration' site/dist/assets/*.css   # must be > 0
 
 # The custom domain unmaps if this is missing, with a green build.
 test -f site/dist/CNAME
+
+# A service worker that ships an unstamped placeholder caches under the literal
+# string "__BUILD_ID__" forever. The build throws instead — but check anyway.
+grep -c '__BUILD_ID__\|__ASSET_LIST__' site/dist/sw.js   # must be 0
 ```
+
+### Two that bit this page already
+
+**Transforms do not apply to non-replaced inline elements.** `.beating` on a
+bare `<span>` wrapper animates nothing, silently. The header mark and the motion
+demo were both built that way and both sat still. The class goes on the `<svg>`.
+
+**XML comments cannot contain a double hyphen.** Writing a CSS custom property
+name the ordinary way inside `icon.svg` makes the file unparseable and the whole
+icon set fails to build. Name tokens in prose there, never in their real syntax.
 
 ## Maintaining
 

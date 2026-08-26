@@ -191,8 +191,11 @@ header.bar {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    height: var(--control-h-sm);
-    padding-block: 0.6rem;
+    /* MIN-height, not height. box-sizing: border-box is set globally, so a
+       fixed height SUBTRACTS the padding instead of adding to it — the bar was
+       36px tall in total and read as cramped. */
+    min-height: var(--control-h-sm);
+    padding-block: 0.9rem;
 }
 
 .wordmark {
@@ -206,6 +209,16 @@ header.bar {
     letter-spacing: -0.01em;
 }
 
+/* ⚠️ display: inline-block IS LOAD-BEARING, and not for the reason it usually
+   is. TRANSFORMS DO NOT APPLY TO NON-REPLACED INLINE ELEMENTS — so `.beating`
+   on a bare <span> wrapper animates nothing at all, silently, with no error at
+   any layer. The header mark and the motion demo were both built that way and
+   both sat still. The class now goes on the <svg> itself, which is a replaced
+   element and transforms fine; this rule only handles the baseline.
+
+   Tailwind's preflight sets svg { display: block }, which would drop the mark
+   onto its own line inside the flex row — 333.eco's hb-footer carries the same
+   rule and the same reason. */
 .wordmark svg {
     width: 1.15em;
     height: 1.15em;
@@ -216,6 +229,30 @@ header.bar {
 
 .spacer {
     flex: 1;
+}
+
+/* ------------------------------------------------------------------- marks ---
+   ™ ℠ ® set as true superscripts. The Unicode glyphs are already drawn raised
+   in most faces, which is why this is easy to skip — but at the wordmark's size
+   they sit on the baseline and read as full-size letters. Scoped to a class
+   rather than applied to the character globally: the corpus and the legal
+   instruments want the plain glyph, and a stylesheet that rewrote every mark on
+   sight would be deciding that for them.
+
+   line-height: 0 keeps the raised glyph from adding to the line box, which
+   would otherwise nudge a wordmark off-centre inside a flex row. */
+.tm {
+    font-size: 0.58em;
+    vertical-align: 0.46em;
+    line-height: 0;
+    letter-spacing: 0;
+    /* The wordmark is set in IBM Plex Mono, where ™ occupies a full character
+       cell and lands a visible space away from the word it belongs to. Forcing
+       the proportional face closes that gap — and is right on its own terms: a
+       trademark symbol is not code, and it is the one glyph in the wordmark
+       that should not be on the mono grid. */
+    font-family: var(--font-text);
+    margin-inline-start: -0.06em;
 }
 
 button.ghost {
@@ -591,3 +628,153 @@ footer p {
 .gem-amethyst { background: var(--color-amethyst); }
 .gem-diamond { background: var(--color-diamond); }
 .gem-violet-sey { background: var(--color-violet-sey); }
+
+/* ------------------------------------------------------------------- aura ---
+   THE B-EMBLEM'S COLOUR, ROTATING. Every mark on the page reads --emblem, which
+   the vendored layer defines as var(--accent); this section lets a visitor
+   redirect it, and rotates it by default.
+
+   ⚠️ WHICH PALETTE, AND WHY IT IS THE GEMS RATHER THAN A VIOLATION OF THEM.
+   The standing warning is that a gem must not become a SITE ACCENT — amethyst
+   means "this artifact is a letter", and a site borrowing it overloads a
+   reserved channel. Rendering the MARK in gem colours is a different act, and
+   it is already ratified doctrine: Tonsay's stream is "7 rainbow hearts: the 6
+   GEM colours + DIAMOND — the B-Gem media-type map made rain". Hearts in gem
+   colours is the precedent; --accent: var(--color-amethyst) is the violation.
+   This page's own accent remains a site value and does not move.
+
+   ⚠️ DIAMOND IS IN THE PICKER AND NOT IN THE ROTATION. #F4F7FF is a cool
+   near-white: luminous on the dark ground, invisible on the light one. A
+   rotation that blinks out for a sixth of its cycle in one theme is a bug that
+   only appears in one theme. Choosing it deliberately is fine — the visitor can
+   see what happened. This is the same reasoning that kept Diamond from being
+   this site's accent.
+
+   @property is what makes the rotation a real interpolation rather than six
+   hard cuts: an unregistered custom property has no type, so the browser cannot
+   tween it. The estate has precedent — thonly.net/docs/metta-light.html
+   interpolates --metta across the seven stops the same way.
+
+   The keyframes reference the gem TOKENS, never their hexes, so this rotation
+   cannot drift from the palette it is drawn from. */
+@property --aura {
+    syntax: "<color>";
+    inherits: true;
+    initial-value: #c8102e;
+}
+
+@keyframes aura-cycle {
+    0% {
+        --aura: var(--color-ruby);
+    }
+    16.66% {
+        --aura: var(--color-fire-opal);
+    }
+    33.33% {
+        --aura: var(--color-citrine);
+    }
+    50% {
+        --aura: var(--color-emerald);
+    }
+    66.66% {
+        --aura: var(--color-sapphire);
+    }
+    83.33% {
+        --aura: var(--color-amethyst);
+    }
+    100% {
+        --aura: var(--color-ruby);
+    }
+}
+
+/* Slow on purpose. This is ambient, not a demo that needs to prove itself: at
+   42s a reader notices the mark is a different colour than when they arrived,
+   which is the whole idea, and never watches it change. */
+:root.aura-auto {
+    animation: aura-cycle 42s linear infinite;
+    --emblem: var(--aura);
+}
+
+/* Under reduced motion the estate-wide sweep already collapses this to a single
+   frame, which leaves the mark on ruby rather than mid-tween. Stated here so
+   the outcome is a decision and not a side effect. */
+
+/* ------------------------------------------------------------ aura control --- */
+
+.aura {
+    margin-top: 1.75rem;
+    padding: 1.1rem 1.25rem 1.25rem;
+    border: 1px solid var(--line);
+    border-radius: var(--r-card);
+    background: var(--surface);
+    max-width: var(--measure-prose);
+}
+
+.aura-label {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    letter-spacing: var(--track-spelt);
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 0.8rem;
+}
+
+.aura-swatches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.aura-swatches button {
+    width: 2rem;
+    height: 2rem;
+    border-radius: var(--r-pill);
+    border: 1px solid var(--line-strong);
+    cursor: pointer;
+    padding: 0;
+    background: var(--swatch, transparent);
+    position: relative;
+    transition:
+        transform var(--dur-base),
+        box-shadow var(--dur-base);
+}
+
+.aura-swatches button:hover {
+    transform: scale(1.12);
+}
+
+/* The selected state is a RING, not a checkmark drawn on the colour: a tick
+   inked on diamond is invisible and a tick inked on ruby is not, so the
+   affordance would work for six of eight swatches. */
+.aura-swatches button[aria-pressed="true"] {
+    box-shadow:
+        0 0 0 2px var(--bg),
+        0 0 0 4px var(--ink-dim);
+}
+
+.aura-swatches button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+}
+
+/* The auto swatch shows the rotation it turns on, as a conic slice of the six
+   stops. It is the one swatch whose fill is not a single token. */
+.aura-swatches button.auto {
+    background: conic-gradient(
+        var(--color-ruby),
+        var(--color-fire-opal),
+        var(--color-citrine),
+        var(--color-emerald),
+        var(--color-sapphire),
+        var(--color-amethyst),
+        var(--color-ruby)
+    );
+}
+
+.aura-now {
+    margin: 0.85rem 0 0;
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    color: var(--ink-faint);
+}

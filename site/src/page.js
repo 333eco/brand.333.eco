@@ -216,3 +216,86 @@ for (const id of ["ver", "foot-ver"]) {
     const n = document.getElementById(id);
     if (n) n.textContent = `brand v${tokens.version}`;
 }
+
+/* -------------------------------------------------------------------- aura --- */
+
+// The mark's colour, for the visitor to move. Every emblem on the page reads
+// --emblem, so one property drives the header, the hero and both demo marks.
+//
+// AUTO is the default and is pure CSS — a class on <html> that turns on the
+// @property interpolation in page.css. Keeping the rotation out of JS means it
+// survives with scripting off, and means reduced-motion is handled by the same
+// sweep that handles everything else rather than by a second code path here.
+//
+// A FIXED choice sets --emblem inline on <html> and removes the class. The two
+// are mutually exclusive by construction: the class defines --emblem, and an
+// inline style outranks it, so leaving both on would silently pin the mark and
+// leave a rotation running underneath that nothing could see.
+
+const auraBox = document.getElementById("aura");
+const auraNow = document.getElementById("aura-now");
+
+// Diamond is offered but is NOT in the rotation — see the aura block in
+// page.css. Near-white is luminous on the dark ground and invisible on the
+// light one, and a rotation that blinks out for a sixth of its cycle in one
+// theme is a bug that only shows up in one theme.
+const AURA_CHOICES = [
+    { id: "auto", label: "Auto — the six saturated gems, rotating", cls: "auto" },
+    ...tokens.gems.map((g) => ({
+        id: g.name,
+        label: `${g.name.replace(/-/g, " ")} — ${g.media}`,
+        token: g.token
+    })),
+    { id: "site", label: "This site's accent — a site value, not a gem", token: "--accent" }
+];
+
+const root2 = document.documentElement;
+
+const applyAura = (id) => {
+    const choice = AURA_CHOICES.find((c) => c.id === id) || AURA_CHOICES[0];
+
+    if (choice.id === "auto") {
+        root2.style.removeProperty("--emblem");
+        root2.classList.add("aura-auto");
+    } else {
+        root2.classList.remove("aura-auto");
+        root2.style.setProperty("--emblem", `var(${choice.token})`);
+    }
+
+    for (const b of auraBox.children) {
+        b.setAttribute("aria-pressed", String(b.dataset.id === choice.id));
+    }
+
+    auraNow.textContent =
+        choice.id === "auto"
+            ? "--emblem: var(--aura) — rotating"
+            : `--emblem: var(${choice.token})`;
+
+    try {
+        if (choice.id === "auto") localStorage.removeItem("brand.aura");
+        else localStorage.setItem("brand.aura", choice.id);
+    } catch (e) {
+        /* private mode — the choice still holds for this page view */
+    }
+};
+
+for (const choice of AURA_CHOICES) {
+    const b = el("button");
+    b.type = "button";
+    b.dataset.id = choice.id;
+    b.title = choice.label;
+    b.setAttribute("aria-label", choice.label);
+    if (choice.cls) b.className = choice.cls;
+    // Painted by the token, like every other swatch on this page.
+    if (choice.token) b.style.setProperty("--swatch", `var(${choice.token})`);
+    b.addEventListener("click", () => applyAura(choice.id));
+    auraBox.append(b);
+}
+
+let storedAura = null;
+try {
+    storedAura = localStorage.getItem("brand.aura");
+} catch (e) {
+    /* ignore */
+}
+applyAura(storedAura || "auto");

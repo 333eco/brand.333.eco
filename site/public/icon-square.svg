@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="B-Emblem">
+  <!-- ⚠️ EDIT icon.svg AND icon-square.svg TOGETHER. They are the same file
+       with one attribute different — icon.svg has the rounded plate, the square
+       one does not — and nothing else may diverge.
+
+       The square source feeds BOTH masked consumers: iOS applies its own
+       superellipse and Android its own mask, and handing either the rounded
+       plate leaves dark wedges in the corners.
+
+       THE MARK IS NOT RESCALED FOR MASKABLE. Its ink measures 226x227 in the
+       512 canvas (44%), farthest corner 173px from centre against a 205px safe
+       radius, so it clears the mask as drawn.
+
+       Colours are HARD-CODED here and duplicated in manifest.webmanifest and in
+       the theme-color meta, by necessity: CSS cannot reach inside an icon the
+       browser fetches by URL, so the emblem token cannot supply them.
+
+       ⚠️ NO DOUBLE HYPHEN ANYWHERE IN THIS COMMENT. XML forbids it, so writing
+       a CSS custom property name in the ordinary way makes the file
+       unparseable — rsvg refuses it and the whole icon set fails to build.
+       Name tokens in prose here, never in their real syntax. -->
+  <rect width="512" height="512" fill="#0A0A0F"/>
+  <g transform="translate(106.67 106.67) scale(12.5)">
+    <path fill="#94A1B8" d="M3.9743 20.0257L3.8824 18.0670C3.5430 11.1232 3.3167 6.5411 5.9896 3.8683C8.1675 1.6904 11.5899 1.6904 13.7678 3.8683C14.9981 5.0986 15.6062 6.8523 15.4719 8.5281C17.1477 8.3938 18.9014 9.0019 20.1317 10.2322C22.3096 12.4101 22.3096 15.8325 20.1317 18.0104C17.4589 20.6833 12.8768 20.4570 5.9260 20.1247L3.9743 20.0257Z"/>
+  </g>
+</svg>
