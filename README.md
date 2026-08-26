@@ -231,3 +231,21 @@ answerable by grep.
 - **`dist/Brand.swift` and `dist/Brand.kt` have no consumer yet.** They were
   written ahead of the first native app, against the rule this package was
   extracted under. They are therefore the least-proven thing here.
+
+## Licence
+
+**Apache-2.0** for the code — see [`LICENSE`](./LICENSE).
+
+⚠️ **The marks are not licensed by it, and that is why this licence and not a
+more permissive one.** This repository ships an actual mark, not just the code
+that renders it: the B-Emblem™ is a design mark under filing, and
+`emblem/emblem.svg` is its canonical copy. Apache-2.0 §6 grants no trademark
+rights, which is exactly the posture wanted — **take the architecture, leave the
+mark.** [`NOTICE`](./NOTICE) lists what is reserved and, more usefully, what you
+are positively invited to do with the rest.
+
+The design patterns themselves are commons, published as CC0 defensive prior art
+in *Brand Identity as Architecture* (DOI
+[10.5281/zenodo.21947287](https://doi.org/10.5281/zenodo.21947287)), whose §12
+names this repository as its reference implementation. The paper is the
+specification; this is the instantiation.

@@ -1,0 +1,45 @@
+brand.333.eco — the canonical brand layer for the institution
+Copyright 2026 Thon Ly
+
+Licensed under the Apache License, Version 2.0. See the LICENSE file.
+
+--------------------------------------------------------------------------
+TRADEMARKS — NOT LICENSED BY THE LICENSE ABOVE
+--------------------------------------------------------------------------
+
+Apache-2.0 section 6 grants no trademark rights, and none are granted here.
+That is why this licence was chosen rather than a more permissive one: this
+repository ships an actual mark, not only the code that renders it.
+
+The following are trademarks or service marks of the institution and are
+NOT licensed by the Apache Licence:
+
+    HeartBank(R)                  B-Emblem(TM)
+    B-Registry(SM)                Thank with HeartBank(R)
+    Proof of Coordinate(SM)       Proof of Humanity(SM)
+    Thank Your Future Kindness(SM)
+
+This includes the B-Emblem design itself — the heart rotated 45 degrees
+clockwise that reads bistably as both a heart and a capital B — wherever it
+appears in this repository, notably `emblem/emblem.svg`, `emblem/emblem.ts`
+and `emblem/emblem.path.txt`. The path data is source code and is licensed;
+the MARK it draws is not. Copying the file does not convey the right to use
+the mark as a mark.
+
+WHAT YOU MAY DO under the Apache Licence, and what this repository is
+published for: take the token architecture, the derivation machinery, the
+generator, the drift guard, the concatenation model and the reasoning
+recorded in the comments, and build your own identity on them. The design
+patterns are described as commons in `Brand Identity as Architecture`
+(CC0 1.0, DOI 10.5281/zenodo.21947287) and are meant to be portable.
+
+WHAT YOU MAY NOT DO: use these marks to identify your goods or services, or
+adopt a mark confusingly similar to them, or suggest that the institution
+endorses your work. Fair, descriptive reference to the institution — saying
+what this software is, where it came from, or that your work is derived from
+it — is expressly fine and is what Apache-2.0 section 6 preserves.
+
+If you want to render the B-Emblem as the institution's mark — a partner
+integration, a vendor tag, a co-branded surface — that is a separate
+permission and a separate conversation, not something a licence file can
+grant you.
