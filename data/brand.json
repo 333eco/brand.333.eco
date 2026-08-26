@@ -1,0 +1,58 @@
+{
+    "$comment": [
+        "Generator metadata. Values that CSS already holds are NOT repeated",
+        "here — scripts/generate.mjs parses css/tokens.css for those. This file",
+        "holds only what a stylesheet cannot express.",
+        "",
+        "`version` is the one number that matters operationally: it is copied",
+        "into brand.lock, which is vendored byte-identical into every consumer,",
+        "so 'which sites are on which brand version' is answerable by grep."
+    ],
+    "version": "1.0.0",
+    "wordmark": {
+        "line": "circulation, not accumulation",
+        "division": "Bank = what accumulates is the RECORD of appreciation. Heart = what circulates is the VALUE.",
+        "slogan": "Thank with HeartBank®",
+        "substitution": "Wherever possible the B in 'Bank' is replaced by the B-Emblem — 'Thank with Heart♥ank®'. Only the B in Bank, never the T in Thank. Monochrome and plain-text fall back to a literal B."
+    },
+    "mark": {
+        "name": "B-Emblem™",
+        "shape": "A universal heart rotated 45° clockwise. Bistable — heart AND capital B, both immediately apparent. Not a reveal.",
+        "rules": [
+            "Inline in the DOM. Never <img src> — CSS cannot reach inside an <img>.",
+            "The 45° rotation is baked into the path coordinates. Never a transform attribute.",
+            "fill=\"currentColor\"; the page sets --emblem.",
+            "`.beating` goes on CHROME and never beside a person's name."
+        ],
+        "states": {
+            "static": "Proof of Coordinate ℠ — a meaningful state, not a degradation.",
+            "beating": "Proof of Humanity ℠ — but only where the beat can be verified. Ambient institutional beating claims 'humans run this', not 'this person is human'."
+        }
+    },
+    "motion": {
+        "signature": "Cardiac morphology: two UNEQUAL beats then a long rest — systole, a weaker diastole, then most of the period at rest.",
+        "notRate": "The RHYTHM is the signature, NOT the cadence or the amplitude. ~40 BPM at 1.5s ships; a 72 BPM variant was built and rejected. A published spec once claimed ~72 BPM / ~8% expansion — that claim was reframed, not the code.",
+        "reducedMotion": "Stop, and substitute nothing. The static mark is already a meaningful state."
+    },
+    "accentRule": {
+        "rule": "A site's accent is DERIVED, never picked: it takes the gem whose media type IS that product's medium.",
+        "cannotDerive": [
+            "--accent-ink — Fire Opal on white is 3.4:1 and fails; Sapphire on white is 7.0:1 and passes. No formula picks correctly.",
+            "--accent-soft on a light ground — the generic oklab mix does not always clear 4.5:1. Measure and pin."
+        ],
+        "honestCount": "The goal was 'a fifth site is five declarations'. It is nine."
+    },
+    "sites": [
+        { "host": "sayyourname.app", "accent": "--color-fire-opal", "because": "the product IS a voice recording" },
+        { "host": "playsey.app", "accent": "--color-emerald", "because": "the medium is MOTION — a name called, an object crossing a circle" },
+        { "host": "333.eco", "accent": "--color-sapphire", "because": "a registry resolves a name to an ADDRESS" },
+        { "host": "seysays.org", "accent": "--color-violet-sey", "because": "the commons' medium is not one of the seven — a SITE value, not an eighth gem" }
+    ],
+    "fonts": {
+        "constants": {
+            "mono": "IBM Plex Mono — one mono across the estate is a system, two is a coincidence.",
+            "khmer": "Noto Sans Khmer — present on every site in the tree."
+        },
+        "perSite": "The display face is the only genuine per-site variable. A site that picks an expanded face owns the type-scale consequence."
+    }
+}

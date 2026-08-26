@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" role="img" aria-label="HeartBank">
+  <!-- B-Emblem: a heart rotated 45 degrees clockwise, bistable as both a heart
+       and a capital B. HeartBank's institutional mark.
+
+       THIS IS THE CANONICAL COPY. Three repos previously carried this file,
+       byte-different only in their comments; the path data was identical in all
+       three and in 333.eco's Lit port, verified at extraction. The geometry
+       never drifted — only the prose around it did, which is the argument for
+       one home.
+
+       NOTHING FETCHES THIS FILE at runtime. The mark ships by being INLINED
+       into markup. This file is the reference and the home of the two warnings
+       below; emblem.path.txt holds the same path with nothing around it, for
+       generators.
+
+       THE ROTATION IS BAKED INTO THE COORDINATES ON PURPOSE. It used to live in
+       transform="rotate(45 12 12) translate(0,2)" on this path, which is a trap:
+       a CSS animation on `transform` overrides a non-animated one, so the first
+       time the heartbeat is applied to this node the mark silently un-rotates
+       and stops reading as a B. There is nothing left here to override.
+
+       fill="currentColor" so the mark takes --emblem from the page. This is also
+       why it must be INLINED in the DOM rather than referenced with <img src>:
+       CSS cannot reach inside an <img>, which is what forces each site's
+       icon.svg to hardcode its own hexes, and what would make the
+       prefers-reduced-motion guard in css/motion.css ungatable. -->
+  <path fill="currentColor" d="M3.9743 20.0257L3.8824 18.0670C3.5430 11.1232 3.3167 6.5411 5.9896 3.8683C8.1675 1.6904 11.5899 1.6904 13.7678 3.8683C14.9981 5.0986 15.6062 6.8523 15.4719 8.5281C17.1477 8.3938 18.9014 9.0019 20.1317 10.2322C22.3096 12.4101 22.3096 15.8325 20.1317 18.0104C17.4589 20.6833 12.8768 20.4570 5.9260 20.1247L3.9743 20.0257Z"/>
+</svg>

@@ -1,0 +1,593 @@
+/* ============================================================================
+   brand.333.eco — the guidelines page
+   ----------------------------------------------------------------------------
+   THE PAGE IS DRAWN BY THE PACKAGE IT DOCUMENTS. These four imports are the
+   same bytes every consumer vendors, in the same order a consumer concatenates
+   them. Nothing below re-states a token value; every swatch, specimen and demo
+   on this page is painted by the variable it names. A wrong value renders as a
+   wrong page.
+
+   ⚠️ RELATIVE @import IS LEGAL HERE and is NOT legal in a consuming site. Vite
+   resolves these at build time because page.css is a real CSS module. The
+   partial-based sites inject their stylesheets as RAW TEXT, where a relative
+   @import would resolve against src/ and ship a dead at-rule. Do not copy this
+   pattern into one of those repos.                                           */
+
+@import "../../css/tokens.css";
+@import "../../css/theme-3block.css";
+@import "../../css/motion.css";
+@import "../../css/reduce-global.css";
+
+/* ---------------------------------------------------------- the site layer ---
+   This is brand.css for this site — the same shape every consumer writes.
+
+   ACCENT: a SITE VALUE, deliberately NOT a gem, and the reasoning is on the
+   page itself because it is the clearest worked example of the rule's limit.
+
+   Diamond was the tempting answer: its media type is "album / collection" and
+   a specimen sheet is a collection, so the derivation looks clean. It was
+   rejected on two grounds. First, Diamond is a CONTENT colour — it means "this
+   artifact is an album" — and promoting a content colour to chrome overloads
+   exactly the channel the doctrine reserves, which is the same mistake
+   borrowing Amethyst for seysays would have been. Second, and decisively,
+   #F4F7FF is a near-white: as a UI accent it is unusable on a light ground and
+   no amount of pinning rescues it.
+
+   So this page does what seysays does — declares a site value and says so. The
+   colour is a cool graphite chosen to be nearly the only unsaturated thing
+   here: a page showing seven saturated specimens should carry no eighth
+   competing hue. The chrome recedes and the palette is the only colour on it. */
+:root {
+    --accent: #78849b;
+    --accent-lift: #94a1b8;
+
+    /* Text ON the accent fill. Near-black: #78849b against white is 2.9:1 and
+       fails, against black it is 7.2:1 and passes. Measured, not picked — this
+       is one of the two values the accent rule says cannot derive. */
+    --accent-ink: #0a0d12;
+
+    --font-display: "Public Sans", ui-sans-serif, system-ui, sans-serif;
+    --font-text: "Public Sans", ui-sans-serif, system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* The generic oklab mix lands at #4b5567 on the light ground, which is 7.4:1
+   and passes — so unlike three of the four sites, this one does NOT need to pin
+   the light value, and leaving it derived is the honest demonstration. */
+
+/* ------------------------------------------------------------------ reset --- */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+}
+
+body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-text);
+    font-size: var(--text-body);
+    line-height: var(--leading-body);
+    -webkit-text-size-adjust: 100%;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* A single ambient wash, tinted by the theme's own token so it inverts with the
+   page instead of needing a second definition. */
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: -1;
+    background: radial-gradient(
+        ellipse 110% 70% at 50% -10%,
+        var(--bg-tint) 0%,
+        transparent 65%
+    );
+}
+
+h1,
+h2,
+h3 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    margin: 0;
+}
+
+a {
+    color: var(--accent-soft);
+    text-underline-offset: 0.2em;
+    text-decoration-thickness: 1px;
+}
+a:hover {
+    color: var(--ink);
+}
+
+code,
+.mono {
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+}
+
+/* ----------------------------------------------------------------- layout --- */
+
+.wrap {
+    width: 100%;
+    max-width: var(--measure-column);
+    margin-inline: auto;
+    padding-inline: 1.5rem;
+}
+
+.wide {
+    max-width: 62rem;
+}
+
+section {
+    padding-block: clamp(3rem, 9vw, 5.5rem);
+    border-top: 1px solid var(--line);
+}
+
+section:first-of-type {
+    border-top: 0;
+}
+
+.eyebrow {
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    letter-spacing: var(--track-spelt);
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0 0 0.75rem;
+}
+
+h2 {
+    font-size: var(--text-title);
+    letter-spacing: var(--track-title);
+    line-height: var(--leading-title);
+    margin-bottom: 1rem;
+}
+
+h3 {
+    font-size: var(--text-sub);
+    margin: 2rem 0 0.5rem;
+}
+
+p {
+    max-width: var(--measure-prose);
+    margin: 0 0 1rem;
+    color: var(--ink-dim);
+}
+
+p strong {
+    color: var(--ink);
+    font-weight: 600;
+}
+
+/* ----------------------------------------------------------------- header --- */
+
+header.bar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: color-mix(in oklab, var(--bg) 88%, transparent);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--line);
+}
+
+.bar-inner {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    height: var(--control-h-sm);
+    padding-block: 0.6rem;
+}
+
+.wordmark {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-mono);
+    font-size: var(--text-small);
+    color: var(--ink);
+    text-decoration: none;
+    letter-spacing: -0.01em;
+}
+
+.wordmark svg {
+    width: 1.15em;
+    height: 1.15em;
+    color: var(--emblem);
+    display: inline-block;
+    vertical-align: -0.12em;
+}
+
+.spacer {
+    flex: 1;
+}
+
+button.ghost {
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    color: var(--ink-dim);
+    background: transparent;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--r-pill);
+    height: var(--control-h-sm);
+    padding-inline: 0.9rem;
+    cursor: pointer;
+    transition: color var(--dur-base), border-color var(--dur-base);
+}
+
+button.ghost:hover {
+    color: var(--ink);
+    border-color: var(--accent);
+}
+
+/* ------------------------------------------------------------------- hero --- */
+
+.hero {
+    padding-block: clamp(3.5rem, 12vw, 7rem) clamp(3rem, 9vw, 5rem);
+}
+
+.hero-mark {
+    width: clamp(4.5rem, 16vw, 7rem);
+    height: clamp(4.5rem, 16vw, 7rem);
+    color: var(--emblem);
+    display: block;
+    margin-bottom: 1.75rem;
+}
+
+.hero h1 {
+    font-size: var(--text-hero);
+    letter-spacing: var(--track-hero);
+    line-height: var(--leading-hero);
+    margin-bottom: 1rem;
+}
+
+.hero .lede {
+    font-size: var(--text-lede);
+    color: var(--ink-dim);
+    max-width: var(--measure-prose);
+}
+
+.hero .version {
+    display: inline-block;
+    margin-top: 1.75rem;
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    color: var(--ink-faint);
+    border: 1px solid var(--line);
+    border-radius: var(--r-pill);
+    padding: 0.35rem 0.85rem;
+}
+
+/* ----------------------------------------------------------------- swatch --- */
+
+.grid {
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+    margin-top: 1.5rem;
+}
+
+.swatch {
+    border: 1px solid var(--line);
+    border-radius: var(--r-card);
+    overflow: hidden;
+    background: var(--surface);
+}
+
+.chip {
+    height: 5.5rem;
+    display: block;
+}
+
+.swatch-body {
+    padding: 0.75rem 0.9rem 0.9rem;
+}
+
+.swatch-name {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: var(--text-small);
+    text-transform: capitalize;
+}
+
+.swatch-meta {
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    color: var(--ink-faint);
+    margin-top: 0.15rem;
+    display: block;
+}
+
+.swatch-media {
+    font-size: var(--text-micro);
+    color: var(--ink-dim);
+    margin-top: 0.4rem;
+    display: block;
+}
+
+/* The reserved slot. It is drawn as an ABSENCE with an explanation, never as a
+   colour — the whole point is that nothing goes here. */
+.reserved .chip {
+    background: repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 7px,
+        var(--line) 7px,
+        var(--line) 8px
+    );
+}
+
+/* Role swatches read against the live theme, so the border does the work where
+   a value is nearly the page colour. */
+.role .chip {
+    border-bottom: 1px solid var(--line);
+}
+
+/* ------------------------------------------------------------------ rules --- */
+
+.rules {
+    list-style: none;
+    padding: 0;
+    margin: 1.25rem 0 0;
+    display: grid;
+    gap: 0.6rem;
+}
+
+.rules li {
+    position: relative;
+    padding-left: 1.5rem;
+    color: var(--ink-dim);
+    max-width: var(--measure-prose);
+}
+
+.rules li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.62em;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 2px;
+    background: var(--accent);
+    transform: rotate(45deg);
+}
+
+.rules li.no::before {
+    background: var(--danger);
+}
+
+/* ------------------------------------------------------------------ table --- */
+
+.tbl-scroll {
+    overflow-x: auto;
+    margin-top: 1.5rem;
+    border: 1px solid var(--line);
+    border-radius: var(--r-card);
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 34rem;
+    font-size: var(--text-small);
+}
+
+th,
+td {
+    text-align: left;
+    padding: 0.7rem 0.9rem;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+}
+
+thead th {
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    letter-spacing: var(--track-spelt);
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    background: var(--surface);
+}
+
+tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+td.tok {
+    font-family: var(--font-mono);
+    color: var(--ink);
+    white-space: nowrap;
+}
+
+td .why {
+    color: var(--ink-dim);
+}
+
+.dot {
+    display: inline-block;
+    width: 0.7rem;
+    height: 0.7rem;
+    border-radius: 50%;
+    margin-right: 0.45rem;
+    vertical-align: -0.06em;
+    border: 1px solid var(--line-strong);
+}
+
+/* ------------------------------------------------------------------ notes --- */
+
+.note {
+    border-left: 2px solid var(--accent-bar);
+    background: var(--accent-wash);
+    border-radius: 0 var(--r-control) var(--r-control) 0;
+    padding: 0.9rem 1.1rem;
+    margin: 1.5rem 0 0;
+    max-width: var(--measure-prose);
+}
+
+.note p:last-child {
+    margin-bottom: 0;
+}
+
+.note.warn {
+    border-left-color: var(--danger);
+    background: color-mix(in oklab, var(--danger) 8%, transparent);
+}
+
+/* -------------------------------------------------------------- specimens --- */
+
+.spec {
+    border: 1px solid var(--line);
+    border-radius: var(--r-card);
+    padding: 1.25rem;
+    margin-top: 1.5rem;
+    background: var(--surface);
+}
+
+.spec-row {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    padding-block: 0.6rem;
+    border-bottom: 1px solid var(--line);
+}
+
+.spec-row:last-child {
+    border-bottom: 0;
+}
+
+.spec-label {
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    color: var(--ink-faint);
+    flex: 0 0 8.5rem;
+}
+
+.spec-demo {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.beat-demo {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+
+.beat-demo figure {
+    margin: 0;
+    text-align: center;
+}
+
+.beat-demo svg {
+    width: 3.25rem;
+    height: 3.25rem;
+    color: var(--emblem);
+}
+
+.beat-demo figcaption {
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    color: var(--ink-faint);
+    margin-top: 0.6rem;
+}
+
+.radii {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 1.5rem;
+}
+
+.radii div {
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    width: 5.5rem;
+    height: 5.5rem;
+    display: grid;
+    place-items: center;
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    color: var(--ink-dim);
+    text-align: center;
+}
+
+/* -------------------------------------------------------------------- pre --- */
+
+pre {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r-card);
+    padding: 1rem 1.1rem;
+    overflow-x: auto;
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    line-height: 1.7;
+    color: var(--ink-dim);
+    margin: 1.25rem 0 0;
+}
+
+pre b {
+    color: var(--accent-soft);
+    font-weight: 400;
+}
+
+/* ----------------------------------------------------------------- footer --- */
+
+footer {
+    border-top: 1px solid var(--line);
+    padding-block: 3rem 4rem;
+    color: var(--ink-faint);
+    font-size: var(--text-small);
+}
+
+footer p {
+    color: var(--ink-faint);
+}
+
+/* ------------------------------------------------------------- gem classes ---
+   ⚠️ THESE EXIST BECAUSE OF A TRAP THIS PAGE WALKED INTO, and the same trap is
+   documented in css/motion.css for a different case. Tailwind 4 tree-shakes
+   @theme: a token survives into the output only if something in the AUTHOR'S
+   OWN CSS references it. The gem palette is @theme, and page.js was painting
+   the swatches with an inline `style.background = var(--color-ruby)` set at
+   RUNTIME — which Tailwind cannot see. Result: every gem token was shaken out
+   and the seven swatches rendered with no colour at all. No error at any layer.
+
+   Verified against dist, not assumed: grep for --color-ruby in the built CSS
+   returned 0 before this block existed. That grep is the tripwire if anyone
+   ever "simplifies" these back into inline styles.
+
+   Naming them here rather than reading the hex out of dist/tokens.json is also
+   what preserves the property the whole page is built on: the swatch is painted
+   by the TOKEN and captioned by the GENERATOR, so a disagreement between CSS
+   and the generated JSON shows up as a swatch whose colour contradicts its own
+   label. Painting from the JSON hex would make the two agree by construction
+   and prove nothing. */
+
+.gem-ruby { background: var(--color-ruby); }
+.gem-fire-opal { background: var(--color-fire-opal); }
+.gem-citrine { background: var(--color-citrine); }
+.gem-emerald { background: var(--color-emerald); }
+.gem-sapphire { background: var(--color-sapphire); }
+.gem-amethyst { background: var(--color-amethyst); }
+.gem-diamond { background: var(--color-diamond); }
+.gem-violet-sey { background: var(--color-violet-sey); }

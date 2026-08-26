@@ -1,0 +1,45 @@
+{
+    "$comment": [
+        "The B-Gem palette. SEMANTICS ONLY — no hex values live here.",
+        "The hexes are in css/tokens.css (--color-ruby and siblings) and are",
+        "joined onto this map by scripts/generate.mjs. That is deliberate: a",
+        "colour typed in two files is a colour that will eventually differ in",
+        "two files, which is the exact failure this package was extracted to",
+        "end. Read dist/tokens.json for the joined result.",
+        "",
+        "⚠️ THIS IS A MEDIA-TYPE MAP, NOT A SITE PALETTE. A gem MEANS a medium:",
+        "amethyst means 'this artifact is a letter'. Using a gem as a site",
+        "accent is only correct where the gem IS that product's medium.",
+        "",
+        "⚠️ AND IT IS NOT THE SIX-TLD RAINBOW. That is a different palette with",
+        "a different job (one colour per TLD / product class, the B-Aura",
+        "thesis). Seven gems, six rainbow colours, and they must never be",
+        "presented as one system."
+    ],
+    "order": "The Metta Light descent: session start at ruby, session end at diamond.",
+    "gems": [
+        { "name": "ruby", "token": "--color-ruby", "media": "video" },
+        { "name": "fire-opal", "token": "--color-fire-opal", "media": "voice / audio" },
+        { "name": "citrine", "token": "--color-citrine", "media": "photo" },
+        { "name": "emerald", "token": "--color-emerald", "media": "animation" },
+        { "name": "sapphire", "token": "--color-sapphire", "media": "link" },
+        { "name": "amethyst", "token": "--color-amethyst", "media": "letter / text" },
+        {
+            "name": "diamond",
+            "token": "--color-diamond",
+            "media": "album / collection",
+            "note": "The unrefracted seventh. A cool near-white, not #FFFFFF, so it reads as luminous rather than flat."
+        }
+    ],
+    "reserved": {
+        "pink": "ABSENT BY CONSTRUCTION. Reserved for B-Dating and romantic contexts. It is not an oversight and must not be filled in."
+    },
+    "siteValues": [
+        {
+            "name": "violet-sey",
+            "token": "--color-violet-sey",
+            "site": "seysays.org",
+            "note": "NOT an eighth gem. The commons' medium is not one of the seven, so borrowing amethyst would overload a channel the doctrine reserves. The measured reason agrees: those pages are read at arm's length outdoors and the more saturated violet survives sunlight."
+        }
+    ]
+}

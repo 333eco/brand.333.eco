@@ -1,0 +1,110 @@
+name: Deploy to GitHub Pages
+
+# Builds site/ and deploys it to GitHub Pages on every push to main.
+#
+# ADAPTED FROM the missaquarius.org / missaquarius.com workflow, which is pure
+# static and uploads the repo root. Two differences, both deliberate:
+#   1. There is a BUILD. The page imports ../../css/tokens.css and
+#      ../../dist/tokens.json, so it cannot be served from source.
+#   2. `path:` is site/dist, not `.` — this repo is a package first and a site
+#      second, and uploading the root would publish css/, scripts/ and the lock.
+#
+# ⚠️ CNAME LIVES IN site/public/, NOT AT THE REPO ROOT. publicDir copies it into
+# site/dist, which is what gets uploaded. A CNAME outside the artifact path is
+# silently ignored and the custom domain UNMAPS on the next deploy — the failure
+# is a working build and a dead domain, with nothing in the log about it.
+#
+# ONE-TIME SETUP per repo (once, in the repo settings on github.com):
+#   Settings → Pages → Build and deployment → Source → "GitHub Actions"
+# (Not "Deploy from a branch" — that is the older mode and would conflict.)
+# Also required, and OUTSIDE this repo: a DNS CNAME record for brand.333.eco
+# pointing at 333eco.github.io.
+#
+# RE-RUN SAFETY: do not re-run a whole failed deploy — re-running uploads a
+# second "github-pages" artifact and deploy-pages@v4 aborts on seeing two.
+# Prefer a fresh push or workflow_dispatch. The "Clear stale Pages artifact"
+# step below also deletes any leftover artifact so re-runs stay safe anyway.
+
+on:
+    push:
+        branches: [main]
+    workflow_dispatch:
+
+permissions:
+    contents: read
+    pages: write
+    id-token: write
+    actions: write # delete stale github-pages artifacts so re-runs stay safe
+
+# Allow one deployment at a time; let an in-progress deploy finish.
+concurrency:
+    group: pages
+    cancel-in-progress: false
+
+jobs:
+    deploy:
+        environment:
+            name: github-pages
+            url: ${{ steps.deployment.outputs.page_url }}
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+
+            # The two guards, before the build. A page that documents a token
+            # layer must not deploy from a stale or unlocked one — this is the
+            # one repo where "the docs are out of date" and "the package is
+            # wrong" are the same failure.
+            - name: Check brand.lock
+              run: node scripts/check-brand.mjs
+
+            - name: Check dist/ is current
+              run: node scripts/generate.mjs --check
+
+            - name: Build
+              working-directory: site
+              run: npm ci && npm run build
+
+            - name: Assert CNAME survived the build
+              run: |
+                  test -f site/dist/CNAME || {
+                    echo "::error::site/dist/CNAME is missing — the custom domain will unmap."
+                    exit 1
+                  }
+
+            - name: Setup Pages
+              uses: actions/configure-pages@v5
+
+            - name: Clear stale Pages artifact (safe re-runs)
+              uses: actions/github-script@v7
+              with:
+                  script: |
+                      const { data } = await github.rest.actions.listWorkflowRunArtifacts({
+                        owner: context.repo.owner,
+                        repo: context.repo.repo,
+                        run_id: context.runId,
+                      });
+                      for (const artifact of data.artifacts) {
+                        if (artifact.name === 'github-pages') {
+                          core.info(`Deleting stale artifact ${artifact.id}`);
+                          await github.rest.actions.deleteArtifact({
+                            owner: context.repo.owner,
+                            repo: context.repo.repo,
+                            artifact_id: artifact.id,
+                          });
+                        }
+                      }
+
+            - name: Upload artifact
+              uses: actions/upload-pages-artifact@v3
+              with:
+                  path: site/dist
+
+            - name: Deploy
+              id: deployment
+              uses: actions/deploy-pages@v4

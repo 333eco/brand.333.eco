@@ -1,0 +1,20 @@
+{
+    "name": "brand-333-eco-site",
+    "version": "1.0.0",
+    "description": "brand.333.eco — the guidelines page, drawn by the tokens it documents.",
+    "author": "Thon Ly",
+    "license": "UNLICENSED",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "start": "vite",
+        "build": "vite build",
+        "preview": "vite preview"
+    },
+    "devDependencies": {
+        "@tailwindcss/vite": "^4.3.0",
+        "tailwindcss": "^4.3.0",
+        "vite": "^8.0.16"
+    }
+}

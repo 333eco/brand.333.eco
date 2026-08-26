@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+        <title>brand.333.eco — the HeartBank® brand layer</title>
+        <meta
+            name="description"
+            content="The canonical design tokens, mark and motion signature behind heartbank.org, 333.eco, seysays.org, sayyourname.app and playsey.app. This page is drawn by the tokens it documents." />
+        <link rel="canonical" href="https://brand.333.eco/" />
+        <meta property="og:title" content="brand.333.eco — the HeartBank® brand layer" />
+        <meta property="og:description" content="Tokens, mark and motion. The page is drawn by the tokens it documents." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://brand.333.eco/" />
+        <meta name="twitter:card" content="summary" />
+
+        <!-- Resolve the theme BEFORE first paint. The three-block cascade in
+             theme-3block.css keys off .dark / .light on <html>; with neither,
+             it falls back to prefers-color-scheme, so a failure here degrades
+             to the OS preference rather than to a broken page. -->
+        <script>
+            try {
+                var t = localStorage.getItem("brand.theme");
+                if (t === "dark" || t === "light")
+                    document.documentElement.classList.add(t);
+            } catch (e) {}
+        </script>
+
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            rel="stylesheet"
+            href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" />
+        <link rel="stylesheet" href="./page.css" />
+    </head>
+    <body>
+        <header class="bar">
+            <div class="wrap wide bar-inner">
+                <a class="wordmark" href="/">
+                    <!-- .beating is on CHROME. This is the rule the page states
+                         further down, applied to the page itself. -->
+                    <span class="beating"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M3.9743 20.0257L3.8824 18.0670C3.5430 11.1232 3.3167 6.5411 5.9896 3.8683C8.1675 1.6904 11.5899 1.6904 13.7678 3.8683C14.9981 5.0986 15.6062 6.8523 15.4719 8.5281C17.1477 8.3938 18.9014 9.0019 20.1317 10.2322C22.3096 12.4101 22.3096 15.8325 20.1317 18.0104C17.4589 20.6833 12.8768 20.4570 5.9260 20.1247L3.9743 20.0257Z"/></svg></span>
+                    brand.333.eco
+                </a>
+                <span class="spacer"></span>
+                <button class="ghost" id="theme" type="button">theme</button>
+            </div>
+        </header>
+
+        <main>
+            <!-- ------------------------------------------------------ hero -->
+            <section class="hero">
+                <div class="wrap wide">
+                    <span class="hero-mark beating"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M3.9743 20.0257L3.8824 18.0670C3.5430 11.1232 3.3167 6.5411 5.9896 3.8683C8.1675 1.6904 11.5899 1.6904 13.7678 3.8683C14.9981 5.0986 15.6062 6.8523 15.4719 8.5281C17.1477 8.3938 18.9014 9.0019 20.1317 10.2322C22.3096 12.4101 22.3096 15.8325 20.1317 18.0104C17.4589 20.6833 12.8768 20.4570 5.9260 20.1247L3.9743 20.0257Z"/></svg></span>
+                    <h1>circulation,<br />not accumulation</h1>
+                    <p class="lede">
+                        The canonical brand layer for the institution — one
+                        palette, one mark, one heartbeat, vendored into every
+                        site that renders them.
+                    </p>
+                    <span class="version mono" id="ver">brand v1.0.0</span>
+                </div>
+            </section>
+
+            <!-- ---------------------------------------------------- system -->
+            <section>
+                <div class="wrap wide">
+                    <p class="eyebrow">What this is</p>
+                    <h2>One definition, vendored — not four copies</h2>
+                    <p>
+                        This layer lived in four repositories at once and had
+                        already begun to fork. It now lives here, and each
+                        consuming site copies the files it needs behind a
+                        <code>brand.lock</code> hash guard that fails its own CI
+                        offline. <strong>The page you are reading is drawn by
+                        those same files</strong> — every swatch below is
+                        painted by the variable it names, and the mark in the
+                        header is beating on the real rule. A wrong value
+                        renders as a wrong page.
+                    </p>
+                    <div class="note">
+                        <p>
+                            <strong>The division of labour in the wordmark.</strong>
+                            <em>Bank</em> is what accumulates — the record of
+                            appreciation. <em>Heart</em> is what circulates —
+                            the value itself.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ------------------------------------------------------ mark -->
+            <section>
+                <div class="wrap wide">
+                    <p class="eyebrow">The mark</p>
+                    <h2>B-Emblem™</h2>
+                    <p>
+                        A universal heart rotated 45° clockwise. It is
+                        <strong>bistable</strong> — heart and capital B, both
+                        immediately apparent. Not a reveal like the FedEx arrow;
+                        there is no <em>aha</em> to wait for, which is why it
+                        survives down to a 16px favicon.
+                    </p>
+                    <ul class="rules">
+                        <li>
+                            <strong>Inline it in the DOM.</strong> Never
+                            <code>&lt;img src&gt;</code> — CSS cannot reach
+                            inside an <code>&lt;img&gt;</code>, so the colour
+                            would have to be duplicated everywhere the mark
+                            appears.
+                        </li>
+                        <li>
+                            <strong>The 45° rotation is baked into the path
+                            coordinates.</strong> It used to be a
+                            <code>transform</code> attribute, which is a trap: a
+                            CSS animation on <code>transform</code> overrides a
+                            non-animated one, so the first heartbeat silently
+                            un-rotates the mark and it stops reading as a B.
+                        </li>
+                        <li>
+                            <code>fill="currentColor"</code>, and the page sets
+                            <code>--emblem</code>. There is no second colour to
+                            keep in step.
+                        </li>
+                        <li class="no">
+                            <strong>Never re-apply a rotation</strong>, and never
+                            scale the mark inside an icon canvas to "fix"
+                            padding — the maskable safe area was measured
+                            against the mark at its shipped size.
+                        </li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- ---------------------------------------------------- motion -->
+            <section>
+                <div class="wrap wide">
+                    <p class="eyebrow">Motion</p>
+                    <h2>The heartbeat is a signal, not decoration</h2>
+                    <p>
+                        Two <strong>unequal</strong> beats and then a long rest —
+                        systole, a weaker diastole, then most of the period at
+                        rest. That morphology is what a counterfeit gets wrong at
+                        any tempo, which is why <strong>the rhythm is the
+                        signature and the rate is not</strong>. A 72 BPM variant
+                        was built and rejected.
+                    </p>
+                    <div class="spec beat-demo">
+                        <figure>
+                            <span class="beating"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M3.9743 20.0257L3.8824 18.0670C3.5430 11.1232 3.3167 6.5411 5.9896 3.8683C8.1675 1.6904 11.5899 1.6904 13.7678 3.8683C14.9981 5.0986 15.6062 6.8523 15.4719 8.5281C17.1477 8.3938 18.9014 9.0019 20.1317 10.2322C22.3096 12.4101 22.3096 15.8325 20.1317 18.0104C17.4589 20.6833 12.8768 20.4570 5.9260 20.1247L3.9743 20.0257Z"/></svg></span>
+                            <figcaption>.beating — Proof of Humanity ℠</figcaption>
+                        </figure>
+                        <figure>
+                            <span><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M3.9743 20.0257L3.8824 18.0670C3.5430 11.1232 3.3167 6.5411 5.9896 3.8683C8.1675 1.6904 11.5899 1.6904 13.7678 3.8683C14.9981 5.0986 15.6062 6.8523 15.4719 8.5281C17.1477 8.3938 18.9014 9.0019 20.1317 10.2322C22.3096 12.4101 22.3096 15.8325 20.1317 18.0104C17.4589 20.6833 12.8768 20.4570 5.9260 20.1247L3.9743 20.0257Z"/></svg></span>
+                            <figcaption>static — Proof of Coordinate ℠</figcaption>
+                        </figure>
+                    </div>
+                    <div class="note warn">
+                        <p>
+                            <strong>Placement, not taste.</strong>
+                            <code>.beating</code> goes on
+                            <strong>chrome</strong> — a wordmark, a footer
+                            attribution, anything that says an institution
+                            stands behind this page. It goes
+                            <strong>never</strong> on a mark drawn beside
+                            somebody's name, where an unverified pulse would be
+                            claiming something about <em>them</em>.
+                        </p>
+                    </div>
+                    <p style="margin-top: 1.25rem">
+                        Under <code>prefers-reduced-motion</code>: stop, and
+                        substitute nothing. The static mark is already a
+                        meaningful state, so there is no degradation to
+                        compensate for.
+                    </p>
+                </div>
+            </section>
+
+            <!-- ------------------------------------------------------ gems -->
+            <section>
+                <div class="wrap wide">
+                    <p class="eyebrow">Colour</p>
+                    <h2>The B-Gem palette</h2>
+                    <p>
+                        A colour here <strong>means a medium</strong>. Ruby is
+                        video; fire opal is voice. The order is the Metta Light
+                        descent — session start at ruby, session end at diamond.
+                    </p>
+                    <div class="grid" id="gems"></div>
+                    <div class="note warn">
+                        <p>
+                            <strong>This is a media-type map, not a site
+                            palette</strong>, and it is not the six-TLD rainbow
+                            either — that is a different palette with a different
+                            job. Using a gem as a site accent is only correct
+                            where the gem <em>is</em> that product's medium.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ---------------------------------------------------- accent -->
+            <section>
+                <div class="wrap wide">
+                    <p class="eyebrow">The rule</p>
+                    <h2>A site's accent is derived, never picked</h2>
+                    <p>
+                        Each site takes the gem whose media type <em>is</em> that
+                        product's medium. Everything else — the whole alpha
+                        family — then falls out of one
+                        <code>color-mix()</code> chain.
+                    </p>
+                    <div class="tbl-scroll">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Site</th>
+                                    <th>Accent</th>
+                                    <th>Because</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sites"></tbody>
+                        </table>
+                    </div>
+                    <div class="note">
+                        <p>
+                            <strong>Two values cannot derive, and that is the
+                            honest limit.</strong>
+                            <code>--accent-ink</code> is decided by contrast:
+                            Fire Opal on white is 3.4:1 and fails, Sapphire on
+                            white is 7.0:1 and passes, so one site takes
+                            near-black ink on its fill and another takes white.
+                            No formula picks correctly. On a light ground
+                            <code>--accent-soft</code> often needs pinning too.
+                            The goal was "a fifth site is five declarations"; it
+                            is nine.
+                        </p>
+                    </div>
+                    <p style="margin-top: 1.25rem">
+                        <strong>Do not build a "pass a gem, get a theme"
+                        API.</strong> The true shape is a gem plus two measured
+                        overrides.
+                    </p>
+                </div>
+            </section>
+
+            <!-- ----------------------------------------------------- roles -->
+            <section>
+                <div class="wrap wide">
+                    <p class="eyebrow">Roles</p>
+                    <h2>The token layer, in the theme you are reading</h2>
+                    <p>
+                        These are live values. Toggle the theme and every swatch
+                        below re-resolves through the same three-block cascade a
+                        consuming site ships.
+                    </p>
+                    <div class="grid" id="roles"></div>
+                </div>
+            </section>
+
+            <!-- ------------------------------------------------------ type -->
+            <section>
+                <div class="wrap wide">
+                    <p class="eyebrow">Type</p>
+                    <h2>The scale</h2>
+                    <p>
+                        Lifted verbatim from the best-tuned stylesheet in the
+                        estate rather than re-derived. The display rungs are
+                        fluid.
+                    </p>
+                    <div class="spec" id="type"></div>
+                    <div class="note warn">
+                        <p>
+                            <strong>The scale assumes a normal-width face.</strong>
+                            A site that picks an expanded display face must
+                            override the hero rung in its own layer — the token
+                            is shared, the face is that site's choice, and the
+                            site that chose the face owns the consequence.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- -------------------------------------------------- geometry -->
+            <section>
+                <div class="wrap wide">
+                    <p class="eyebrow">Geometry</p>
+                    <h2>Radii and controls</h2>
+                    <div class="radii">
+                        <div style="border-radius: var(--r-control)">--r-control</div>
+                        <div style="border-radius: var(--r-card)">--r-card</div>
+                        <div style="border-radius: var(--r-input)">--r-input</div>
+                        <div style="border-radius: var(--r-pill)">--r-pill</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- --------------------------------------------------- consume -->
+            <section>
+                <div class="wrap wide">
+                    <p class="eyebrow">How to consume it</p>
+                    <h2>Vendor the files; the lock does the rest</h2>
+                    <p>
+                        There is no package to install and nothing to fetch at
+                        build time. A consumer copies the files it needs, copies
+                        <code>brand.lock</code> verbatim, and declares what it
+                        took in <code>brand.uses</code> — the one file in the set
+                        that differs per repository.
+                    </p>
+                    <pre><b># take the current layer</b>
+npm run brand:sync -- --from ../../333.eco/brand.333.eco
+
+<b># in CI — no network, no credentials, no sibling checkout</b>
+npm run check:brand</pre>
+                    <h3>Concatenation order</h3>
+                    <p>
+                        It is not arbitrary. Custom-property substitution is
+                        lazy, so a value declared early may reference one a later
+                        file sets — which is how <code>--accent</code>, set per
+                        site, reaches the derived family.
+                    </p>
+                    <pre>tokens.css
+  <b>+</b> theme-3block.css   <b>or</b>   theme-2state.css
+  <b>+</b> motion.css
+  <b>+</b> reduce-global.css  <b>(opt-in)</b>
+  <b>+</b> brand.css          <b>(per site)</b>
+  <b>+</b> site.css           <b>(per site)</b></pre>
+                    <div class="note warn">
+                        <p>
+                            <strong>Never <code>@import</code> a sibling of
+                            these files.</strong> The partial-based sites inject
+                            their stylesheets as raw text and concatenate them; a
+                            relative <code>@import</code> resolves against
+                            <code>src/</code>, where <code>partials/</code> is
+                            unreachable, and ships a dead render-blocking
+                            at-rule that quietly destroys the
+                            one-request-renders-complete property.
+                        </p>
+                    </div>
+                    <h3>Two theme files, on purpose</h3>
+                    <p>
+                        <code>theme-3block.css</code> is a dark-default cascade
+                        for sites that stamp both classes and must resolve the
+                        unstamped case themselves. <code>theme-2state.css</code>
+                        is a light-default stamp for a site whose resolver
+                        already handles three states and writes only
+                        <code>.dark</code>.
+                        <strong>Neither is the inferior variant of the
+                        other</strong>, and converting a site between them is a
+                        regression, not a tidy-up.
+                    </p>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <div class="wrap wide">
+                <p>
+                    HeartBank® · B-Emblem™ · Proof of Humanity ℠ · Proof of
+                    Coordinate ℠
+                </p>
+                <p class="mono" id="foot-ver"></p>
+            </div>
+        </footer>
+
+        <script type="module" src="./page.js"></script>
+    </body>
+</html>
