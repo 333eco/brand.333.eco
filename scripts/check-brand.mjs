@@ -14,6 +14,25 @@
 // guard needs nothing it does not already have and cannot be disabled by a
 // missing token.
 //
+// ⚠️ INTEGRITY IS NOT CURRENCY, and conflating them is how four repos sat three
+// minor versions behind while every guard reported green. --check answers "do
+// my files match MY lock" — it is local, offline, and it cannot answer "is my
+// lock the current one", because a repo that has fallen behind is internally
+// consistent. That was left to "an older version string shows up in a pull
+// request", which is a person remembering, and on 2026-09-01 the person had not:
+// package v1.3.0, all four consumers v1.0.0.
+//
+// So currency is a SECOND MODE with different rules, and the rules differ
+// because the questions do. --currency --against <checkout> compares this
+// repo's lock version to the package's. It needs the package, so it needs
+// either a sibling checkout or a network fetch — which is exactly why it must
+// not run in the build. It runs on a SCHEDULE, where being unable to reach
+// GitHub means a red scheduled job and not a blocked deploy.
+//
+// brand.333.eco is a PUBLIC repository, so the scheduled workflow checks it out
+// with no token, and the "cannot be disabled by a missing credential" property
+// survives into the second mode intact.
+//
 // THREE FILES, AND ONLY ONE OF THEM DIFFERS PER REPO:
 //   brand.lock       every package file -> sha256, plus a version.
 //                    BYTE-IDENTICAL in every consumer. A repo that falls
@@ -134,6 +153,62 @@ if (!existsSync(LOCK)) {
 }
 
 const lock = JSON.parse(readFileSync(LOCK, "utf8"));
+
+/* ---------------------------------------------------------------- currency ---
+   "Is my lock the current one?" — the question --check structurally cannot ask.
+   Compared as VERSION STRINGS and not as hashes, deliberately: a consumer
+   vendors a subset (brand.uses), so its files can legitimately differ from the
+   package's full set while being perfectly current. The version is the only
+   thing every consumer holds in common with the package, which is why the lock
+   carries one at all. */
+
+if (args.includes("--currency")) {
+    const against = argOf("--against");
+    if (!against) {
+        die(
+            "--currency needs --against <path to a brand.333.eco checkout>.\n" +
+                "  In CI, check the public package out beside this repo:\n" +
+                "    - uses: actions/checkout@v4\n" +
+                "      with: { repository: 333eco/brand.333.eco, path: .brand }"
+        );
+    }
+    const theirLock = resolve(against, "brand.lock");
+    if (!existsSync(theirLock)) {
+        die(`${theirLock} does not exist — is --against pointing at the brand.333.eco checkout?`);
+    }
+    const theirs = JSON.parse(readFileSync(theirLock, "utf8")).version;
+    const mine = lock.version;
+
+    if (mine === theirs) {
+        console.log(`check-brand: current (v${mine})`);
+        process.exit(0);
+    }
+
+    /* Numeric compare, so "1.10.0" is not judged older than "1.9.0" the way a
+       string compare would have it. A consumer AHEAD of the package is not a
+       lag — it means someone edited the brand layer here, which --check already
+       catches by hash and reports with the right fix. Say so rather than
+       telling them to sync backwards. */
+    const parts = (v) => v.split(".").map(Number);
+    const [a, b] = [parts(mine), parts(theirs)];
+    const ahead = a.some((n, i) => n !== b[i] && n > b[i] && a.slice(0, i).every((m, j) => m === b[j]));
+
+    if (ahead) {
+        die(
+            `this repo's brand.lock (v${mine}) is AHEAD of the package (v${theirs}).\n` +
+                "  That is not a stale consumer — the brand layer was edited here, or the\n" +
+                "  package was rolled back. Edits belong upstream in brand.333.eco."
+        );
+    }
+
+    die(
+        `brand layer is BEHIND: this repo is on v${mine}, the package is on v${theirs}.\n` +
+            "  Take the current layer, review the diff, and commit it:\n" +
+            "    npm run brand:sync -- --from <path to brand.333.eco>\n" +
+            "  This is a scheduled check, not a build gate — nothing is blocked by it."
+    );
+}
+
 const problems = [];
 
 for (const name of uses.files) {

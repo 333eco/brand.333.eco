@@ -331,6 +331,15 @@ for (const id of ["ver", "foot-ver"]) {
     if (n) n.textContent = `brand v${tokens.version}`;
 }
 
+// The npm install line, pinned to the version this page was built from. Same
+// rule as the two above and for a sharper reason: a stale number in prose is
+// wrong, a stale number in a command someone pastes into a terminal installs
+// the wrong thing. Exact-pinned rather than caret-ranged deliberately — the
+// package is a mirror, and a range would invite the drift the whole layer
+// exists to prevent.
+const npmCmd = document.getElementById("npm-cmd");
+if (npmCmd) npmCmd.textContent = `npm i @333eco/brand@${tokens.version}`;
+
 /* -------------------------------------------------------------------- aura --- */
 
 // The mark's colour, for the visitor to move. Every emblem on the page reads

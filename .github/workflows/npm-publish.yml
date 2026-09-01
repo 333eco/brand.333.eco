@@ -1,0 +1,79 @@
+name: Publish npm mirror
+
+# Publishes @333eco/brand when data/brand.json's version changes on main.
+#
+# WHY IT IS AUTOMATED RATHER THAN A HUMAN STEP. The npm package is a MIRROR, and
+# a mirror's failure mode is not breaking — it is quietly ceasing to be one. A
+# stale @333eco/brand misrepresents the institution's brand to everyone who takes
+# it, silently, looking exactly like a current one. Leaving the publish to
+# somebody remembering is the same mechanism that left four internal consumers
+# three minor versions behind with every guard green; the README records that.
+#
+# So the publish is bound to the version bump rather than to a person: bump
+# data/brand.json, run check-brand --write, set package.json to match, merge —
+# and the mirror moves in the same breath. check-publish.mjs refuses the release
+# if those three numbers disagree.
+#
+# TRIGGERED BY A CHANGED FILE, not by a tag, because a tag is another thing to
+# remember. The version-changed guard below means an ordinary commit to css/
+# does not republish; only a real version bump does.
+#
+# ⚠️ NEEDS NPM_TOKEN — a granular automation token with publish rights on the
+# @333eco scope and 2FA bypass enabled. An interactive OTP cannot be supplied to
+# a workflow; a plain "Publish" token with 2FA required will fail here with
+# E403 and nothing else will look wrong.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "data/brand.json"
+      - "package.json"
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          registry-url: "https://registry.npmjs.org"
+
+      # The three-number agreement, plus the trademark and vendor notes the
+      # mirror must not ship without. Runs before anything is built or sent.
+      - name: Release gate
+        run: node scripts/check-publish.mjs
+
+      - name: Lock matches the files it describes
+        run: node scripts/check-brand.mjs
+
+      - name: Regenerate dist and fail if it moved
+        run: |
+          node scripts/generate.mjs
+          if ! git diff --quiet -- dist; then
+            echo "::error::dist/ is not the output of css/ and data/ — commit the regenerated files"
+            git --no-pager diff --stat -- dist
+            exit 1
+          fi
+
+      # Already-published versions are not an error. A commit that touches
+      # package.json without moving the version reaches here legitimately, and
+      # it should be a no-op rather than a red workflow nobody trusts.
+      - name: Publish if this version is new
+        run: |
+          V=$(node -p "require('./package.json').version")
+          if npm view "@333eco/brand@$V" version >/dev/null 2>&1; then
+            echo "@333eco/brand@$V is already published — nothing to do."
+            exit 0
+          fi
+          npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

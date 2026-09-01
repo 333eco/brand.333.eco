@@ -6,6 +6,24 @@ the heartbeat. Vendored into every site that renders them, behind a hash guard.
 Published as guidelines at **<https://brand.333.eco>** — a page that is *drawn by
 the tokens it documents*, so it cannot drift from them.
 
+## ⚠️ On npm as `@333eco/brand` — a READ-ONLY MIRROR
+
+The package exists so that people outside the institution can take what the
+NOTICE invites them to take. **It is not how institution repos get this layer.**
+
+> **Institution repos VENDOR this layer. They do not `npm install` it.**
+> `npm run brand:sync -- --from <path to brand.333.eco>`, guarded by
+> `brand.lock`. A dependency range is drift with a number on it, and four
+> consumers were once found three minor versions behind while every guard
+> reported green — see the note further down. Do not add `@333eco/brand` to any
+> repository in this estate.
+
+For everyone else: `npm i @333eco/brand`, then import what you need —
+`@333eco/brand/css/tokens.css`, `@333eco/brand/tokens.json`,
+`@333eco/brand/Brand.swift`. The mirror is published from the same commit that
+bumps the version, gated by `scripts/check-publish.mjs`, so it cannot lag behind
+the repository.
+
 ## Why this exists
 
 This layer lived in four repositories at once — `seysays`, `sayyourname`,

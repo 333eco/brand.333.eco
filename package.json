@@ -1,0 +1,49 @@
+{
+    "name": "@333eco/brand",
+    "version": "1.3.0",
+    "description": "The canonical brand layer for the institution — design tokens, themes, motion, and the B-Emblem. A READ-ONLY MIRROR; institution repos vendor this layer, they do not install it.",
+    "license": "Apache-2.0",
+    "author": "Thon Ly",
+    "homepage": "https://brand.333.eco",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/333eco/brand.333.eco.git"
+    },
+    "bugs": {
+        "url": "https://github.com/333eco/brand.333.eco/issues"
+    },
+    "keywords": [
+        "design-tokens",
+        "design-system",
+        "css",
+        "tailwind",
+        "theme",
+        "dark-mode"
+    ],
+    "type": "module",
+    "exports": {
+        "./css/*": "./css/*",
+        "./emblem/*": "./emblem/*",
+        "./data/*": "./data/*",
+        "./tokens.json": "./dist/tokens.json",
+        "./Brand.swift": "./dist/Brand.swift",
+        "./Brand.kt": "./dist/Brand.kt",
+        "./brand.lock": "./brand.lock",
+        "./package.json": "./package.json"
+    },
+    "files": [
+        "css",
+        "emblem",
+        "data",
+        "dist",
+        "brand.lock"
+    ],
+    "scripts": {
+        "check": "node scripts/check-brand.mjs",
+        "check:publish": "node scripts/check-publish.mjs",
+        "generate": "node scripts/generate.mjs"
+    },
+    "publishConfig": {
+        "access": "public"
+    }
+}
