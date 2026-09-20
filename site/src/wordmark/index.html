@@ -38,19 +38,18 @@
                     </p>
                     <div class="specimen" id="spec-wordmark"></div>
 
-                    <!-- One control for BOTH specimens and for the header mark,
-                         because a toggle that left the chrome beating on the
-                         same screen would read as a broken switch rather than a
-                         preference. -->
+                    <!-- ⚠️ There are TWO of these, one per specimen, and they
+                         drive ONE site-wide preference — including the header
+                         mark, because a toggle that left the chrome beating on
+                         the same screen would read as a broken switch rather
+                         than a preference. page.js wires every .beat-control on
+                         the page and repaints ALL of them on any change, so the
+                         second cannot fall out of step with the first. -->
                     <div class="beat-control">
-                        <button
-                            class="ghost"
-                            id="beat"
-                            type="button"
-                            aria-pressed="true">
+                        <button class="ghost" type="button" aria-pressed="true">
                             beat: on
                         </button>
-                        <span class="mono" id="beat-read"></span>
+                        <span class="mono"></span>
                     </div>
 
                     <p class="note">
@@ -81,6 +80,20 @@
                 <div class="wrap">
                     <h2>B-Slogan</h2>
                     <div class="specimen" id="spec-slogan"></div>
+
+                    <!-- ⚠️ There are TWO of these, one per specimen, and they
+                         drive ONE site-wide preference — including the header
+                         mark, because a toggle that left the chrome beating on
+                         the same screen would read as a broken switch rather
+                         than a preference. page.js wires every .beat-control on
+                         the page and repaints ALL of them on any change, so the
+                         second cannot fall out of step with the first. -->
+                    <div class="beat-control">
+                        <button class="ghost" type="button" aria-pressed="true">
+                            beat: on
+                        </button>
+                        <span class="mono"></span>
+                    </div>
                     <p>
                         The slogan is the wordmark in a sentence, and the
                         substitution does not change inside one.

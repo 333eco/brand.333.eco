@@ -47,8 +47,7 @@ const el = (tag, cls, html) => {
 // throws at load, in dev, on the page that is missing it.
 const SECTIONS = [
     "gems", "auras", "tld-marks", "tlds", "sites", "roles", "type",
-    "aura", "aura-now", "spec-wordmark", "spec-slogan", "page-cards",
-    "beat", "beat-read"
+    "aura", "aura-now", "spec-wordmark", "spec-slogan", "page-cards"
 ];
 
 const node = (id) => {
@@ -383,42 +382,54 @@ const wordmark = (classes) =>
 /* ------------------------------------------------------------------- beat --- */
 
 // The heartbeat as a remembered preference: default ON, site-wide, applied to
-// <html> so it reaches the header mark and both specimens at once. The class is
+// <html> so it reaches the header mark and every specimen at once. The class is
 // already set before first paint by the inline script in partials/head.html;
-// this only wires the control and keeps the label honest.
+// this only wires the controls and keeps their labels honest.
+//
+// ⚠️ THERE IS MORE THAN ONE CONTROL AND ONE STATE. Every .beat-control on the
+// page drives the same preference, and EVERY one is repainted on any change —
+// so the slogan's button cannot sit reading "on" while the wordmark's reads
+// "off". Two switches for one light have to agree, or the page is lying about
+// which state it is in.
 //
 // ⛔ IT DOES NOT OVERRIDE REDUCED MOTION. motion.css stops the animation under
 // `prefers-reduced-motion: reduce`, and a control that could start it again
-// would be worse than no control — so when the OS asks for stillness the button
-// is disabled and SAYS which of the two is in force. A toggle that silently
-// does nothing is the failure this avoids.
+// would be worse than no control — so when the OS asks for stillness every
+// button is disabled and SAYS which of the two is in force. A toggle that
+// silently does nothing is the failure this avoids.
 {
-    const beatBtn = node("beat");
-    const beatRead = node("beat-read");
+    const controls = [...document.querySelectorAll(".beat-control")].map((el) => ({
+        btn: el.querySelector("button"),
+        read: el.querySelector(".mono")
+    }));
     const still = window.matchMedia("(prefers-reduced-motion: reduce)");
 
     const paintBeat = () => {
         const off = document.documentElement.classList.contains("beat-off");
-        beatBtn.textContent = `beat: ${off ? "off" : "on"}`;
-        beatBtn.setAttribute("aria-pressed", String(!off));
-        beatBtn.disabled = still.matches;
-        beatRead.textContent = still.matches
-            ? "reduced motion is on — the system is holding the mark still"
-            : off
-              ? "Proof of Coordinate ℠ — the resting state, not a degraded one"
-              : "Proof of Humanity ℠ — ambient: humans run this";
+        for (const { btn, read } of controls) {
+            btn.textContent = `beat: ${off ? "off" : "on"}`;
+            btn.setAttribute("aria-pressed", String(!off));
+            btn.disabled = still.matches;
+            read.textContent = still.matches
+                ? "reduced motion is on — the system is holding the mark still"
+                : off
+                  ? "Proof of Coordinate ℠ — the resting state, not a degraded one"
+                  : "Proof of Humanity ℠ — ambient: humans run this";
+        }
     };
 
-    beatBtn.addEventListener("click", () => {
-        const off = document.documentElement.classList.toggle("beat-off");
-        try {
-            if (off) localStorage.setItem("brand.beat", "off");
-            else localStorage.removeItem("brand.beat");
-        } catch (e) {
-            /* private mode — the choice still holds for this page view */
-        }
-        paintBeat();
-    });
+    for (const { btn } of controls) {
+        btn.addEventListener("click", () => {
+            const off = document.documentElement.classList.toggle("beat-off");
+            try {
+                if (off) localStorage.setItem("brand.beat", "off");
+                else localStorage.removeItem("brand.beat");
+            } catch (e) {
+                /* private mode — the choice still holds for this page view */
+            }
+            paintBeat();
+        });
+    }
 
     // A visitor who turns Reduce Motion on mid-visit should not have to reload,
     // exactly as with the aura rotation above.

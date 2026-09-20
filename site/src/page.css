@@ -1039,23 +1039,33 @@ footer p {
 .slogan-xl {
     --emblem-fill: 0.7534;
 
-    /* The painted height of the mark, and the only knob here. "Fills its
-       footprint" and "sits on the baseline" both hold at ANY value, because
-       every margin is derived from it — so this is purely optical.
+    /* MEASURED cap height of the display typeface (Public Sans, 700): 46.27px at
+       64px, so 0.723em. Stated as a token because every size decision below is
+       a RATIO TO IT, and the em box is the wrong comparison — it includes
+       ascender and descender room no capital beside the mark ever uses.
+       ⚠️ A different display typeface changes this number. */
+    --emblem-cap: 0.723em;
 
-       Compare against CAP HEIGHT, never the em box, which includes ascender and
-       descender room no capital beside it uses. The mark stands in for a letter
-       B, so it should occupy a letter's space:
+    /* How much taller than a capital H the mark stands. "Fills its footprint"
+       and "sits on the baseline" both hold at ANY value here, because every
+       margin below is derived from it — so this is purely optical.
 
-         0.7534em = 104% of cap  — SHIPPED. A letter-substitute, with the ~4%
-                                   overshoot a round/pointed shape needs to look
-                                   the same size as a flat-topped capital.
-         0.85em   = 118% of cap  — reads as a logo dropped into a word
-         1em      = 138% of cap  — swamps the letters and the ® with them
+         1.04  — optically EQUAL to the H. A round/pointed shape needs ~4%
+                 overshoot just to look the same size as a flat-topped capital,
+                 so this reads as level, not as taller.
+         1.10  — SHIPPED. Stands out a little; still a letter in a word.
+         1.18  — reads as a logo dropped into a word.
+         1.38  — swamps the letters and the ® with them. */
+    --emblem-rise: 1.1;
+    --emblem-size: calc(var(--emblem-cap) * var(--emblem-rise));
 
-       At 0.7534em the box works out to exactly 1em, which is a coincidence of
-       the fill ratio and not something to rely on. */
-    --emblem-size: 0.7534em;
+    /* A pure optical nudge, applied AFTER the four insets have already squared
+       the mark up. The rotated heart carries its visual mass low-left, so it
+       reads a touch close to the letter before it. Absolute rather than
+       relative to the size: it is a correction to how the eye reads the shape,
+       not a proportion of it. ⚠️ It is spent through the MARGINS so the total
+       footprint is unchanged — the mark moves, the letters do not. */
+    --emblem-nudge-x: 1px;
 
     --emblem-box: calc(var(--emblem-size) / var(--emblem-fill));
 }
@@ -1068,10 +1078,14 @@ footer p {
     width: var(--emblem-box);
     height: var(--emblem-box);
 
-    /* The four measured insets, in TRBL order. They are four different numbers
-       because the path is not centred; do not "tidy" them into one value. */
-    margin: calc(var(--emblem-box) * -0.09312) calc(var(--emblem-box) * -0.09312)
-        calc(var(--emblem-box) * -0.15333) calc(var(--emblem-box) * -0.15343);
+    /* The four measured insets. They are four different numbers because the
+       path is not centred; do not "tidy" them into one value. Longhand rather
+       than the shorthand so the nudge is visible where it is spent: +x on the
+       left and −x on the right move the mark without moving anything else. */
+    margin-top: calc(var(--emblem-box) * -0.09312);
+    margin-bottom: calc(var(--emblem-box) * -0.15333);
+    margin-left: calc(var(--emblem-box) * -0.15343 + var(--emblem-nudge-x));
+    margin-right: calc(var(--emblem-box) * -0.09312 - var(--emblem-nudge-x));
 
     /* Stated rather than left to default, because it is load-bearing: the
        margin box above is what makes the plain baseline correct. */
