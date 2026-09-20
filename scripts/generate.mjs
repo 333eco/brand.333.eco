@@ -265,6 +265,12 @@ const tokensJson = {
         meaning: auraData.meaning,
         source: auraData.source,
         twoRings: auraData.twoRings,
+        // The ring geometry and the no-reading state travel with the ramp.
+        // Without them a native surface gets seven colours and none of the
+        // two properties that keep an aura from reading as a rank: diameter
+        // parity, and the rule that absence is not the ramp's floor.
+        geometry: auraData.geometry,
+        noReading: auraData.noReading,
         buckets: auras,
         reserved: auraData.reserved,
         collisions: auraData.collisions
@@ -274,6 +280,10 @@ const tokensJson = {
         order: tldData.order,
         scope: tldData.scope,
         pinned: tldData.pinned,
+        // Staged, not ratified. Travels so a native surface reads the same
+        // measurement the web will; `pinned` stays the flag that says whether
+        // these are tokens yet.
+        candidateValues: tldData.candidateValues,
         tlds,
         reserved: tldData.reserved
     },
