@@ -997,61 +997,86 @@ footer p {
    onto its own line inside flowing text. This is the rule every call site
    needs, and it is stated on the page beside the markup that needs it. */
 
-/* THE MARK DOES NOT FILL ITS OWN viewBox, and every call site in the estate has
-   silently inherited the consequence.
+/* THE MARK DOES NOT FILL ITS OWN viewBox, AND IT IS NOT CENTRED IN IT EITHER.
    ----------------------------------------------------------------------------
    MEASURED with getBBox(), not assumed: the path's bounding box is
-   18.0828 x 18.0851 inside a 24 x 24 viewBox. So it paints across 75.34% of its
-   square and leaves a ~12.3% margin on every side.
+   18.0828 x 18.0851 at (3.6824, 2.2349) inside a 24 x 24 viewBox. Two separate
+   facts fall out, and the estate had silently inherited both.
 
-   Two things follow, and the second is the defect:
+   (1) IT FILLS ONLY 75.34% OF ITS SQUARE. So an <svg> sized 1em paints a
+       0.753em mark — the slot looks padded because it IS — and the heartbeat's
+       1.3 peak lands at 0.979em, the box almost exactly. The beat READ AS
+       GROWING TO FIT rather than growing beyond, and the rest state looked like
+       the shrunken one.
 
-     · an <svg> sized 1em paints a mark of only 0.753em — the slot looks padded
-       because it IS padded;
-     · the heartbeat's 1.3 peak lands at 0.979em, which is the box almost
-       exactly. So the beat READ AS GROWING TO FIT rather than growing beyond,
-       and the rest state looked like the shrunken one.
+   (2) IT IS OFF-CENTRE. The four insets, as fractions of the viewBox, are
+       left 0.15343 · right 0.09312 · top 0.09312 · bottom 0.15333 — the mark
+       sits high and right. Symmetric margins therefore CANNOT square it up, and
+       a hand-tuned vertical-align lands it 5.51px below the baseline at the
+       specimen size, which is exactly what it looked like.
 
-   The fix is to size the BOX by the reciprocal, so the painted MARK is
-   --emblem-size at rest, and to pull the inline footprint back to that same
-   figure with negative margins — the letters keep their spacing, the mark fills
-   what it occupies, and the beat now overflows it by the full 30%.
+   THE FIX IS ONE MOVE: pull the MARGIN box in to the painted mark on all four
+   sides, by its own four insets. Once the margin box IS the mark:
 
-   ⚠️ It is done with the box and NEVER with `transform: scale()`, which would
-   be the obvious way and is a trap: a CSS animation on `transform` overrides a
-   non-animated one, so `.beating` would silently eat the correction. That is the
-   same trap emblem.ts records for the 45-degree rotation.
+     · the inline footprint is the mark, so there is no phantom padding and the
+       letters keep their spacing;
+     · the LINE BOX sees the mark's height rather than the larger svg box —
+       which matters more than it sounds, because while the box was taller than
+       the text the mark was driving the line box, and moving it moved the
+       baseline with it (measured: vertical-align had a slope of -0.39, not -1,
+       so it could never have been tuned to land);
+     · and an <svg>'s baseline IS its bottom margin edge, which is now the
+       mark's own bottom — so plain `vertical-align: baseline` puts it on the
+       text baseline with NO fudge factor. Measured after: 0.00px.
 
-   ⭐ CSS only — no change to emblem.ts, emblem.svg or the viewBox. A consumer
+   ⚠️ Done with the BOX, never with `transform: scale()` — a CSS animation on
+   `transform` overrides a non-animated one, so `.beating` would silently eat
+   the correction. Same trap emblem.ts records for the 45-degree rotation.
+
+   ⭐ CSS only. No change to emblem.ts, emblem.svg or the viewBox, so a consumer
    applies this to the component exactly as vendored. */
 .wordmark-xl,
 .slogan-xl {
     --emblem-fill: 0.7534;
-    /* The painted size of the mark, and the one knob here. "Fills its footprint"
-       holds at ANY value — the margins are derived — so this is a purely optical
-       choice, made by rendering four candidates against the cap height of the
-       letters beside it and looking:
 
-         0.7534em = 104% of cap  — where it started; reads slightly timid
-         0.85em   = 118% of cap  — CHOSEN: a confident letter-substitute
-         0.92em   = 127% of cap  — begins to dominate
-         1em      = 138% of cap  — swamps the caps and the ® with it
+    /* The painted height of the mark, and the only knob here. "Fills its
+       footprint" and "sits on the baseline" both hold at ANY value, because
+       every margin is derived from it — so this is purely optical.
 
-       Cap height, not em, is the comparison that matters: an em box includes
-       ascender and descender room that no capital letter beside it uses. */
-    --emblem-size: 0.85em;
+       Compare against CAP HEIGHT, never the em box, which includes ascender and
+       descender room no capital beside it uses. The mark stands in for a letter
+       B, so it should occupy a letter's space:
+
+         0.7534em = 104% of cap  — SHIPPED. A letter-substitute, with the ~4%
+                                   overshoot a round/pointed shape needs to look
+                                   the same size as a flat-topped capital.
+         0.85em   = 118% of cap  — reads as a logo dropped into a word
+         1em      = 138% of cap  — swamps the letters and the ® with them
+
+       At 0.7534em the box works out to exactly 1em, which is a coincidence of
+       the fill ratio and not something to rely on. */
+    --emblem-size: 0.7534em;
+
     --emblem-box: calc(var(--emblem-size) / var(--emblem-fill));
 }
 
 .wordmark-xl svg,
 .slogan-xl svg {
+    /* ⚠️ Tailwind's preflight sets svg { display: block }, which drops the mark
+       onto its own line inside flowing text. */
     display: inline-block;
     width: var(--emblem-box);
     height: var(--emblem-box);
-    /* Back to --emblem-size of inline footprint. The overflow is deliberate and
-       is what the beat needs room to use. */
-    margin-inline: calc((var(--emblem-box) - var(--emblem-size)) / -2);
-    vertical-align: calc(-0.12em - (var(--emblem-box) - var(--emblem-size)) / 2);
+
+    /* The four measured insets, in TRBL order. They are four different numbers
+       because the path is not centred; do not "tidy" them into one value. */
+    margin: calc(var(--emblem-box) * -0.09312) calc(var(--emblem-box) * -0.09312)
+        calc(var(--emblem-box) * -0.15333) calc(var(--emblem-box) * -0.15343);
+
+    /* Stated rather than left to default, because it is load-bearing: the
+       margin box above is what makes the plain baseline correct. */
+    vertical-align: baseline;
+
     /* The mark takes the visitor's chosen aura, like every other emblem on the
        site — it is the one element here that is NOT ink-coloured. */
     color: var(--emblem);

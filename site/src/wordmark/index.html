@@ -59,9 +59,9 @@
                         beating is <strong>Proof of
                         Humanity&nbsp;&#8480;</strong> &mdash; so turning the
                         beat off is not a degraded rendering, it is the other
-                        half of the pair. <em>At rest the mark fills exactly
-                        what it occupies; the beat is the only thing that
-                        overflows it.</em>
+                        half of the pair. <em>At rest the mark sits on the
+                        baseline and fills exactly what it occupies; the beat
+                        is the only thing that overflows it.</em>
                     </p>
 
                     <p class="note">
@@ -221,6 +221,39 @@
                         call site setting the wordmark at ~1rem needs none of
                         that. <em>The difference is the guidance, not a
                         discrepancy.</em>
+                    </p>
+                    <p class="note">
+                        <strong>The mark does not fill its own viewBox, and is
+                        not centred in it either.</strong> Its bounding box is
+                        <code>18.0828&nbsp;&times;&nbsp;18.0851</code> at
+                        <code>(3.6824,&nbsp;2.2349)</code> inside
+                        <code>24&nbsp;&times;&nbsp;24</code> &mdash; it paints
+                        across 75.34% of its square and sits high and right in
+                        it. Pull the <em>margin</em> box in to the painted mark
+                        by its own four insets and three things follow at once:
+                        the footprint becomes the mark, the line box stops being
+                        driven by the larger box, and an
+                        <code>&lt;svg&gt;</code>'s baseline &mdash; its bottom
+                        margin edge &mdash; becomes the mark's own bottom, so a
+                        plain <code>vertical-align: baseline</code> seats it
+                        with no fudge factor.
+                    </p>
+                    <p class="note">
+                        <strong>Do it with the box, never
+                        <code>transform: scale()</code>.</strong> A CSS
+                        animation on <code>transform</code> overrides a
+                        non-animated one, so <code>.beating</code> would
+                        silently eat the correction &mdash; the same trap the
+                        45&deg; rotation is baked into the path coordinates to
+                        avoid.
+                    </p>
+                    <p class="note">
+                        <strong>A chrome lockup is a different problem.</strong>
+                        The mark beside a label in <code>inline-flex</code> with
+                        <code>align-items: center</code> &mdash; the header of
+                        this site &mdash; centres on the text's cap band instead
+                        of seating on the baseline, and needs none of this. Both
+                        are correct; do not make one look like the other.
                     </p>
                     <p class="note">
                         <strong>Tailwind's preflight sets
