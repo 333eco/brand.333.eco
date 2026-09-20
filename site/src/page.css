@@ -996,15 +996,74 @@ footer p {
 /* ⚠️ Tailwind's preflight sets svg { display: block }, which drops the mark
    onto its own line inside flowing text. This is the rule every call site
    needs, and it is stated on the page beside the markup that needs it. */
+
+/* THE MARK DOES NOT FILL ITS OWN viewBox, and every call site in the estate has
+   silently inherited the consequence.
+   ----------------------------------------------------------------------------
+   MEASURED with getBBox(), not assumed: the path's bounding box is
+   18.0828 x 18.0851 inside a 24 x 24 viewBox. So it paints across 75.34% of its
+   square and leaves a ~12.3% margin on every side.
+
+   Two things follow, and the second is the defect:
+
+     · an <svg> sized 1em paints a mark of only 0.753em — the slot looks padded
+       because it IS padded;
+     · the heartbeat's 1.3 peak lands at 0.979em, which is the box almost
+       exactly. So the beat READ AS GROWING TO FIT rather than growing beyond,
+       and the rest state looked like the shrunken one.
+
+   The fix is to size the BOX by the reciprocal, so the painted MARK is
+   --emblem-size at rest, and to pull the inline footprint back to that same
+   figure with negative margins — the letters keep their spacing, the mark fills
+   what it occupies, and the beat now overflows it by the full 30%.
+
+   ⚠️ It is done with the box and NEVER with `transform: scale()`, which would
+   be the obvious way and is a trap: a CSS animation on `transform` overrides a
+   non-animated one, so `.beating` would silently eat the correction. That is the
+   same trap emblem.ts records for the 45-degree rotation.
+
+   ⭐ CSS only — no change to emblem.ts, emblem.svg or the viewBox. A consumer
+   applies this to the component exactly as vendored. */
+.wordmark-xl,
+.slogan-xl {
+    --emblem-fill: 0.7534;
+    /* The painted size of the mark, and the one knob here. "Fills its footprint"
+       holds at ANY value — the margins are derived — so this is a purely optical
+       choice, made by rendering four candidates against the cap height of the
+       letters beside it and looking:
+
+         0.7534em = 104% of cap  — where it started; reads slightly timid
+         0.85em   = 118% of cap  — CHOSEN: a confident letter-substitute
+         0.92em   = 127% of cap  — begins to dominate
+         1em      = 138% of cap  — swamps the caps and the ® with it
+
+       Cap height, not em, is the comparison that matters: an em box includes
+       ascender and descender room that no capital letter beside it uses. */
+    --emblem-size: 0.85em;
+    --emblem-box: calc(var(--emblem-size) / var(--emblem-fill));
+}
+
 .wordmark-xl svg,
 .slogan-xl svg {
     display: inline-block;
-    vertical-align: -0.12em;
-    width: 1em;
-    height: 1em;
+    width: var(--emblem-box);
+    height: var(--emblem-box);
+    /* Back to --emblem-size of inline footprint. The overflow is deliberate and
+       is what the beat needs room to use. */
+    margin-inline: calc((var(--emblem-box) - var(--emblem-size)) / -2);
+    vertical-align: calc(-0.12em - (var(--emblem-box) - var(--emblem-size)) / 2);
     /* The mark takes the visitor's chosen aura, like every other emblem on the
        site — it is the one element here that is NOT ink-coloured. */
     color: var(--emblem);
+}
+
+/* The beat is a site-wide preference, like the theme and the aura: default ON,
+   remembered, and set on <html> before first paint so it never flashes.
+   ⛔ It does NOT override reduced motion — motion.css already stops there, and
+   a preference that could switch a stopped animation back on would be worse
+   than no control. The page says which of the two is in force. */
+:root.beat-off .beating {
+    animation: none;
 }
 
 .nowrap {
@@ -1029,4 +1088,23 @@ footer p {
     vertical-align: 0.85em;
     margin-left: 0.04em;
     font-weight: 400;
+}
+
+/* The beat control, beside the specimen it governs. */
+.beat-control {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    margin: -0.5rem 0 1.25rem;
+}
+
+.beat-control .mono {
+    font-size: var(--text-small);
+    color: var(--ink-dim);
+}
+
+.beat-control .ghost[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
 }

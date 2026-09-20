@@ -1,0 +1,23 @@
+# Canonical URLs to prior-art-snapshot on push (one per line; # = comment).
+#
+# ⚠️ THIS LIST IS ASSERTED AGAINST vite.config.ts's NAV ARRAY AT BUILD TIME, by
+# the brand-sitemap plugin, together with the SHELL array in site/public/sw.js.
+# Adding a page to NAV and forgetting either file fails the build. Do not edit
+# this by hand without adding the page to NAV — the build will tell you.
+#
+# ⚠️ The workflow's own drift check (sitemap vs manifest) is INERT in this repo
+# and says so in the run summary: it looks for a COMMITTED sitemap.xml, and this
+# site's is generated into site/dist/ at build time, which is gitignored. That
+# is fine and is why the build-time assertion above exists instead — the two
+# lists are checked against the array they both describe, which is strictly
+# stronger than checking them against each other.
+#
+# The DAILY full run in 333eco/snapshot.333.eco reads the LIVE
+# https://brand.333.eco/sitemap.xml, so every page here is re-archived daily
+# regardless. brand.333.eco was added to that repo's hosts.txt on 2026-09-20.
+https://brand.333.eco/
+https://brand.333.eco/wordmark/
+https://brand.333.eco/mark/
+https://brand.333.eco/color/
+https://brand.333.eco/tokens/
+https://brand.333.eco/vendor/

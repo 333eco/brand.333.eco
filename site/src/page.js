@@ -47,7 +47,8 @@ const el = (tag, cls, html) => {
 // throws at load, in dev, on the page that is missing it.
 const SECTIONS = [
     "gems", "auras", "tld-marks", "tlds", "sites", "roles", "type",
-    "aura", "aura-now", "spec-wordmark", "spec-slogan", "page-cards"
+    "aura", "aura-now", "spec-wordmark", "spec-slogan", "page-cards",
+    "beat", "beat-read"
 ];
 
 const node = (id) => {
@@ -377,6 +378,52 @@ const wordmark = (classes) =>
         if (!real.has(href))
             throw new Error(`page.js: card "${href}" is not a page in NAV`);
     }
+}
+
+/* ------------------------------------------------------------------- beat --- */
+
+// The heartbeat as a remembered preference: default ON, site-wide, applied to
+// <html> so it reaches the header mark and both specimens at once. The class is
+// already set before first paint by the inline script in partials/head.html;
+// this only wires the control and keeps the label honest.
+//
+// ⛔ IT DOES NOT OVERRIDE REDUCED MOTION. motion.css stops the animation under
+// `prefers-reduced-motion: reduce`, and a control that could start it again
+// would be worse than no control — so when the OS asks for stillness the button
+// is disabled and SAYS which of the two is in force. A toggle that silently
+// does nothing is the failure this avoids.
+{
+    const beatBtn = node("beat");
+    const beatRead = node("beat-read");
+    const still = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+    const paintBeat = () => {
+        const off = document.documentElement.classList.contains("beat-off");
+        beatBtn.textContent = `beat: ${off ? "off" : "on"}`;
+        beatBtn.setAttribute("aria-pressed", String(!off));
+        beatBtn.disabled = still.matches;
+        beatRead.textContent = still.matches
+            ? "reduced motion is on — the system is holding the mark still"
+            : off
+              ? "Proof of Coordinate ℠ — the resting state, not a degraded one"
+              : "Proof of Humanity ℠ — ambient: humans run this";
+    };
+
+    beatBtn.addEventListener("click", () => {
+        const off = document.documentElement.classList.toggle("beat-off");
+        try {
+            if (off) localStorage.setItem("brand.beat", "off");
+            else localStorage.removeItem("brand.beat");
+        } catch (e) {
+            /* private mode — the choice still holds for this page view */
+        }
+        paintBeat();
+    });
+
+    // A visitor who turns Reduce Motion on mid-visit should not have to reload,
+    // exactly as with the aura rotation above.
+    still.addEventListener("change", paintBeat);
+    paintBeat();
 }
 
 /* ------------------------------------------------------------------- theme --- */

@@ -14,6 +14,12 @@
         var t = localStorage.getItem("brand.theme");
         if (t === "dark" || t === "light")
             document.documentElement.classList.add(t);
+        // The beat is ON unless it was explicitly turned off, and the class is
+        // set here rather than in page.js so a visitor who turned it off does
+        // not get one cycle of it before the module runs. Same reason as above:
+        // a preference that flashes its opposite has not been remembered.
+        if (localStorage.getItem("brand.beat") === "off")
+            document.documentElement.classList.add("beat-off");
     } catch (e) {}
 </script>
 

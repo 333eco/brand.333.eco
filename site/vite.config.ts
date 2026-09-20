@@ -1,7 +1,7 @@
 import { defineConfig, type Plugin } from "vite";
 import tailwindcss from "@tailwindcss/vite";
 import { createHash } from "node:crypto";
-import { readdirSync, readFileSync, writeFileSync, statSync } from "node:fs";
+import { readdirSync, readFileSync, writeFileSync, statSync, existsSync } from "node:fs";
 import { resolve, join } from "node:path";
 
 // The page lives in site/ but is STYLED BY THE PACKAGE ITSELF — src/page.css
@@ -182,7 +182,50 @@ function sitemap(distDir: string): Plugin {
                 `User-agent: *\nAllow: /\n\nSitemap: ${origin}/sitemap.xml\n`
             );
 
-            this.info(`wrote sitemap.xml (${NAV.length} urls) and robots.txt`);
+            // ---------------------------------------------------------------
+            // The two lists that CANNOT import NAV, asserted against it here.
+            //
+            // sw.js is copied into dist verbatim by publicDir, and
+            // snapshot-urls.txt is read by a GitHub workflow that never runs a
+            // build — so neither can be generated from NAV, and both are
+            // hand-written copies of the site's shape. That is two places to
+            // forget a page, and both fail in ways nobody notices: a missing
+            // SHELL entry works online and breaks only offline, and a missing
+            // manifest line means the page is simply never archived on push.
+            //
+            // Checking them here is not as good as generating them, but it is
+            // the strongest thing available: they are compared against the array
+            // they both describe, not against each other, so agreeing with each
+            // other while both being wrong is caught too.
+            const want = NAV.map(({ dir }) => urlOf(dir));
+            const root = resolve(import.meta.dirname, "..");
+
+            const sw = readFileSync(join(import.meta.dirname, "public", "sw.js"), "utf8");
+            const shell = (sw.match(/const SHELL = \[([\s\S]*?)\]/) ?? [, ""])[1];
+            const missingShell = want.filter((u) => !shell.includes(`"${u}"`));
+            if (missingShell.length)
+                throw new Error(
+                    `sw.js SHELL is missing ${missingShell.join(", ")} — ` +
+                        `a page in NAV that is not precached fails only offline`
+                );
+
+            const manifestPath = join(root, "snapshot-urls.txt");
+            if (existsSync(manifestPath)) {
+                const manifest = readFileSync(manifestPath, "utf8");
+                const missingUrls = want.filter(
+                    (u) => !manifest.includes(`https://brand.333.eco${u}`)
+                );
+                if (missingUrls.length)
+                    throw new Error(
+                        `snapshot-urls.txt is missing ${missingUrls.join(", ")} — ` +
+                            `a page in NAV that is never archived on push`
+                    );
+            }
+
+            this.info(
+                `wrote sitemap.xml (${NAV.length} urls) and robots.txt; ` +
+                    `sw.js SHELL and snapshot-urls.txt agree with NAV`
+            );
         }
     };
 }
