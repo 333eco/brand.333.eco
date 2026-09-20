@@ -67,7 +67,11 @@ dist/                 GENERATED, committed: tokens.json · Brand.swift · Brand.
 scripts/
   generate.mjs        css/ + data/ -> dist/
   check-brand.mjs     the drift guard; copied verbatim into every consumer
-site/                 the guidelines page -> brand.333.eco (an installable PWA)
+site/                 the guidelines pages -> brand.333.eco (an installable PWA)
+  src/partials/       header, footer, head — resolved at BUILD time, not by the
+                      client, so six documents share ONE copy of the chrome
+  src/*/index.html    one directory per page; vite.config.ts's NAV array is the
+                      single source for BOTH rollupOptions.input and the menu
 brand.lock            every package file -> sha256, plus a version
 ```
 
@@ -106,6 +110,10 @@ npm run brand:sync -- --from ../../333.eco/brand.333.eco
 # verify — no network, no credentials, no sibling checkout
 npm run check:brand
 ```
+
+**Consumers, as of 2026-09-20:** `heartbank.ceo` (the first `heartbank.{TLD}`,
+and the second repo after `333.eco` to vendor a non-CSS file — `emblem.ts`),
+`333.eco`, `seysays`, `sayyourname`, `playsey`.
 
 A consumer holds three files from this repo:
 
@@ -159,10 +167,13 @@ fine: a bare specifier the Tailwind plugin resolves. Verified to reach `dist`.
   carries indigo and ends at violet, the gems carry no indigo and end at
   diamond.
 - **The six-TLD rainbow has NO pinned values, anywhere.** The corpus fixes six
-  colour *words*; no file fixes a hex. Do not add six tokens to tidy that up —
-  none of the four consumers is a `heartbank.{TLD}`, so they would ship dead
-  into all four behind the lock. Pin them when the first one needs them, and
-  measure contrast then.
+  colour *words*; no file fixes a hex. ⚠️ **The reason not to pin them has now
+  half-expired:** `heartbank.ceo` became a consumer on 2026-09-20 — the first
+  `heartbank.{TLD}` to vendor this layer — so the tokens would no longer ship
+  dead into every consumer. What still holds is the harder half: the six hues
+  need LIGHT/DARK PAIRS, because three of the six gems fail contrast on one
+  ground or the other, and pinning six single values would bake in three
+  failures. Measure per theme, then pin.
 - **The Metta Light chain lives on `.metta`, never on `:root`.** Custom
   properties inherit their *computed* value, so a chain on `:root` resolves once
   against root's `--t` and every descendant inherits the finished colour — the

@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <!--#include head-->
+        <title>Vendoring — brand.333.eco</title>
+        <meta name="description" content="What a consumer holds, the concatenation order, and what the lock does when a repo falls behind." />
+        <link rel="canonical" href="https://brand.333.eco/vendor/" />
+        <meta property="og:title" content="Vendoring — brand.333.eco" />
+        <meta property="og:description" content="What a consumer holds, the concatenation order, and what the lock does when a repo falls behind." />
+        <meta property="og:url" content="https://brand.333.eco/vendor/" />
+    </head>
+    <body>
+        <!--#include header-->
+
+        <main>
+            <!-- ------------------------------------------------ page lead -->
+            <section class="lead">
+                <div class="wrap">
+                    <h1>Vendoring</h1>
+                    <p class="sub">There is nothing to install and nothing to fetch at build time. A consumer takes bytes and proves them against a lock.</p>
+                </div>
+            </section>
+            <!-- --------------------------------------------------- consume -->
+            <section>
+                <div class="wrap wide">
+                    <p class="eyebrow">How to consume it</p>
+                    <h2>Vendor the files; the lock does the rest</h2>
+                    <p>
+                        There is no package to install and nothing to fetch at
+                        build time. A consumer copies the files it needs, copies
+                        <code>brand.lock</code> verbatim, and declares what it
+                        took in <code>brand.uses</code> — the one file in the
+                        set that differs per repository.
+                    </p>
+                    <pre><b># take the current layer</b>
+npm run brand:sync -- --from ../../333.eco/brand.333.eco
+
+<b># in CI — no network, no credentials, no sibling checkout</b>
+npm run check:brand</pre>
+                    <h3>Concatenation order</h3>
+                    <p>
+                        It is not arbitrary. Custom-property substitution is
+                        lazy, so a value declared early may reference one a
+                        later file sets — which is how <code>--accent</code>,
+                        set per site, reaches the derived family.
+                    </p>
+                    <pre>tokens.css
+  <b>+</b> theme-3block.css   <b>or</b>   theme-2state.css
+  <b>+</b> motion.css
+  <b>+</b> metta.css          <i>opt-in — only where a session descends</i>
+  <b>+</b> reduce-global.css  <b>(opt-in)</b>
+  <b>+</b> brand.css          <b>(per site)</b>
+  <b>+</b> site.css           <b>(per site)</b></pre>
+                    <div class="note warn">
+                        <p>
+                            <strong
+                                >Never <code>@import</code> a sibling of these
+                                files.</strong
+                            >
+                            The partial-based sites inject their stylesheets as
+                            raw text and concatenate them; a relative
+                            <code>@import</code> resolves against
+                            <code>src/</code>, where <code>partials/</code> is
+                            unreachable, and ships a dead render-blocking
+                            at-rule that quietly destroys the
+                            one-request-renders-complete property.
+                        </p>
+                    </div>
+                    <h3>Two theme files, on purpose</h3>
+                    <p>
+                        <code>theme-3block.css</code> is a dark-default cascade
+                        for sites that stamp both classes and must resolve the
+                        unstamped case themselves. <code>theme-2state.css</code>
+                        is a light-default stamp for a site whose resolver
+                        already handles three states and writes only
+                        <code>.dark</code>.
+                        <strong
+                            >Neither is the inferior variant of the
+                            other</strong
+                        >, and converting a site between them is a regression,
+                        not a tidy-up.
+                    </p>
+                </div>
+            </section>
+        </main>
+
+        <!--#include footer-->
+    </body>
+</html>

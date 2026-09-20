@@ -29,10 +29,31 @@ const BUILD = "__BUILD_ID__";
 const CACHE = "brand-" + BUILD;
 const ASSETS = __ASSET_LIST__;
 
-// The document itself is not content-hashed, so it is fetched fresh where the
+// The documents are not content-hashed, so they are fetched fresh where the
 // network allows and served from cache only as a fallback. The assets ARE
 // hashed, so they are cache-first and never revalidated.
-const SHELL = ["/", "/manifest.webmanifest", "/icon.svg"];
+//
+// ⚠️ ONE ENTRY PER PAGE, and they are precached rather than left to the
+// fallback on purpose: an offline visitor who has only ever opened "/" would
+// otherwise get the shell for the home page and a network error for every menu
+// item, which reads as a broken site rather than an offline one.
+//
+// ⚠️⚠️ THIS LIST IS THE ONE PLACE THE SITE'S SHAPE IS WRITTEN BY HAND. sw.js is
+// copied into dist VERBATIM — publicDir does not pass it through Vite — so it
+// cannot import NAV from vite.config.ts the way rollupOptions.input and the
+// menu both do. A page added to NAV and forgotten here still works online and
+// fails only offline, which is the kind of defect nobody finds. Add it here in
+// the same commit.
+const SHELL = [
+    "/",
+    "/wordmark/",
+    "/mark/",
+    "/color/",
+    "/tokens/",
+    "/vendor/",
+    "/manifest.webmanifest",
+    "/icon.svg"
+];
 
 self.addEventListener("install", (event) => {
     event.waitUntil(

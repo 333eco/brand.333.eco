@@ -855,3 +855,178 @@ footer p {
     font-size: var(--text-micro);
     color: var(--ink-faint);
 }
+
+/* ======================================================================== nav ===
+   The menu. Generated from the NAV array in vite.config.ts, so nothing here
+   knows how many items there are — the row wraps rather than scrolls, because a
+   horizontally scrolled nav hides items with no affordance saying so, and six
+   short words at this size fit two lines on the narrowest phone.
+
+   There is no toggle and no hidden state. A disclosure button is one more thing
+   that can be open when the page thinks it is shut; wrapping cannot be.        */
+
+.nav {
+    border-top: 1px solid var(--line);
+    background: color-mix(in oklab, var(--bg) 88%, transparent);
+}
+
+.nav-inner {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1.25rem;
+    padding-block: 0.55rem;
+}
+
+.nav-inner a {
+    color: var(--ink-dim);
+    text-decoration: none;
+    font-size: var(--text-small);
+    letter-spacing: 0.01em;
+    padding-block: 0.15rem;
+    border-bottom: 1px solid transparent;
+}
+
+.nav-inner a:hover {
+    color: var(--ink);
+}
+
+/* aria-current is the accessible signal AND the styling hook. A separate
+   .active class would be a second copy of one fact, and the two would drift
+   the first time a page was renamed. */
+.nav-inner a[aria-current="page"] {
+    color: var(--ink);
+    border-bottom-color: var(--accent);
+}
+
+/* ==================================================================== page lead ===
+   Every page but the home page opens with one. The hero keeps its own type
+   scale; this is the quieter sibling, so a subpage does not announce itself as
+   loudly as the front door.                                                    */
+
+.lead {
+    padding-block: 2.5rem 0.5rem;
+}
+
+.lead h1 {
+    font-family: var(--font-display);
+    font-size: var(--text-title);
+    letter-spacing: var(--track-title);
+    line-height: 1.1;
+    margin: 0;
+}
+
+.lead .sub {
+    color: var(--ink-dim);
+    max-width: var(--measure-prose);
+    margin-top: 0.75rem;
+}
+
+/* ====================================================================== cards ===
+   The home page's index of the other five. Hand-written, because each card
+   carries a sentence the NAV array has no place for — and asserted against the
+   generated <nav> at runtime, in page.js, for exactly that reason.             */
+
+.cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    gap: 1rem;
+    margin-top: 1.75rem;
+}
+
+.card {
+    display: block;
+    padding: 1.15rem 1.25rem;
+    border: 1px solid var(--line);
+    border-radius: var(--r-card);
+    background: var(--surface);
+    color: inherit;
+    text-decoration: none;
+}
+
+.card:hover {
+    border-color: var(--line-strong);
+    background: var(--surface-2);
+}
+
+.card h3 {
+    margin: 0 0 0.4rem;
+    font-size: var(--text-body);
+    letter-spacing: 0.01em;
+}
+
+.card p {
+    margin: 0;
+    color: var(--ink-dim);
+    font-size: var(--text-small);
+}
+
+/* =================================================================== specimen ===
+   The wordmark at display size. Both specimens are built by page.js from
+   emblem.path.txt — the file itself, not a copy — so a change to the mark
+   changes this page without anyone editing it.                                 */
+
+.specimen {
+    margin: 1.75rem 0 1.25rem;
+    padding: 2.5rem 1.5rem;
+    border: 1px solid var(--line);
+    border-radius: var(--r-card);
+    background: var(--bg-tint);
+    text-align: center;
+    color: var(--emblem);
+}
+
+.wordmark-xl,
+.slogan-xl {
+    font-family: var(--font-display);
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: var(--track-title);
+    color: var(--ink);
+    display: inline-block;
+}
+
+.wordmark-xl {
+    font-size: var(--text-hero);
+}
+
+.slogan-xl {
+    font-size: var(--text-title);
+}
+
+/* ⚠️ Tailwind's preflight sets svg { display: block }, which drops the mark
+   onto its own line inside flowing text. This is the rule every call site
+   needs, and it is stated on the page beside the markup that needs it. */
+.wordmark-xl svg,
+.slogan-xl svg {
+    display: inline-block;
+    vertical-align: -0.12em;
+    width: 1em;
+    height: 1em;
+    /* The mark takes the visitor's chosen aura, like every other emblem on the
+       site — it is the one element here that is NOT ink-coloured. */
+    color: var(--emblem);
+}
+
+.nowrap {
+    white-space: nowrap;
+}
+
+/* The plain-text stand-in, shown at the size it is actually read at — a commit
+   message, not a billboard. */
+.plain {
+    font-size: var(--text-title);
+    letter-spacing: 0.02em;
+    margin: 1rem 0 0;
+}
+
+/* The registration symbol, optically scaled. Every typeface draws ® at full cap
+   height — right at body size, far too heavy at display size, where it competes
+   with the mark it is supposed to defer to. Scoped to the specimens: a real
+   call site sets the wordmark at ~1rem and needs none of this. */
+.wordmark-xl .reg,
+.slogan-xl .reg {
+    font-size: 0.42em;
+    vertical-align: 0.85em;
+    margin-left: 0.04em;
+    font-weight: 400;
+}

@@ -70,11 +70,130 @@ function stampServiceWorker(distDir: string): Plugin {
     };
 }
 
+// ---------------------------------------------------------------- the pages ---
+//
+// ONE definition of the site's shape. rollupOptions.input is built from this
+// array and so is the menu, which is the property that matters: a page that is
+// not an input cannot appear in the menu, and a page in the menu cannot 404.
+// A hand-kept <nav> beside a hand-kept input map is two lists that drift, and
+// this repository exists because two copies of one definition always do.
+//
+// `dir` is the directory under src/ — "" is the home page. The URL is derived,
+// never written twice.
+const NAV = [
+    { dir: "", label: "overview" },
+    { dir: "wordmark", label: "wordmark" },
+    { dir: "mark", label: "mark" },
+    { dir: "color", label: "colour" },
+    { dir: "tokens", label: "tokens" },
+    { dir: "vendor", label: "vendoring" }
+];
+
+const urlOf = (dir: string) => (dir === "" ? "/" : `/${dir}/`);
+
+// Shared chrome, resolved at BUILD time rather than by the client.
+//
+// The alternative was a copy of the header in each of six documents. That is
+// the exact failure this package is built to prevent one layer down — six
+// copies of one definition, byte-identical on the day they are written and
+// never again — so the chrome gets the same treatment the tokens get: one
+// source, mechanically distributed.
+//
+// transformIndexHtml runs in dev AND build, so what a reader sees on :57890 is
+// what ships. An unresolved include throws rather than shipping the comment as
+// visible text.
+function htmlPartials(srcDir: string): Plugin {
+    const read = (name: string) =>
+        readFileSync(join(resolve(srcDir), "partials", `${name}.html`), "utf8");
+
+    return {
+        name: "brand-html-partials",
+        enforce: "pre",
+        transformIndexHtml: {
+            order: "pre",
+            handler(html, ctx) {
+                // ctx.path is "/index.html" or "/mark/index.html" in both dev
+                // and build, which is what the active item is keyed on.
+                const here = ctx.path.replace(/index\.html$/, "");
+
+                const nav = NAV.map(({ dir, label }) => {
+                    const url = urlOf(dir);
+                    // aria-current is the accessible signal AND the styling
+                    // hook — no separate .active class to keep in sync.
+                    const current = url === here ? ' aria-current="page"' : "";
+                    return `<a href="${url}"${current}>${label}</a>`;
+                }).join("\n                ");
+
+                const out = html.replace(
+                    /<!--#include ([a-z]+)-->/g,
+                    (_m, name: string) =>
+                        read(name).replace("<!--#nav-->", nav)
+                );
+
+                if (/<!--#(include|nav)/.test(out)) {
+                    // A surviving include ships as an HTML comment: invisible,
+                    // and the page silently loses its header. Fail the build.
+                    throw new Error(
+                        `html-partials: an unresolved include survived in ${ctx.path}`
+                    );
+                }
+                return out;
+            }
+        }
+    };
+}
+
+// A sitemap and a robots.txt, both derived from NAV — the third and fourth
+// consumers of that one array, after rollupOptions.input and the menu.
+//
+// It matters more than it looks: this site was ONE document until the pages
+// were split out, so nothing ever had to list them. Five of the six are now
+// reachable only through the menu, and a hand-written sitemap would be a fifth
+// copy of the site's shape to forget.
+//
+// ⚠️ site/public/sw.js is the ONE place the shape is still written by hand —
+// publicDir copies it verbatim, so it cannot import from here. Its SHELL array
+// carries the warning.
+function sitemap(distDir: string): Plugin {
+    return {
+        name: "brand-sitemap",
+        apply: "build",
+        closeBundle() {
+            const origin = "https://brand.333.eco";
+            const day = new Date().toISOString().slice(0, 10);
+
+            const urls = NAV.map(
+                ({ dir }) =>
+                    `    <url>\n` +
+                    `        <loc>${origin}${urlOf(dir)}</loc>\n` +
+                    `        <lastmod>${day}</lastmod>\n` +
+                    `    </url>`
+            ).join("\n");
+
+            writeFileSync(
+                join(resolve(distDir), "sitemap.xml"),
+                `<?xml version="1.0" encoding="UTF-8"?>\n` +
+                    `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
+                    `${urls}\n</urlset>\n`
+            );
+
+            writeFileSync(
+                join(resolve(distDir), "robots.txt"),
+                `User-agent: *\nAllow: /\n\nSitemap: ${origin}/sitemap.xml\n`
+            );
+
+            this.info(`wrote sitemap.xml (${NAV.length} urls) and robots.txt`);
+        }
+    };
+}
+
 export default defineConfig({
     root: "src",
     publicDir: "../public",
     plugins: [
+        htmlPartials("src"),
         tailwindcss(),
+        sitemap(resolve(import.meta.dirname, "dist")),
         stampServiceWorker(resolve(import.meta.dirname, "dist"))
     ],
     server: {
@@ -86,6 +205,15 @@ export default defineConfig({
     build: {
         outDir: "../dist",
         emptyOutDir: true,
-        target: "es2021"
+        target: "es2021",
+        rollupOptions: {
+            // Derived from NAV, so the menu and the build cannot disagree.
+            input: Object.fromEntries(
+                NAV.map(({ dir }) => [
+                    dir === "" ? "index" : dir,
+                    resolve(import.meta.dirname, "src", dir, "index.html")
+                ])
+            )
+        }
     }
 });

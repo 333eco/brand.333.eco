@@ -11,6 +11,16 @@
 
 import tokens from "../../dist/tokens.json";
 
+// THE PATH, not a copy of it. emblem.path.txt is one of the nine files
+// brand.lock hashes and every consumer vendors, so the wordmark specimen on
+// /wordmark/ is drawn by the same bytes a consuming site draws its own mark
+// with. Pasting the `d` here would make that page a PICTURE of the wordmark;
+// importing it makes the page wrong the moment the mark is.
+//
+// (vite.config.ts names the package root in server.fs.allow, which is what
+// makes reaching above site/ legal in dev.)
+import emblemPath from "../../emblem/emblem.path.txt?raw";
+
 const el = (tag, cls, html) => {
     const n = document.createElement(tag);
     if (cls) n.className = cls;
@@ -18,9 +28,37 @@ const el = (tag, cls, html) => {
     return n;
 };
 
+// ---------------------------------------------------------- one script, six pages ---
+//
+// This file was written for ONE document and now serves six. Every block below
+// builds into an element it looks up by id, and five of those ids are absent on
+// any given page.
+//
+// A section that is not on THIS page resolves to a DETACHED stand-in: the block
+// runs, writes into a node nothing will ever insert, and is collected. That
+// keeps the blocks exactly as they were — no guard at every append, no
+// re-indentation of code whose comments are load-bearing.
+//
+// ⚠️⚠️ THE STAND-IN MUST NOT ABSORB A TYPO, and that is the whole reason for the
+// whitelist. A mistyped id and a section that lives on another page are the SAME
+// SHAPE — both return null — so a bare `?? createElement` would render an empty
+// section with no error anywhere, which is the failure mode this estate is worst
+// at seeing. SECTIONS is the one list of ids this site has; an id outside it
+// throws at load, in dev, on the page that is missing it.
+const SECTIONS = [
+    "gems", "auras", "tld-marks", "tlds", "sites", "roles", "type",
+    "aura", "aura-now", "spec-wordmark", "spec-slogan", "page-cards"
+];
+
+const node = (id) => {
+    if (!SECTIONS.includes(id))
+        throw new Error(`page.js: "${id}" is not a section of this site`);
+    return document.getElementById(id) ?? document.createElement("div");
+};
+
 /* -------------------------------------------------------------------- gems --- */
 
-const gemGrid = document.getElementById("gems");
+const gemGrid = node("gems");
 
 for (const gem of tokens.gems) {
     const card = el("div", "swatch");
@@ -117,7 +155,7 @@ if (mettaStage && mettaT && mettaRead) {
 // a class, captioned by the GENERATOR. If css/tokens.css and dist/tokens.json
 // ever disagree, the swatch contradicts its own caption on the page.
 
-const auraGrid = document.getElementById("auras");
+const auraGrid = node("auras");
 
 for (const bucket of tokens.auras.buckets) {
     const card = el("div", "swatch");
@@ -161,8 +199,8 @@ for (const bucket of tokens.auras.buckets) {
 // have. Never let these marks BEAT: a rainbow of a body's domains is not a
 // liveness claim, and the placement rule in motion.css governs here too.
 
-const tldMarks = document.getElementById("tld-marks");
-const tldBody = document.getElementById("tlds");
+const tldMarks = node("tld-marks");
+const tldBody = node("tlds");
 
 for (const t of tokens.tlds.tlds) {
     const fig = el("figure", "tld-mark");
@@ -190,7 +228,7 @@ for (const t of tokens.tlds.tlds) {
 
 /* ------------------------------------------------------------------- sites --- */
 
-const sitesBody = document.getElementById("sites");
+const sitesBody = node("sites");
 
 for (const site of tokens.sites) {
     const tr = el("tr");
@@ -219,7 +257,7 @@ const ROLES = [
     "accent", "accent-soft", "emblem"
 ];
 
-const roleGrid = document.getElementById("roles");
+const roleGrid = node("roles");
 const roleReadouts = [];
 
 for (const role of ROLES) {
@@ -266,7 +304,7 @@ const RUNGS = [
     ["--text-micro", "Micro — eyebrows, token names, metadata"]
 ];
 
-const typeBox = document.getElementById("type");
+const typeBox = node("type");
 
 for (const [token, sample] of RUNGS) {
     const row = el("div", "spec-row");
@@ -281,6 +319,64 @@ for (const [token, sample] of RUNGS) {
     }
     row.append(demo);
     typeBox.append(row);
+}
+
+/* --------------------------------------------------------------- wordmark --- */
+
+// The B-Wordmark® and the B-Slogan®, composed the way a consumer composes them:
+// two text literals with the mark between them. There is no wordmark ASSET and
+// there must not be one — the moment this ships as an SVG, a consumer takes the
+// SVG, and the colour stops inheriting.
+//
+// ⚠️ The ® rides on HeartBank, never on B-Wordmark or B-Slogan themselves:
+// those are internal short-names carrying no mark of their own.
+//
+// ⚠️ THE ® IS WRAPPED, and only here. A registration symbol is drawn at full
+// cap height by every typeface, which is correct at body size and far too heavy
+// at display size — so the SPECIMEN scales it optically and a real call site
+// does not. That is why the markup shown on this page is `ank&reg;` while the
+// specimen above it carries one extra span: the difference is the guidance, not
+// a discrepancy, and the page says so.
+const wordmark = (classes) =>
+    `Heart<svg class="${classes}" viewBox="0 0 24 24" aria-hidden="true" ` +
+    `focusable="false"><path fill="currentColor" d="${emblemPath.trim()}" />` +
+    `</svg>ank<span class="reg">\u00AE</span>`;
+
+{
+    // .beating is CORRECT here and is the canonical placement — a wordmark is
+    // chrome, and chrome may claim "humans run this". It is NOT correct beside
+    // a person's name, which is the distinction /mark/ draws.
+    const spec = node("spec-wordmark");
+    spec.innerHTML = `<span class="wordmark-xl">${wordmark("beating")}</span>`;
+
+    // The accessible name has to be the WORD, not "Heart, image, ank". The
+    // glyph is aria-hidden inside wordmark(), so the text nodes alone would
+    // read as "Heart ank" — correct only once the label is supplied here.
+    spec.firstElementChild?.setAttribute("aria-label", "HeartBank");
+    spec.firstElementChild?.setAttribute("role", "img");
+
+    const slogan = node("spec-slogan");
+    slogan.innerHTML =
+        `<span class="slogan-xl">Thank with ` +
+        `<span class="nowrap">${wordmark("beating")}</span></span>`;
+    slogan.firstElementChild?.setAttribute("aria-label", "Thank with HeartBank");
+    slogan.firstElementChild?.setAttribute("role", "img");
+}
+
+// The home page's cards are hand-written, so their hrefs are the one part of
+// the menu that is NOT derived from the NAV array. Assert they resolve against
+// the real <nav>, which IS derived — a renamed page then fails here, loudly, on
+// the page that links to it, instead of shipping a card that 404s.
+{
+    const cards = node("page-cards");
+    const real = new Set(
+        [...document.querySelectorAll(".nav-inner a")].map((a) => a.getAttribute("href"))
+    );
+    for (const a of cards.querySelectorAll("a")) {
+        const href = a.getAttribute("href");
+        if (!real.has(href))
+            throw new Error(`page.js: card "${href}" is not a page in NAV`);
+    }
 }
 
 /* ------------------------------------------------------------------- theme --- */
@@ -360,8 +456,8 @@ if (npmCmd) npmCmd.textContent = `npm i @333eco/brand@${tokens.version}`;
 // A FIXED choice sets --emblem and stops the loop; AUTO restarts it. The two
 // are mutually exclusive by construction — one writer, one property.
 
-const auraBox = document.getElementById("aura");
-const auraNow = document.getElementById("aura-now");
+const auraBox = node("aura");
+const auraNow = node("aura-now");
 
 // Diamond is offered but is NOT in the rotation — near-white is luminous on the
 // dark ground and invisible on the light one, and a rotation that blinks out

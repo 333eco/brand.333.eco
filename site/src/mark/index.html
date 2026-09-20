@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <!--#include head-->
+        <title>Mark — brand.333.eco</title>
+        <meta name="description" content="The B-Emblem™, its two proof-states, and why the heartbeat is a signal rather than decoration." />
+        <link rel="canonical" href="https://brand.333.eco/mark/" />
+        <meta property="og:title" content="Mark — brand.333.eco" />
+        <meta property="og:description" content="The B-Emblem™, its two proof-states, and why the heartbeat is a signal rather than decoration." />
+        <meta property="og:url" content="https://brand.333.eco/mark/" />
+    </head>
+    <body>
+        <!--#include header-->
+
+        <main>
+            <!-- ------------------------------------------------ page lead -->
+            <section class="lead">
+                <div class="wrap">
+                    <h1>The mark</h1>
+                    <p class="sub">One shape, two meanings, and a placement rule that decides which of them a surface is allowed to claim.</p>
+                </div>
+            </section>
+            <!-- ------------------------------------------------------ mark -->
+            <section>
+                <div class="wrap wide">
+                    <p class="eyebrow">The mark</p>
+                    <h2>B-Emblem<sup>™</sup></h2>
+                    <p>
+                        A universal heart rotated 45° clockwise. It is
+                        <strong>bistable</strong> — heart and capital B, both
+                        immediately apparent. Not a reveal like the FedEx arrow;
+                        there is no <em>aha</em> to wait for, which is why it
+                        survives down to a 16px favicon.
+                    </p>
+                    <ul class="rules">
+                        <li>
+                            <strong>Inline it in the DOM.</strong> Never
+                            <code>&lt;img src&gt;</code> — CSS cannot reach
+                            inside an <code>&lt;img&gt;</code>, so the colour
+                            would have to be duplicated everywhere the mark
+                            appears.
+                        </li>
+                        <li>
+                            <strong
+                                >The 45° rotation is baked into the path
+                                coordinates.</strong
+                            >
+                            It used to be a <code>transform</code> attribute,
+                            which is a trap: a CSS animation on
+                            <code>transform</code> overrides a non-animated one,
+                            so the first heartbeat silently un-rotates the mark
+                            and it stops reading as a B.
+                        </li>
+                        <li>
+                            <code>fill="currentColor"</code>, and the page sets
+                            <code>--emblem</code>. There is no second colour to
+                            keep in step.
+                        </li>
+                        <li class="no">
+                            <strong>Never re-apply a rotation</strong>, and
+                            never scale the mark inside an icon canvas to "fix"
+                            padding — the maskable safe area was measured
+                            against the mark at its shipped size.
+                        </li>
+                    </ul>
+                </div>
+            </section>
+            <!-- ---------------------------------------------------- motion -->
+            <section>
+                <div class="wrap wide">
+                    <p class="eyebrow">Motion</p>
+                    <h2>The heartbeat is a signal, not decoration</h2>
+                    <p>
+                        Two <strong>unequal</strong> beats and then a long rest
+                        — systole, a weaker diastole, then most of the period at
+                        rest. That morphology is what a counterfeit gets wrong
+                        at any tempo, which is why
+                        <strong
+                            >the rhythm is the signature and the rate is
+                            not</strong
+                        >. A 72 BPM variant was built and rejected.
+                    </p>
+                    <div class="spec beat-demo">
+                        <figure>
+                            <svg
+                                class="beating"
+                                viewBox="0 0 24 24"
+                                aria-hidden="true"
+                                focusable="false">
+                                <path
+                                    fill="currentColor"
+                                    d="M3.9743 20.0257L3.8824 18.0670C3.5430 11.1232 3.3167 6.5411 5.9896 3.8683C8.1675 1.6904 11.5899 1.6904 13.7678 3.8683C14.9981 5.0986 15.6062 6.8523 15.4719 8.5281C17.1477 8.3938 18.9014 9.0019 20.1317 10.2322C22.3096 12.4101 22.3096 15.8325 20.1317 18.0104C17.4589 20.6833 12.8768 20.4570 5.9260 20.1247L3.9743 20.0257Z" />
+                            </svg>
+                            <figcaption>
+                                .beating — Proof of Humanity ℠
+                            </figcaption>
+                        </figure>
+                        <figure>
+                            <svg
+                                viewBox="0 0 24 24"
+                                aria-hidden="true"
+                                focusable="false">
+                                <path
+                                    fill="currentColor"
+                                    d="M3.9743 20.0257L3.8824 18.0670C3.5430 11.1232 3.3167 6.5411 5.9896 3.8683C8.1675 1.6904 11.5899 1.6904 13.7678 3.8683C14.9981 5.0986 15.6062 6.8523 15.4719 8.5281C17.1477 8.3938 18.9014 9.0019 20.1317 10.2322C22.3096 12.4101 22.3096 15.8325 20.1317 18.0104C17.4589 20.6833 12.8768 20.4570 5.9260 20.1247L3.9743 20.0257Z" />
+                            </svg>
+                            <figcaption>
+                                static — Proof of Coordinate ℠
+                            </figcaption>
+                        </figure>
+                    </div>
+                    <div class="note warn">
+                        <p>
+                            <strong>Placement, not taste.</strong>
+                            <code>.beating</code> goes on
+                            <strong>chrome</strong> — a wordmark, a footer
+                            attribution, anything that says an institution
+                            stands behind this page. It goes
+                            <strong>never</strong> on a mark drawn beside
+                            somebody's name, where an unverified pulse would be
+                            claiming something about <em>them</em>.
+                        </p>
+                    </div>
+                    <p style="margin-top: 1.25rem">
+                        Under <code>prefers-reduced-motion</code>: stop, and
+                        substitute nothing. The static mark is already a
+                        meaningful state, so there is no degradation to
+                        compensate for.
+                    </p>
+                </div>
+            </section>
+        </main>
+
+        <!--#include footer-->
+    </body>
+</html>

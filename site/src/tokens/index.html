@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <!--#include head-->
+        <title>Tokens — brand.333.eco</title>
+        <meta name="description" content="The token layer resolved in the theme you are reading, the type scale, radii and controls." />
+        <link rel="canonical" href="https://brand.333.eco/tokens/" />
+        <meta property="og:title" content="Tokens — brand.333.eco" />
+        <meta property="og:description" content="The token layer resolved in the theme you are reading, the type scale, radii and controls." />
+        <meta property="og:url" content="https://brand.333.eco/tokens/" />
+    </head>
+    <body>
+        <!--#include header-->
+
+        <main>
+            <!-- ------------------------------------------------ page lead -->
+            <section class="lead">
+                <div class="wrap">
+                    <h1>Tokens</h1>
+                    <p class="sub">Every value below is read back from the cascade with getComputedStyle, so what is printed is what this theme actually resolved.</p>
+                </div>
+            </section>
+            <!-- ----------------------------------------------------- roles -->
+            <section>
+                <div class="wrap wide">
+                    <p class="eyebrow">Roles</p>
+                    <h2>The token layer, in the theme you are reading</h2>
+                    <p>
+                        These are live values. Toggle the theme and every swatch
+                        below re-resolves through the same three-block cascade a
+                        consuming site ships.
+                    </p>
+                    <div class="grid" id="roles"></div>
+                </div>
+            </section>
+            <!-- ------------------------------------------------------ type -->
+            <section>
+                <div class="wrap wide">
+                    <p class="eyebrow">Type</p>
+                    <h2>The scale</h2>
+                    <p>
+                        Lifted verbatim from the best-tuned stylesheet in the
+                        estate rather than re-derived. The display rungs are
+                        fluid.
+                    </p>
+                    <div class="spec" id="type"></div>
+                    <div class="note warn">
+                        <p>
+                            <strong
+                                >The scale assumes a normal-width face.</strong
+                            >
+                            A site that picks an expanded display face must <!-- sig-ok: "face" here is a TYPEFACE, not a person's face; #47 is about captures -->
+                            override the hero rung in its own layer — the token
+                            is shared, the face is that site's choice, and the
+                            site that chose the face owns the consequence.
+                        </p>
+                    </div>
+                </div>
+            </section>
+            <!-- -------------------------------------------------- geometry -->
+            <section>
+                <div class="wrap wide">
+                    <p class="eyebrow">Geometry</p>
+                    <h2>Radii and controls</h2>
+                    <div class="radii">
+                        <div style="border-radius: var(--r-control)">
+                            --r-control
+                        </div>
+                        <div style="border-radius: var(--r-card)">--r-card</div>
+                        <div style="border-radius: var(--r-input)">
+                            --r-input
+                        </div>
+                        <div style="border-radius: var(--r-pill)">--r-pill</div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!--#include footer-->
+    </body>
+</html>

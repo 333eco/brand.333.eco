@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <!--#include head-->
+        <title>Wordmark — brand.333.eco</title>
+        <meta name="description" content="The B-Wordmark and the B-Slogan: what a consuming site renders, drawn from the same emblem.ts and tokens.css every consumer vendors." />
+        <link rel="canonical" href="https://brand.333.eco/wordmark/" />
+        <meta property="og:title" content="Wordmark — brand.333.eco" />
+        <meta property="og:description" content="The B-Wordmark and the B-Slogan: what a consuming site renders, drawn from the same emblem.ts and tokens.css every consumer vendors." />
+        <meta property="og:url" content="https://brand.333.eco/wordmark/" />
+    </head>
+    <body>
+        <!--#include header-->
+
+        <main>
+            <!-- ------------------------------------------------ page lead -->
+            <section class="lead">
+                <div class="wrap">
+                    <h1>The wordmark</h1>
+                    <p class="sub">What a consuming site actually renders — composed here from the same files it vendors, so this page is a conformance test and not a picture of one.</p>
+                </div>
+            </section>
+
+            <!-- ------------------------------------------------- specimen -->
+            <!-- The two specimens are BUILT BY page.js from emblem.path.txt,
+                 imported ?raw — the same bytes brand.lock hashes and every
+                 consumer vendors. Hard-coding the `d` here would make this page
+                 a PICTURE of the wordmark; importing it makes the page fail
+                 visibly if the mark ever changes under it. Same reason the
+                 swatches on /color/ are painted by the token they name. -->
+            <section>
+                <div class="wrap">
+                    <h2>B-Wordmark</h2>
+                    <p>
+                        The B-Emblem&trade; stands in for the B in
+                        <em>Bank</em>. It is the whole substitution: one letter,
+                        in one word.
+                    </p>
+                    <div class="specimen" id="spec-wordmark"></div>
+                    <p class="note">
+                        <strong>The emblem beats here because a wordmark is
+                        chrome.</strong> That is the canonical placement, not a
+                        decorative choice &mdash; <code>.beating</code> claims
+                        <em>humans run this</em>, which an institutional mark
+                        may say and a mark beside a person's name may not.
+                        <a href="/mark/">The two proof-states</a> are on the
+                        mark page.
+                    </p>
+                </div>
+            </section>
+
+            <!-- --------------------------------------------------- slogan -->
+            <section>
+                <div class="wrap">
+                    <h2>B-Slogan</h2>
+                    <div class="specimen" id="spec-slogan"></div>
+                    <p>
+                        The slogan is the wordmark in a sentence, and the
+                        substitution does not change inside one.
+                    </p>
+                    <ul class="rules">
+                        <li>
+                            <strong>Only the B in <em>Bank</em>.</strong> Never
+                            the T in <em>Thank</em>. The mark is bistable as a
+                            heart and a capital <em>B</em>; it can only stand in
+                            for the letter it already is.
+                        </li>
+                        <li>
+                            <strong>The string is the site's, not the
+                            layer's.</strong> <code>footer.slogan</code> lives
+                            in each consumer's i18n because it is translated
+                            &mdash; <span lang="km">អរគុណជាមួយ</span> &mdash;
+                            and a shared package has no business owning a
+                            translated string. This layer owns the
+                            <em>composition</em>; i18n owns the
+                            <em>words</em>.
+                        </li>
+                        <li>
+                            <strong>The &reg; rides on HeartBank.</strong>
+                            <code>B-Wordmark</code> and <code>B-Slogan</code>
+                            are internal short-names with no mark of their own;
+                            what carries the registration is HeartBank&reg;,
+                            which is why the &reg; sits where it does and
+                            nowhere else.
+                        </li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- ---------------------------------------- plain-text fallback -->
+            <section>
+                <div class="wrap">
+                    <h2>Where there is no glyph</h2>
+                    <p>
+                        Monochrome print, a commit message, a plain-text email,
+                        a filename. The stand-in is a <strong>3</strong>:
+                    </p>
+                    <p class="plain mono">Heart3ank&reg;</p>
+                    <p>
+                        <strong>Not a heart character.</strong> A
+                        <span aria-hidden="true">&hearts;</span> keeps the
+                        heart and drops the <em>B</em>, which is the half that
+                        makes the substitution legible at all &mdash; the whole
+                        claim of this mark is that it is <em>both</em>. A 3
+                        carries both, and it is why the estate's internal
+                        shorthand for HeartBank&reg; is
+                        <strong>H3</strong>.
+                    </p>
+                    <p class="note">
+                        A literal <code>B</code> remains the correct fallback
+                        where a 3 would read as a digit &mdash; a legal
+                        instrument, a form field, anything parsed by machine.
+                    </p>
+                </div>
+            </section>
+
+            <!-- ------------------------------------------ what you consume -->
+            <section>
+                <div class="wrap">
+                    <h2>What a consuming site takes</h2>
+                    <p>
+                        Nothing on this page is a special asset. The wordmark is
+                        a <em>composition</em> of files a consumer already
+                        vendors, which is why there is no
+                        <code>wordmark.svg</code> to download and never will be.
+                    </p>
+                    <div class="tbl-scroll">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>File</th>
+                                    <th>What it supplies</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="mono">emblem/emblem.ts</td>
+                                    <td>
+                                        the mark, as a bare template function
+                                        &mdash; the caller passes its own
+                                        classes, which is what lets one call
+                                        site beat and another not
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="mono">css/tokens.css</td>
+                                    <td>
+                                        <code>--emblem</code>, the colour the
+                                        mark inherits through
+                                        <code>currentColor</code>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="mono">css/motion.css</td>
+                                    <td>
+                                        <code>.beating</code> &mdash; the
+                                        cardiac rhythm, and the placement rule
+                                        that governs it
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="mono">your own i18n</td>
+                                    <td>
+                                        <code>footer.slogan</code>, and the
+                                        two literals <code>Heart</code> and
+                                        <code>ank&reg;</code>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h3>The call site</h3>
+                    <pre>&lt;h5 class="slogan"&gt;
+    ${t("footer.slogan")} Heart${emblem("beating")}ank&amp;reg;
+&lt;/h5&gt;</pre>
+                    <p class="note">
+                        <strong>Inline, never
+                        <code>&lt;img src&gt;</code>.</strong> CSS cannot reach
+                        inside an <code>&lt;img&gt;</code>, so the fill has to
+                        be repeated at every call site &mdash; and a value that
+                        must be remembered is a value that drifts. Inline, the
+                        mark inherits <code>--emblem</code> and answers dark
+                        mode for free. <em>The delivery mechanism is what makes
+                        the colour a property instead of a rule.</em>
+                    </p>
+                    <p class="note">
+                        <strong>The &reg; above carries one extra
+                        <code>&lt;span&gt;</code> that the markup here does
+                        not.</strong> Every typeface draws &reg; at full cap
+                        height &mdash; right at body size, far too heavy at
+                        display size, where it competes with the mark it is
+                        there to defer to. The specimen scales it optically; a
+                        call site setting the wordmark at ~1rem needs none of
+                        that. <em>The difference is the guidance, not a
+                        discrepancy.</em>
+                    </p>
+                    <p class="note">
+                        <strong>Tailwind's preflight sets
+                        <code>svg { display: block }</code></strong>, which
+                        drops the mark onto its own line inside a
+                        <code>&lt;p&gt;</code>. A call site in flowing text
+                        needs
+                        <code>display: inline-block; vertical-align: -0.12em</code>.
+                    </p>
+                </div>
+            </section>
+
+            <!-- ------------------------------------------------- consumers -->
+            <section>
+                <div class="wrap">
+                    <h2>Who renders it</h2>
+                    <p>
+                        <strong>heartbank.ceo is the first</strong> &mdash; the
+                        first HeartBank&reg; TLD to vendor this layer rather
+                        than carry its own copy of the mark.
+                    </p>
+                    <p class="note">
+                        Everything else in the estate still hand-assembles the
+                        wordmark around an <code>&lt;img&gt;</code>, and the
+                        glyph inside it is not this one. That is being retired
+                        site by site; this page is the target it is being
+                        retired toward.
+                    </p>
+                </div>
+            </section>
+
+        </main>
+
+        <!--#include footer-->
+    </body>
+</html>

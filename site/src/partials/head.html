@@ -1,0 +1,38 @@
+<meta charset="utf-8" />
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta property="og:type" content="website" />
+<meta name="twitter:card" content="summary" />
+
+<!-- Resolve the theme BEFORE first paint. The three-block cascade in
+     theme-3block.css keys off .dark / .light on <html>; with neither,
+     it falls back to prefers-color-scheme, so a failure here degrades
+     to the OS preference rather than to a broken page. -->
+<script>
+    try {
+        var t = localStorage.getItem("brand.theme");
+        if (t === "dark" || t === "light")
+            document.documentElement.classList.add(t);
+    } catch (e) {}
+</script>
+
+<!-- PWA. theme_color is duplicated here and in the manifest by
+     necessity: the browser reads this one before the manifest arrives,
+     and CSS cannot supply either. It is the dark ground, because dark
+     is this page's unstamped default. -->
+<link rel="manifest" href="/manifest.webmanifest" />
+<meta name="theme-color" content="#0A0A0F" />
+<link rel="icon" href="/favicon.ico" sizes="32x32" />
+<link rel="icon" href="/icon.svg" type="image/svg+xml" />
+<!-- ⚠️ MUST be a PNG. Safari ignores an SVG here, and an ignored
+     apple-touch-icon is not a missing icon: iOS substitutes a shrunken
+     screenshot of the page. -->
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" />
+<link rel="stylesheet" href="/page.css" />

@@ -1,0 +1,31 @@
+<footer>
+    <div class="wrap wide">
+        <p>
+            HeartBank® · B-Emblem<sup>™</sup> · Proof of Humanity ℠ ·
+            Proof of Coordinate ℠
+        </p>
+        <p class="mono" id="foot-ver"></p>
+    </div>
+</footer>
+
+<script type="module" src="/page.js"></script>
+
+<!-- Root-absolute, not ./ — the file is served from publicDir and is
+     never bundled or hashed, so it must not be rewritten as an asset. -->
+<script src="/analytics.js" defer></script>
+
+<!-- Registered on load rather than immediately, so the first paint never
+     competes with the worker install for the network. Dev is excluded:
+     a service worker in front of the dev server serves yesterday's
+     stylesheet and makes the token layer look broken for reasons that
+     have nothing to do with the tokens. -->
+<script type="module">
+    if ("serviceWorker" in navigator && import.meta.env.PROD) {
+        window.addEventListener("load", () => {
+            navigator.serviceWorker.register("/sw.js").catch(() => {
+                /* An offline shell is an enhancement. A failed
+                   registration must never break the page. */
+            });
+        });
+    }
+</script>
