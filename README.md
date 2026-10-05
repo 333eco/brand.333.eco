@@ -58,6 +58,9 @@ emblem/
   emblem.svg          reference copy + the home of the rotation warning
   emblem.ts           Lit template function
   emblem.path.txt     the path `d` string, alone, for generators
+qr/                   (v1.4.0) the B-QR recipe — one of OUR codes drawn inside the B-Emblem
+  bqr.ts              the measured drawing: layout (pure), paint (any 2D context), draw (loads `qrcode`)
+  bqr-card.ts         the printable card: title, the B-QR, a caption, the address in words
 data/
   gems.json           gem semantics (MEDIUM). NO hex — those live in tokens.css
   auras.json          aura-ramp semantics (RATE). NO hex — same rule
@@ -67,6 +70,7 @@ dist/                 GENERATED, committed: tokens.json · Brand.swift · Brand.
 scripts/
   generate.mjs        css/ + data/ -> dist/
   check-brand.mjs     the drift guard; copied verbatim into every consumer
+  bqr.test.mjs        the B-QR decode matrix (`npm run bqr:test`) — three decoders, pre-registered
 site/                 the guidelines pages -> brand.333.eco (an installable PWA)
   src/partials/       header, footer, head — resolved at BUILD time, not by the
                       client, so six documents share ONE copy of the chrome
@@ -99,6 +103,26 @@ DIAMOND"*. This page's own accent stays a site value and does not move.
 **No value is typed twice.** `css/tokens.css` is canonical; the JSON holds only
 what a stylesheet cannot say; `dist/` is generated from both.
 
+## B-QR — the drawing every code of ours shares (v1.4.0)
+
+A **B-QR** is a QR code drawn inside the B-Emblem™: the real code in the emblem's square body with its quiet zone clear,
+the two lobes filled with decorative modules on the same grid (*Green B-QR*) or left white inside a thick outline
+(*White B-QR*), all in one green, `#14532d`. It is a public shorthand (2026-10-04) for a **drawing style**, not a mark:
+an H3QR names whom you thank, and a B-QR is how that code is drawn.
+
+- **Ours only.** A link to one of our pages is drawn as a B-QR. A bank's code — KHQR, any EMVCo payload — is **never**
+  a B-QR: it is the bank's rail under its own design standard, and a bank app's scan-from-gallery is the payment.
+- **Measured, not eyeballed.** The body square is the largest square inside the silhouette less the outline's inner
+  half; the painted bounding box (not the viewBox) is centred. `scripts/bqr.test.mjs` re-measures both on every run.
+- **Scanning outranks beauty.** The code keeps one clear module at least; the decoration never draws three dark modules
+  in a row, so it cannot imitate a finder pattern. The green was chosen by a rule written into the test **before** the
+  sweep ran (lightest green at ISO/IEC 15415 grade A that decodes within 2/90 of near-black on two decoders); the
+  prediction was wrong and the rule's pick was kept.
+- **Run the matrix** after any change to `qr/`: `npm i && npm run bqr:test` (jsQR + ZXing pinned here; OpenCV optional
+  via `BQR_PYTHON`). It must also be seen to FAIL — break the path or the ring on purpose once and watch it catch it.
+
+`drawBqr` and `bqrDataUrl` load the `qrcode` package on demand, so a consumer that vendors `qr/` brings `qrcode` itself.
+
 ## Consuming it
 
 There is nothing to install and nothing to fetch at build time.
@@ -111,7 +135,8 @@ npm run brand:sync -- --from ../../333.eco/brand.333.eco
 npm run check:brand
 ```
 
-**Consumers, as of 2026-09-20:** `heartbank.ceo` (the first `heartbank.{TLD}`,
+**`qr/` consumers, as of 2026-10-04:** `thank.heartbank.ceo` (HeartBank® Shops) and `thank.heartbank.org`
+(the Treasury app). **Consumers, as of 2026-09-20:** `heartbank.ceo` (the first `heartbank.{TLD}`,
 and the second repo after `333.eco` to vendor a non-CSS file — `emblem.ts`),
 `333.eco`, `seysays`, `sayyourname`, `playsey`.
 

@@ -1,6 +1,6 @@
 {
     "name": "@333eco/brand",
-    "version": "1.3.0",
+    "version": "1.4.0",
     "description": "The canonical brand layer for the institution — design tokens, themes, motion, and the B-Emblem. A READ-ONLY MIRROR; institution repos vendor this layer, they do not install it.",
     "license": "Apache-2.0",
     "author": "Thon Ly",
@@ -18,12 +18,14 @@
         "css",
         "tailwind",
         "theme",
-        "dark-mode"
+        "dark-mode",
+        "qr-code"
     ],
     "type": "module",
     "exports": {
         "./css/*": "./css/*",
         "./emblem/*": "./emblem/*",
+        "./qr/*": "./qr/*",
         "./data/*": "./data/*",
         "./tokens.json": "./dist/tokens.json",
         "./Brand.swift": "./dist/Brand.swift",
@@ -34,6 +36,7 @@
     "files": [
         "css",
         "emblem",
+        "qr",
         "data",
         "dist",
         "brand.lock"
@@ -41,9 +44,17 @@
     "scripts": {
         "check": "node scripts/check-brand.mjs",
         "check:publish": "node scripts/check-publish.mjs",
-        "generate": "node scripts/generate.mjs"
+        "generate": "node scripts/generate.mjs",
+        "bqr:test": "node scripts/bqr.test.mjs"
     },
     "publishConfig": {
         "access": "public"
+    },
+    "devDependencies": {
+        "@napi-rs/canvas": "1.0.10",
+        "jsqr": "1.4.0",
+        "qrcode": "1.5.4",
+        "typescript": "6.0.3",
+        "zxing-wasm": "3.1.4"
     }
 }
