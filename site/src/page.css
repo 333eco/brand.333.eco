@@ -856,6 +856,20 @@ footer p {
     color: var(--ink-faint);
 }
 
+/* Diamond on a light page: said once, with the dark ground offered — never
+   switched to on the reader's behalf (page.js says why). */
+.aura-hint {
+    margin: 0.6rem 0 0;
+    max-width: 30rem;
+    font-size: var(--text-small);
+    color: var(--ink-dim);
+}
+
+.aura-hint button {
+    margin-left: 0.35rem;
+    vertical-align: middle;
+}
+
 /* ======================================================================== nav ===
    The menu. Generated from the NAV array in vite.config.ts, so nothing here
    knows how many items there are — the row wraps rather than scrolls, because a

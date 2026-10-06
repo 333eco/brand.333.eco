@@ -605,6 +605,47 @@ const stopRotation = () => {
     rafId = null;
 };
 
+// ⭐ DIAMOND ON A LIGHT PAGE (founder, 2026-10-06: "add that line"). Diamond is
+// near-white, so on the light ground the mark all but disappears — the reason it
+// is out of the rotation. When it is CHOSEN there anyway, the page says so once,
+// beside the swatches, and offers the dark ground as a button.
+//
+// ⛔ IT NEVER SWITCHES THE THEME ON ITS OWN. The theme is the reader's own
+// remembered choice; a colour swatch that silently changed it would be one
+// control moving two settings, and a reader who chose light would lose that
+// choice without being asked. The line goes the moment either condition stops
+// holding — another colour, or the dark ground.
+//
+// The theme is read off the CASCADE (`color-scheme`, which theme-3block.css sets
+// in all three states), never re-derived from the class and the media query.
+const auraHint = el("p", "aura-hint");
+auraHint.hidden = true;
+// On a page without the picker, auraNow is a detached stand-in and this is a no-op.
+auraNow.after(auraHint);
+
+const paintHint = () => {
+    const diamond = [...auraBox.children].some(
+        (b) => b.dataset.id === "diamond" && b.getAttribute("aria-pressed") === "true"
+    );
+    const light = !getComputedStyle(root2).colorScheme.includes("dark");
+    auraHint.hidden = !(diamond && light);
+    if (!auraHint.hidden && !auraHint.firstChild) {
+        auraHint.append(
+            document.createTextNode(
+                "Diamond is near-white, so on a light page it nearly disappears. It shows on the dark ground. "
+            )
+        );
+        const go = el("button", "ghost", "view on dark");
+        go.type = "button";
+        go.addEventListener("click", () => apply("dark"));
+        auraHint.append(go);
+    }
+};
+
+// The theme button and the OS setting both move the ground; either can end the line.
+new MutationObserver(paintHint).observe(root2, { attributes: true, attributeFilter: ["class"] });
+window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", paintHint);
+
 const applyAura = (id) => {
     const choice = AURA_CHOICES.find((c) => c.id === id) || AURA_CHOICES[0];
     stopRotation();
@@ -638,6 +679,7 @@ const applyAura = (id) => {
     } catch (e) {
         /* private mode — the choice still holds for this page view */
     }
+    paintHint();
 };
 
 for (const choice of AURA_CHOICES) {
