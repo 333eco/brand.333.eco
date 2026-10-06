@@ -114,6 +114,25 @@
  *     ⚠️ Caught in that first run, by reading its output and not its verdict: the control's family began `BROKEN`, and P6 selects
  *     its cases by that prefix — so P6 read "failures of 300" with the new controls inside it, a P6 that could no longer fail on its
  *     own. Renamed `CONTROL …` before the run recorded here; P6 is back to its 120 (jsQR 69 · ZXing 50, as before). OpenCV NOT RUN.
+ *
+ * ⛔ §emblem-hue — PRE-REGISTERED 2026-10-06, written before the §emblem-hue arm ran (founder: *"The B-QR color should dynamically
+ *   change to match the selected --emblem"*; of three options he chose *"Gem hue, darkened (Recommended)"*). `paintBqr` takes `hue`:
+ *   the drawing's colour family, drawn by `bqrInkFor` at `BQR_INK`'s relative luminance (same OKLCH hue, the most chroma sRGB holds
+ *   there, never lighter than the green). No `hue` = `BQR_INK` verbatim. The gems are read from `dist/tokens.json` (all seven).
+ *   The run FAILS on any of:
+ *   H1 identity — no `hue`, `hue: BQR_INK` and `hue` in capitals draw the same bytes as v1.5.0's default, both versions, all
+ *      payloads (the apps pass none and must not move); CONTROL: `hue` ruby draws different bytes.
+ *   H2 darkness — for the seven gems, this site's accent #78849b, black, white and 2,000 seeded random sRGB colours, `bqrInkFor` is
+ *      NEVER lighter than `BQR_INK` and within 0.004 of its luminance, so every one prints at ISO/IEC 15415 grade A by the §4AA
+ *      formula. CONTROL: raw citrine as an ink is caught below grade A.
+ *   H3 hue kept — for every gem whose derived ink keeps OKLCH chroma ≥ 0.03, its hue is within 6° of the gem's. Predicted ≤ 3°.
+ *      (Diamond is near-neutral, its hue undefined; it is reported, not gated.)
+ *   H4 decode — for each gem, the `pixels` bare card drawn with that `hue`, at 300/200/150 × the six distortions × the five payloads
+ *      (90), decodes no worse than the same card with no `hue` by more than 2 of 90, in jsQR AND in ZXing — the ink rule's margin;
+ *      and every gem's `outline` preview at 300, clean, decodes 5/5 in both. Predicted: all seven within 2 on both decoders.
+ *   H5 the broken control — raw diamond #f4f7ff as the ink (the TEST-ONLY `ink`, which skips `bqrInkFor` — the failure `hue`
+ *      exists to make impossible) FAILS at least 80 of 90 on both decoders. Predicted: 90 of 90.
+ *   Reported, gating nothing: raw citrine as an ink (90 cases), beside its derived ink.
  */
 import { createRequire } from "node:module";
 import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, existsSync } from "node:fs";
@@ -372,6 +391,44 @@ for (const style of ["pixels", "outline"]) {
     }
 }
 
+// ---- §emblem-hue H1 · H2 · H3 (pre-registered in the header, 2026-10-06) ---------------------------------------------------------
+console.log("\n— §emblem-hue H1 identity · H2 darkness · H3 hue");
+const GEMS = JSON.parse(readFileSync(join(ROOT, "dist", "tokens.json"), "utf8")).gems.map((g) => [g.name, g.hex.toLowerCase()]);
+const gemHex = Object.fromEntries(GEMS);
+ok(GEMS.length === 7, `aperture: ${GEMS.length} gems read from dist/tokens.json (${GEMS.map(([n]) => n).join(" · ")})`);
+for (const style of ["pixels", "outline"]) {
+    const same = P.filter(([, text]) => {
+        const d = renderBqr(text, 640, { style }).toBuffer("image/png");
+        return [B.BQR_INK, B.BQR_INK.toUpperCase()].every((hue) => d.equals(renderBqr(text, 640, { style, hue }).toBuffer("image/png")));
+    }).length;
+    ok(same === P.length, `H1 ${style}: no hue, hue ${B.BQR_INK} and hue ${B.BQR_INK.toUpperCase()} draw the same bytes — ${same}/${P.length} payloads`);
+    ok(!renderBqr(P[0][1], 640, { style }).toBuffer("image/png").equals(renderBqr(P[0][1], 640, { style, hue: gemHex.ruby }).toBuffer("image/png")), `H1 control ${style}: hue ruby draws different bytes`);
+}
+const linH = (c) => { c /= 255; return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; };
+const lumH = (hex) => { const n = parseInt(hex.slice(1), 16); return 0.2126 * linH(n >> 16) + 0.7152 * linH((n >> 8) & 255) + 0.0722 * linH(n & 255); };
+const INK_L = lumH(B.BQR_INK);
+{
+    const rand = (() => { let x = 0x2026_1006; return () => ((x = Math.imul(x ^ (x >>> 15), 0x2c1b3c6d) ^ (x + 0x6d2b79f5)) >>> 0) / 4294967296; })();
+    const inputs = [...GEMS.map(([, h]) => h), "#78849b", "#000000", "#ffffff",
+        ...Array.from({ length: 2000 }, () => "#" + [0, 0, 0].map(() => Math.floor(rand() * 256).toString(16).padStart(2, "0")).join(""))];
+    let lighter = 0, far = 0, worst = 0;
+    for (const h of inputs) { const d = lumH(B.bqrInkFor(h)); if (d > INK_L + 1e-12) lighter++; if (INK_L - d > 0.004) far++; worst = Math.max(worst, INK_L - d); }
+    ok(lighter === 0 && far === 0, `H2: ${inputs.length} inputs — ${lighter} lighter than ${B.BQR_INK}, ${far} more than 0.004 darker (worst ${worst.toFixed(4)}; ink luminance ${INK_L.toFixed(4)}) → SC ≥ ${(0.85 - INK_L).toFixed(3)} for every one`);
+    ok(0.85 - lumH(gemHex.citrine) < 0.70, `H2 control: raw citrine as an ink is below grade A (SC ${(0.85 - lumH(gemHex.citrine)).toFixed(3)})`);
+}
+{
+    // OKLCH of an 8-bit hex — the same published matrices, written HERE so H3 does not grade the recipe with its own code.
+    const oklch = (hex) => {
+        const n = parseInt(hex.slice(1), 16), [r, g, b] = [n >> 16, (n >> 8) & 255, n & 255].map(linH);
+        const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b), m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b), s2 = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b);
+        const a = 1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s2, bb = 0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s2;
+        return { C: Math.hypot(a, bb), H: Math.atan2(bb, a) * 180 / Math.PI };
+    };
+    const rows = GEMS.map(([name, h]) => { const d = B.bqrInkFor(h), o = oklch(h), q = oklch(d); const dh = Math.abs(((q.H - o.H + 540) % 360) - 180); return { name, h, d, C: q.C, dh }; });
+    const gated = rows.filter((r) => r.C >= 0.03);
+    ok(gated.every((r) => r.dh <= 6), `H3: hue kept within 6° — ${rows.map((r) => `${r.name} ${r.h}→${r.d} ${r.C >= 0.03 ? r.dh.toFixed(1) + "°" : "(C " + r.C.toFixed(3) + ", reported)"}`).join(" · ")}`);
+}
+
 // ---- the images ------------------------------------------------------------------------------------------------------------------
 const CARD_TEXT = { title: "Home Coffee", caption: "Scan to order here", foot: "homecoffee.heartbank.ceo" };
 async function card(text, accent, style) {
@@ -393,11 +450,11 @@ function plainCard(text) {
     return c;
 }
 /** The card's emblem with no words, at a chosen ECC or quiet ring — the ECC sweep, and ⛔ the BROKEN control (quiet < 4). */
-function bareCard(text, { quiet, ecc = B.BQR_ECC, style = "pixels", ink, accent } = {}) {
+function bareCard(text, { quiet, ecc = B.BQR_ECC, style = "pixels", ink, accent, hue } = {}) {
     const c = createCanvas(C.CARD.W, C.CARD.H), g = c.getContext("2d");
     g.fillStyle = "#fff"; g.fillRect(0, 0, C.CARD.W, C.CARD.H);
     const q = QRCode.create(text, { errorCorrectionLevel: ecc });
-    B.paintBqr(g, q.modules, text, { ...C.CARD.code, quiet, style, ink, accent });
+    B.paintBqr(g, q.modules, text, { ...C.CARD.code, quiet, style, ink, accent, hue });
     return c;
 }
 /** ⭐ The SAME code pixels with the emblem cut away (code box + quiet ring copied onto white) — separates what the decoration costs
@@ -494,6 +551,21 @@ for (const [name, text] of P) {
         bg.fillRect(0, 0, 640, y0); bg.fillRect(0, y1, 640, 640 - y1); bg.fillRect(0, y0, x0, y1 - y0); bg.fillRect(x1, y0, 640 - x1, y1 - y0);
         for (const s of [300, 200, 150]) await decodeAll(`CONTROL dark ground at the code (${vname})`, s, name, text, B.BQR_INK, br);
     }
+    // ⭐ §emblem-hue H4 · H5 — every gem's derived ink, beside the same card with no hue; raw diamond (and citrine, reported).
+    {
+        const dflt = bareCard(text, {});
+        for (const s of [300, 200, 150]) await decodeAll("HUE (none)", s, name, text, B.BQR_INK, dflt);
+        for (const [gem, hex] of GEMS) {
+            const hc = bareCard(text, { hue: hex });
+            for (const s of [300, 200, 150]) await decodeAll(`HUE ${gem}`, s, name, text, hex, hc);
+            const op = renderBqr(text, 640, { style: "outline", hue: hex });
+            await decodeAll(`HUE ${gem} outline preview`, 300, name, text, hex, op);
+        }
+        for (const [gem, fam] of [["diamond", "CONTROL raw diamond ink"], ["citrine", "raw citrine ink (reported)"]]) {
+            const rc = bareCard(text, { ink: gemHex[gem], accent: gemHex[gem] });
+            for (const s of [300, 200, 150]) await decodeAll(fam, s, name, text, gemHex[gem], rc);
+        }
+    }
     const pl = plainCard(text);
     for (const s of [1200, 300, 200, 150]) await decodeAll("plain card (old)", s, name, text, "—", pl);
     const nk = nakedCard(text);
@@ -578,6 +650,22 @@ for (const [style, vname] of Object.entries(VERSIONS)) {
     const br = cases.filter((c) => c.family === `CONTROL dark ground at the code (${vname})`);
     ok(br.length === 90 && br.length - n(br, "jsqr") >= 45 && br.length - n(br, "zxing") >= 45,
         `G5 control ${style}: the ground pressed to the code fails jsQR ${br.length - n(br, "jsqr")} · ZXing ${br.length - n(br, "zxing")} of ${br.length} (≥ 45 each)`);
+}
+
+// ---- §emblem-hue H4 · H5 ------------------------------------------------------------------------------------------------------
+console.log("\n— §emblem-hue H4 · H5 (rule in the header: each gem's hue within 2 of 90 of no hue; raw diamond fails ≥ 80)");
+{
+    const n = (a, k) => a.filter((c) => c[k]).length;
+    const base = cases.filter((c) => c.family === "HUE (none)");
+    ok(base.length === 90, `H4 aperture: ${base.length} no-hue cases (5 payloads × 3 sizes × 6 distortions)`);
+    for (const [gem] of GEMS) {
+        const h = cases.filter((c) => c.family === `HUE ${gem}`), op = cases.filter((c) => c.family === `HUE ${gem} outline preview` && c.distort === "clean");
+        ok(h.length === 90 && n(base, "jsqr") - n(h, "jsqr") <= 2 && n(base, "zxing") - n(h, "zxing") <= 2 && op.length === 5 && op.every((c) => c.jsqr && c.zxing),
+            `H4 ${gem} ${B.bqrInkFor(gemHex[gem])}: jsQR ${n(h, "jsqr")} · ZXing ${n(h, "zxing")} of ${h.length} vs no hue ${n(base, "jsqr")} · ${n(base, "zxing")} · outline clean 300 ${op.filter((c) => c.jsqr && c.zxing).length}/${op.length}`);
+    }
+    const rd = cases.filter((c) => c.family === "CONTROL raw diamond ink"), rc = cases.filter((c) => c.family === "raw citrine ink (reported)");
+    ok(rd.length === 90 && rd.length - n(rd, "jsqr") >= 80 && rd.length - n(rd, "zxing") >= 80,
+        `H5 control: raw diamond as the ink fails jsQR ${rd.length - n(rd, "jsqr")} · ZXing ${rd.length - n(rd, "zxing")} of ${rd.length} (≥ 80 each; reported: raw citrine reads ${n(rc, "jsqr")} · ${n(rc, "zxing")})`);
 }
 
 // ---- §4AA the ink ---------------------------------------------------------------------------------------------------------------

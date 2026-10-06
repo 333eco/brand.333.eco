@@ -25,8 +25,9 @@
  *   module (measured: one decodes on par with four; zero — decoration touching the finders — halves one decoder), and no decorative
  *   row or column ever holds three dark modules in a run, so the decoration cannot contain a finder's 1:1:3:1:1 at module scale.
  *
- * TWO VERSIONS, the person chooses (a fact about their phone, kept by the app): `pixels` — the *Green B-QR*, the padding filled with
- * green modules · `outline` — the *White B-QR*, a white heart with a thick green outline and no decoration.
+ * TWO VERSIONS, the person chooses (a fact about their phone, kept by the app): `pixels` — the *Full B-QR*, the lobes full of
+ * modules · `outline` — the *Open B-QR*, the lobes left open inside a thick outline, no decoration. (Public names RULED 2026-10-06,
+ * replacing *Green B-QR* / *White B-QR*: a colour name stops being true once the colour can change — see `hue` below.)
  *
  * ⭐ ONE GREEN, `BQR_INK` = #14532d, for the code, its decoration and its outline — ⛔ never a theme's colour (a light theme must not
  *   reach the code). Chosen by a rule written into the test BEFORE its sweep ran: the LIGHTEST candidate that prints at ISO/IEC 15415
@@ -90,6 +91,62 @@ export type BqrGround = "paper" | "heart";
 export const BQR_GROUNDS: readonly BqrGround[] = ["paper", "heart"];
 export const BQR_GROUND_DEFAULT: BqrGround = "paper";
 export const bqrGroundOf = (s: unknown): BqrGround => (BQR_GROUNDS as readonly unknown[]).includes(s) ? s as BqrGround : BQR_GROUND_DEFAULT;
+
+/**
+ * ⭐ v1.6.0 (2026-10-06) — A HUE, NEVER A DARKNESS. `hue` lets a caller choose the drawing's colour FAMILY; the recipe draws it at
+ *   `BQR_INK`'s relative luminance (the darkness the pre-registered ink rule chose), keeping the hue and giving up only the chroma
+ *   sRGB cannot hold that dark. So a caller can pick ruby, citrine or even diamond and still never draw a code that prints below
+ *   grade A or scans worse than the green: ⭐ the darkness is a PROPERTY of the recipe, not a rule a caller must remember.
+ *   Light hues come out deep — citrine as an olive-brown, diamond as a graphite — and that is the honest result, not a defect.
+ * ⭐ No `hue` = `BQR_INK` itself, verbatim, so every drawing that passes none is byte-identical to v1.5.0 — the apps pass none and
+ *   keep the one green (founder 2026-10-06: the brand page's B-QRs follow the selected `--emblem`; the apps were not ruled).
+ *   `scripts/bqr.test.mjs` §emblem-hue decodes every gem's derivation before it shipped.
+ */
+const lin8 = (c: number) => { c /= 255; return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; };
+const gam = (c: number) => (c <= 0.0031308 ? 12.92 * c : 1.055 * c ** (1 / 2.4) - 0.055);
+/** Relative luminance of an 8-bit sRGB triple (WCAG). */
+const luminance = ([r, g, b]: readonly number[]) => 0.2126 * lin8(r) + 0.7152 * lin8(g) + 0.0722 * lin8(b);
+/** `#rrggbb` or `rgb(…)` / `rgba(…)` (what `getComputedStyle` returns) → an 8-bit triple, or null. */
+function rgbOf(color: string): [number, number, number] | null {
+    const h = /^#([0-9a-f]{6})$/i.exec(color.trim());
+    if (h) { const n = parseInt(h[1], 16); return [n >> 16, (n >> 8) & 255, n & 255]; }
+    const f = /^rgba?\(\s*([\d.]+)[\s,]+([\d.]+)[\s,]+([\d.]+)/i.exec(color.trim());
+    return f ? [Number(f[1]), Number(f[2]), Number(f[3])].map((v) => Math.max(0, Math.min(255, Math.round(v)))) as [number, number, number] : null;
+}
+/** OKLab ⇄ linear sRGB (Björn Ottosson's published matrices). */
+function oklab([r, g, b]: readonly number[]): [number, number, number] {
+    const [R, G, B2] = [r, g, b].map(lin8);
+    const l = Math.cbrt(0.4122214708 * R + 0.5363325363 * G + 0.0514459929 * B2);
+    const m = Math.cbrt(0.2119034982 * R + 0.6806995451 * G + 0.1073969566 * B2);
+    const s = Math.cbrt(0.0883024619 * R + 0.2817188376 * G + 0.6299787005 * B2);
+    return [0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s, 1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s, 0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s];
+}
+function linearOf(L: number, a: number, b: number): [number, number, number] {
+    const l = (L + 0.3963377774 * a + 0.2158037573 * b) ** 3, m = (L - 0.1055613458 * a - 0.0638541728 * b) ** 3, s = (L - 0.0894841775 * a - 1.291485548 * b) ** 3;
+    return [4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s, -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s, -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s];
+}
+const inGamut = (v: readonly number[]) => v.every((c) => c >= -1e-6 && c <= 1 + 1e-6);
+const hex8 = (v: readonly number[]) => "#" + v.map((c) => Math.round(Math.max(0, Math.min(1, gam(c))) * 255).toString(16).padStart(2, "0")).join("");
+const INK_LUM = luminance(rgbOf(BQR_INK)!);
+
+/** ⭐ v1.6.0 — the colour a B-QR is drawn in for `hue`: the same OKLCH hue, at the most chroma sRGB holds, at the largest OKLab
+ *  lightness whose 8-bit result is NO LIGHTER than `BQR_INK` (so it never prints lighter than the green). Unparseable → `BQR_INK`. */
+export function bqrInkFor(hue: string): string {
+    if (hue.trim().toLowerCase() === BQR_INK) return BQR_INK;
+    const rgb = rgbOf(hue);
+    if (!rgb) return BQR_INK;
+    const [, a0, b0] = oklab(rgb), C0 = Math.hypot(a0, b0), H = Math.atan2(b0, a0);
+    const at = (L: number) => {
+        let lo = 0, hi = C0;                                           // the most chroma, up to the hue's own, that sRGB holds at L
+        if (!inGamut(linearOf(L, hi * Math.cos(H), hi * Math.sin(H))))
+            for (let i = 0; i < 24; i++) { const c = (lo + hi) / 2; if (inGamut(linearOf(L, c * Math.cos(H), c * Math.sin(H)))) lo = c; else hi = c; }
+        else lo = hi;
+        return hex8(linearOf(L, lo * Math.cos(H), lo * Math.sin(H)));
+    };
+    let lo = 0, hi = 1;                                                // ⭐ invariant: at(lo) is never lighter than BQR_INK (black, at 0)
+    for (let i = 0; i < 32; i++) { const L = (lo + hi) / 2; if (luminance(rgbOf(at(L))!) > INK_LUM) hi = L; else lo = L; }
+    return at(lo);
+}
 /** The decorative module's side, as a fraction of a module — a visible gap between neighbours, so no two ever merge. */
 const DOT = 0.84;
 /** Share of decorative cells drawn dark (before the run limit thins them). */
@@ -117,6 +174,8 @@ export interface BqrOptions {
     quiet?: number;
     /** ⛔ TEST ONLY — the code's colour, for the ink sweep that chose `BQR_INK`. ⛔ Never a theme's colour. */
     ink?: string;
+    /** ⭐ v1.6.0 — the drawing's colour family, drawn at `BQR_INK`'s darkness (`bqrInkFor`). Default: `BQR_INK` itself. */
+    hue?: string;
 }
 export interface BqrLayout {
     /** Modules across the code. */
@@ -242,7 +301,9 @@ export function bqrPlacement(size: number, x = 0, y = 0): { k: number; tx: numbe
 /** Paint a B-QR from a module matrix into a 2D context. Synchronous; `drawBqr` makes the matrix. */
 export function paintBqr(g: CanvasRenderingContext2D, mat: BqrMatrix, seed: string, o: BqrOptions): void {
     // ⭐ §4AA — one green for the whole drawing: the decoration and the outline default to the code's own ink.
-    const X = o.x ?? 0, Y = o.y ?? 0, size = o.size, accent = o.accent || BQR_INK;
+    // ⭐ v1.6.0 — `hue` sets the code, the decoration and the outline at once, darkened by `bqrInkFor`; none = `BQR_INK`, verbatim.
+    const inkOfHue = o.hue ? bqrInkFor(o.hue) : BQR_INK;
+    const X = o.x ?? 0, Y = o.y ?? 0, size = o.size, accent = o.accent || inkOfHue;
     const L = bqrLayout(mat, seed, { style: o.style, quiet: o.quiet });
     const { k, tx, ty } = bqrPlacement(size, X, Y);
     const path = new Path2D(EMBLEM_D);
@@ -267,7 +328,7 @@ export function paintBqr(g: CanvasRenderingContext2D, mat: BqrMatrix, seed: stri
 
     // ⭐ The code, in DEVICE pixels with every edge rounded, one rect per run — scaled sub-pixel rects leave hairline seams
     //   between modules, and a seam inside a finder is the last thing a camera should see.
-    g.save(); g.fillStyle = o.ink || BQR_INK;
+    g.save(); g.fillStyle = o.ink || inkOfHue;
     const px = (u: number) => Math.round(tx + u * k), py = (v: number) => Math.round(ty + v * k);
     for (let r = 0; r < L.n; r++) {
         const top = py(L.oy + r * L.m), bottom = py(L.oy + (r + 1) * L.m);
@@ -290,11 +351,11 @@ export async function drawBqr(g: CanvasRenderingContext2D, text: string, o: BqrO
 }
 
 /** A B-QR as a PNG data URL — the on-screen preview of a code a person may also download, so what they see is what they print. */
-export async function bqrDataUrl(text: string, o: { size?: number; accent?: string; ecc?: "L" | "M" | "Q" | "H"; style?: BqrStyle; ground?: BqrGround } = {}): Promise<string> {
+export async function bqrDataUrl(text: string, o: { size?: number; accent?: string; ecc?: "L" | "M" | "Q" | "H"; style?: BqrStyle; ground?: BqrGround; hue?: string } = {}): Promise<string> {
     const size = o.size ?? 640;
     const canvas = document.createElement("canvas");
     canvas.width = size; canvas.height = size;
     // ⛔ v1.5.0 — `ground: "heart"` only for a picture that stays on screen; a URL handed to a download takes the default `paper`.
-    await drawBqr(canvas.getContext("2d")!, text, { size, accent: o.accent, ecc: o.ecc, style: o.style, ground: o.ground });
+    await drawBqr(canvas.getContext("2d")!, text, { size, accent: o.accent, ecc: o.ecc, style: o.style, ground: o.ground, hue: o.hue });
     return canvas.toDataURL("image/png");
 }

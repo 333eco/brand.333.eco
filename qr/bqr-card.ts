@@ -25,6 +25,8 @@ export interface BqrCard {
     accent?: string;
     /** Which of the two versions. ⭐ Pass the SAME as the preview. */
     style?: BqrStyle;
+    /** ⭐ v1.6.0 — the drawing's colour family, at the green's darkness (`bqrInkFor`). Absent = `BQR_INK`. ⭐ Pass the SAME as the preview. */
+    hue?: string;
 }
 
 /**
@@ -37,7 +39,7 @@ export const CARD = { W: 1200, H: 1560, title: 140, code: { x: 80, y: 205, size:
 export async function paintQrCard(g: CanvasRenderingContext2D, c: BqrCard, face: string): Promise<void> {
     const { W, H } = CARD;
     g.fillStyle = "#ffffff"; g.fillRect(0, 0, W, H);
-    await drawBqr(g, c.url, { ...CARD.code, accent: c.accent, style: c.style });
+    await drawBqr(g, c.url, { ...CARD.code, accent: c.accent, style: c.style, hue: c.hue });
     g.fillStyle = "#16141c"; g.textAlign = "center"; g.textBaseline = "middle";
     g.font = `600 72px ${face}`;
     g.fillText(c.title, W / 2, CARD.title, W - 120);
