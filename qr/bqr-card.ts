@@ -25,7 +25,7 @@ export interface BqrCard {
     accent?: string;
     /** Which of the two versions. ⭐ Pass the SAME as the preview. */
     style?: BqrStyle;
-    /** ⭐ v1.6.0 — the drawing's colour family, at the green's darkness (`bqrInkFor`). Absent = `BQR_INK`. ⭐ Pass the SAME as the preview. */
+    /** ⭐ v1.6.0 — the drawing's color family, at the green's darkness (`bqrInkFor`). Absent = `BQR_INK`. ⭐ Pass the SAME as the preview. */
     hue?: string;
 }
 

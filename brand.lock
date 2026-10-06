@@ -10,7 +10,7 @@
         "emblem/emblem.path.txt": "8377c7bc7f9ab629058b6ee1d9ec058eedb5f473328bf5017bba056f214c2707",
         "emblem/emblem.svg": "368f520ad2d2f9db50d83ca9cd7aee9475948dc8e38c61b7afa13f7717fef903",
         "emblem/emblem.ts": "6e150389eed576c392ff6231c0b38b8fea5d4c11f7a5b21936bb25afab069890",
-        "qr/bqr-card.ts": "a60023c631530ad2b25ff6400cf4672caad9b15d635aaf6f9452c8a5269377c9",
-        "qr/bqr.ts": "4eb302de6089b7e3a2a4201f1e0c8b62e73347916bd5471e816ba9dee7bb5f42"
+        "qr/bqr-card.ts": "74655bfee3307d87204d232f188e53bf20d71bdd2766930e9042d09ee8784fed",
+        "qr/bqr.ts": "f9e5df6a22fbca5483d3a6e1d91cd70cd0941f51e173c557fcc72836ecfab8bf"
     }
 }

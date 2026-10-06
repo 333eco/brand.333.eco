@@ -7,7 +7,7 @@
 //
 // Every code opens THIS page, so a visitor can check any specimen with a phone.
 //
-// ⭐ v1.6.0 — THE B-QRs FOLLOW THE MARK'S COLOUR (founder 2026-10-06): each is drawn in the hue of the visitor's `--emblem`, at
+// ⭐ v1.6.0 — THE B-QRs FOLLOW THE MARK'S COLOR (founder 2026-10-06): each is drawn in the hue of the visitor's `--emblem`, at
 // the green's darkness, by the recipe's own `bqrInkFor` — so a ruby or a diamond B-QR here prints and scans like the green
 // (`bqr.test.mjs` §emblem-hue). The apps pass no hue and keep the one green; this page is the only caller that passes one.
 //
@@ -24,7 +24,7 @@ import { paintQrCard } from "../../../qr/bqr-card";
 const HERE = "https://brand.333.eco/qr/";
 const SIZE = 640;
 
-// The two public names (ruled 2026-10-06, replacing Green / White — a colour name stops being true once the colour follows the
+// The two public names (ruled 2026-10-06, replacing Green / White — a color name stops being true once the color follows the
 // mark). ⛔ The internal ones (`pixels`, `outline`) are code identifiers and never captions.
 const NAME: Record<BqrStyle, string> = { pixels: "Full B-QR", outline: "Open B-QR" };
 const ABOUT: Record<BqrStyle, string> = {
@@ -45,9 +45,9 @@ const el = (tag: string, cls?: string, text?: string) => {
     return n;
 };
 
-// ------------------------------------------------------------------------------------------------ the colour, live ---
+// ------------------------------------------------------------------------------------------------ the color, live ---
 //
-// The mark's colour can change sixty times a second (the rotation), so the B-QRs are NOT redrawn when it does. Each is drawn
+// The mark's color can change sixty times a second (the rotation), so the B-QRs are NOT redrawn when it does. Each is drawn
 // ONCE, in the default ink, and split into two layers: the PAPER (white, with the drawing's own coverage) and the INK (an alpha
 // mask). CSS paints the mask with `--bqr-ink`, and only that one property moves. Stacking the two is the same arithmetic as
 // drawing the ink over the paper in one pass, so the picture is the recipe's drawing with that hue — checked to within 1/255
@@ -133,7 +133,7 @@ const now = byId("bqr-now");
 const inkReadout = byId("bqr-ink");
 let drawn: BqrGround | null = null;
 let currentInk = BQR_INK;
-/** The mark's colour as the cascade resolved it — the HUE the card is painted with (the recipe darkens it, not this file). */
+/** The mark's color as the cascade resolved it — the HUE the card is painted with (the recipe darkens it, not this file). */
 let currentHue = BQR_INK;
 
 const readout = () => {
@@ -174,7 +174,7 @@ const followMark = () => {
     currentInk = ink;
     main.style.setProperty("--bqr-ink", ink);
     readout();
-    // The card is painted, not layered (its words are in other colours), so it follows at most every 0.6 s.
+    // The card is painted, not layered (its words are in other colors), so it follows at most every 0.6 s.
     if (cardTimer === null) cardTimer = window.setTimeout(() => { cardTimer = null; void drawCard(); }, 600);
 };
 

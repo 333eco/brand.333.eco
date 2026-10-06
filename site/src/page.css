@@ -1291,10 +1291,10 @@ footer p {
 }
 
 /* ⭐ v1.6.0 — a live B-QR: the recipe's PAPER as an <img>, and its INK as an
-   alpha mask painted by --bqr-ink, which qr.ts sets from the mark's colour
+   alpha mask painted by --bqr-ink, which qr.ts sets from the mark's color
    through the recipe's own bqrInkFor. Only that one property moves when the
-   mark's colour does; nothing is redrawn. The fallback is the one green, so a
-   page whose script never ran still shows a correct B-QR's colour. */
+   mark's color does; nothing is redrawn. The fallback is the one green, so a
+   page whose script never ran still shows a correct B-QR's color. */
 .bqr-live {
     position: relative;
     display: block;

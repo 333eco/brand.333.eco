@@ -27,7 +27,7 @@
  *
  * TWO VERSIONS, the person chooses (a fact about their phone, kept by the app): `pixels` — the *Full B-QR*, the lobes full of
  * modules · `outline` — the *Open B-QR*, the lobes left open inside a thick outline, no decoration. (Public names RULED 2026-10-06,
- * replacing *Green B-QR* / *White B-QR*: a colour name stops being true once the colour can change — see `hue` below.)
+ * replacing *Green B-QR* / *White B-QR*: a color name stops being true once the color can change — see `hue` below.)
  *
  * ⭐ ONE GREEN, `BQR_INK` = #14532d, for the code, its decoration and its outline — ⛔ never a theme's colour (a light theme must not
  *   reach the code). Chosen by a rule written into the test BEFORE its sweep ran: the LIGHTEST candidate that prints at ISO/IEC 15415
@@ -93,7 +93,7 @@ export const BQR_GROUND_DEFAULT: BqrGround = "paper";
 export const bqrGroundOf = (s: unknown): BqrGround => (BQR_GROUNDS as readonly unknown[]).includes(s) ? s as BqrGround : BQR_GROUND_DEFAULT;
 
 /**
- * ⭐ v1.6.0 (2026-10-06) — A HUE, NEVER A DARKNESS. `hue` lets a caller choose the drawing's colour FAMILY; the recipe draws it at
+ * ⭐ v1.6.0 (2026-10-06) — A HUE, NEVER A DARKNESS. `hue` lets a caller choose the drawing's color FAMILY; the recipe draws it at
  *   `BQR_INK`'s relative luminance (the darkness the pre-registered ink rule chose), keeping the hue and giving up only the chroma
  *   sRGB cannot hold that dark. So a caller can pick ruby, citrine or even diamond and still never draw a code that prints below
  *   grade A or scans worse than the green: ⭐ the darkness is a PROPERTY of the recipe, not a rule a caller must remember.
@@ -129,7 +129,7 @@ const inGamut = (v: readonly number[]) => v.every((c) => c >= -1e-6 && c <= 1 + 
 const hex8 = (v: readonly number[]) => "#" + v.map((c) => Math.round(Math.max(0, Math.min(1, gam(c))) * 255).toString(16).padStart(2, "0")).join("");
 const INK_LUM = luminance(rgbOf(BQR_INK)!);
 
-/** ⭐ v1.6.0 — the colour a B-QR is drawn in for `hue`: the same OKLCH hue, at the most chroma sRGB holds, at the largest OKLab
+/** ⭐ v1.6.0 — the color a B-QR is drawn in for `hue`: the same OKLCH hue, at the most chroma sRGB holds, at the largest OKLab
  *  lightness whose 8-bit result is NO LIGHTER than `BQR_INK` (so it never prints lighter than the green). Unparseable → `BQR_INK`. */
 export function bqrInkFor(hue: string): string {
     if (hue.trim().toLowerCase() === BQR_INK) return BQR_INK;
@@ -174,7 +174,7 @@ export interface BqrOptions {
     quiet?: number;
     /** ⛔ TEST ONLY — the code's colour, for the ink sweep that chose `BQR_INK`. ⛔ Never a theme's colour. */
     ink?: string;
-    /** ⭐ v1.6.0 — the drawing's colour family, drawn at `BQR_INK`'s darkness (`bqrInkFor`). Default: `BQR_INK` itself. */
+    /** ⭐ v1.6.0 — the drawing's color family, drawn at `BQR_INK`'s darkness (`bqrInkFor`). Default: `BQR_INK` itself. */
     hue?: string;
 }
 export interface BqrLayout {
