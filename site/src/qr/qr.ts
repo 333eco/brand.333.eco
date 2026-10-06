@@ -151,7 +151,7 @@ const drawAnatomy = async () => {
             ul.append(li);
         };
         row("k-viewbox", "viewBox 24 × 24");
-        row("k-bbox", `painted box ${f(E.w)} × ${f(E.h)} at (${f(E.x)}, ${f(E.y)}), centred`);
+        row("k-bbox", `painted box ${f(E.w)} × ${f(E.h)} at (${f(E.x)}, ${f(E.y)}), centered`);
         row("k-outline", `outline ${f(G.outline)}`);
         row("k-body", `body ${f(G.body.s)} at (${f(G.body.x)}, ${f(G.body.y)})`);
         row("k-code", `code ${L.n} × ${L.n} modules, ${BQR_QUIET} clear on each side`);

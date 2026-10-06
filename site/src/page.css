@@ -1161,9 +1161,9 @@ footer p {
    to the theme files and used inside a panel must be added here too.
 
    ⚠️ DERIVED tokens (--accent-soft and its family) are resolved once on :root
-   and inherited as finished colours, so they do NOT flip inside a panel.
+   and inherited as finished colors, so they do NOT flip inside a panel.
    Nothing in a panel reads one; keep it that way, or the panel lies. --emblem
-   is not theme-varying at all — the mark keeps its colour on both grounds, and
+   is not theme-varying at all — the mark keeps its color on both grounds, and
    that is the point of showing them together.                                  */
 
 .grounds {
@@ -1306,7 +1306,7 @@ footer p {
 
 /* The geometry, in the emblem's own viewBox units. Strokes are ink at three
    weights of emphasis and three dash patterns — never a gem, which would turn a
-   content colour into a diagram key. */
+   content color into a diagram key. */
 .bqr-anatomy {
     margin: 0;
     border: 1px solid var(--line);
