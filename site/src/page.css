@@ -1290,6 +1290,43 @@ footer p {
     font-weight: 600;
 }
 
+/* ⭐ v1.6.0 — a live B-QR: the recipe's PAPER as an <img>, and its INK as an
+   alpha mask painted by --bqr-ink, which qr.ts sets from the mark's colour
+   through the recipe's own bqrInkFor. Only that one property moves when the
+   mark's colour does; nothing is redrawn. The fallback is the one green, so a
+   page whose script never ran still shows a correct B-QR's colour. */
+.bqr-live {
+    position: relative;
+    display: block;
+    width: min(100%, 16rem);
+    aspect-ratio: 1;
+    margin: 0 auto;
+}
+
+.bqr-live img {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.bqr-ink {
+    position: absolute;
+    inset: 0;
+    background: var(--bqr-ink, #14532d);
+    -webkit-mask-size: 100% 100%;
+    mask-size: 100% 100%;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+}
+
+.ground-row .bqr-live {
+    width: 100%;
+}
+
+.bqr-anatomy .a-ink {
+    fill: var(--bqr-ink, #14532d);
+}
+
 .ground-row {
     display: grid;
     grid-template-columns: 1fr 1fr;

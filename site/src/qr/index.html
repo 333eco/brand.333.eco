@@ -41,7 +41,7 @@
             <section>
                 <div class="wrap wide">
                     <p class="eyebrow">Two versions</p>
-                    <h2>Green and White</h2>
+                    <h2>Full and Open</h2>
                     <p>
                         The real code fills the emblem's square body, with its
                         own quiet zone clear. The two lobes either carry
@@ -104,8 +104,8 @@
                         <code>#0a0a0f</code> must decode within 2 of 90
                         distorted cases of paper on white, in two decoders that
                         share no code. On 2026-10-06 it matched or beat paper in
-                        every column (Green 82&middot;86 against 81&middot;85;
-                        White 86&middot;87 against 86&middot;87). The control,
+                        every column (Full 82&middot;86 against 81&middot;85;
+                        Open 86&middot;87 against 86&middot;87). The control,
                         the dark ground pressed up to the code so that no quiet
                         zone is left, failed all 90 cases in both decoders. That
                         failure is why the body sits inside the silhouette.
@@ -152,20 +152,28 @@
                             and a bank app's scan-from-gallery is the payment.
                         </li>
                         <li>
-                            <strong
-                                >One green, <code id="bqr-ink"></code>,</strong
-                            >
-                            for the code, the decoration and the outline, chosen
-                            by a rule written before the sweep ran: the lightest
-                            green that prints at ISO/IEC&nbsp;15415 grade&nbsp;A
-                            and decodes within 2 of 90 cases of near-black. The
-                            prediction was wrong, and the rule's pick was kept.
-                            It is never a theme's color.
+                            <strong>One color, at one darkness.</strong> The
+                            code, the decoration and the outline are always one
+                            color. In the apps it is <code>#14532d</code>,
+                            chosen by a rule written before the sweep ran: the
+                            lightest green that prints at ISO/IEC&nbsp;15415
+                            grade&nbsp;A and decodes within 2 of 90 cases of
+                            near-black. The prediction was wrong, and the rule's
+                            pick was kept.
+                        </li>
+                        <li>
+                            <strong>A hue, never a darkness.</strong> A caller
+                            may change the hue and never the darkness:
+                            <code>hue</code> draws any color at that green's
+                            luminance, so a light hue comes out deep. That is
+                            why the B-QRs on this page can follow the mark's
+                            color and still print and scan like the green. Ink
+                            right now: <code id="bqr-ink"></code>.
                         </li>
                         <li>
                             <strong>Scanning outranks beauty.</strong> The code
                             is sized for the standard four-module quiet zone.
-                            Green lets its decoration in to one clear module,
+                            The Full B-QR lets its decoration in to one clear module,
                             never zero, and never draws three dark decorative
                             modules in a row, so the decoration cannot imitate a
                             finder pattern.
@@ -253,7 +261,10 @@
 img.src = await bqrDataUrl(url, { style, ground: dark ? "heart" : "paper" });
 
 // a download or a print: always paper (the default)
-const png = await bqrDataUrl(url, { style });</pre
+const png = await bqrDataUrl(url, { style });
+
+// another color family, at the green's darkness (this page passes the mark's color)
+img.src = await bqrDataUrl(url, { style, hue: "#c8102e" });</pre
                     >
                     <p class="note">
                         <strong><code>ground</code> is new in v1.5.0.</strong>
@@ -261,6 +272,12 @@ const png = await bqrDataUrl(url, { style });</pre
                         everywhere, which is still correct: a white tile on a
                         dark page scans exactly as well. The heart is the better
                         picture, not a fix.
+                    </p>
+                    <p class="note">
+                        <strong><code>hue</code> is new in v1.6.0, and the apps
+                        pass none.</strong> With no hue the drawing is the green,
+                        byte for byte, so a consumer that never passes one never
+                        changes.
                     </p>
                 </div>
             </section>

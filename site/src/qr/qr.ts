@@ -7,23 +7,29 @@
 //
 // Every code opens THIS page, so a visitor can check any specimen with a phone.
 //
+// ⭐ v1.6.0 — THE B-QRs FOLLOW THE MARK'S COLOUR (founder 2026-10-06): each is drawn in the hue of the visitor's `--emblem`, at
+// the green's darkness, by the recipe's own `bqrInkFor` — so a ruby or a diamond B-QR here prints and scans like the green
+// (`bqr.test.mjs` §emblem-hue). The apps pass no hue and keep the one green; this page is the only caller that passes one.
+//
 // ⚠️ Loaded on /qr/ only, beside page.js (which every page loads). It owns no id page.js knows about, so page.js's SECTIONS
 // whitelist does not list these — and these lookups throw on a missing id instead of falling back, for the reason that list
 // exists: a mistyped id must fail loudly, not render an empty section.
 
 import {
-    bqrDataUrl, bqrLayout, bqrPlacement, BQR_ECC, BQR_GEOMETRY, BQR_INK, BQR_QUIET, BQR_STYLES, EMBLEM_BOX, EMBLEM_D,
+    bqrInkFor, bqrLayout, bqrPlacement, drawBqr, BQR_ECC, BQR_GEOMETRY, BQR_INK, BQR_QUIET, BQR_STYLES, EMBLEM_BOX, EMBLEM_D,
     type BqrGround, type BqrStyle
 } from "../../../qr/bqr";
 import { paintQrCard } from "../../../qr/bqr-card";
 
 const HERE = "https://brand.333.eco/qr/";
+const SIZE = 640;
 
-// The two public names. ⛔ The internal ones (`pixels`, `outline`) are code identifiers and never captions.
-const NAME: Record<BqrStyle, string> = { pixels: "Green B-QR", outline: "White B-QR" };
+// The two public names (ruled 2026-10-06, replacing Green / White — a colour name stops being true once the colour follows the
+// mark). ⛔ The internal ones (`pixels`, `outline`) are code identifiers and never captions.
+const NAME: Record<BqrStyle, string> = { pixels: "Full B-QR", outline: "Open B-QR" };
 const ABOUT: Record<BqrStyle, string> = {
-    pixels: "the lobes filled with green modules on the code's own grid",
-    outline: "a white heart inside a thick green outline"
+    pixels: "the lobes full of modules on the code's own grid",
+    outline: "the lobes left open inside a thick outline"
 };
 
 const byId = <T extends HTMLElement>(id: string): T => {
@@ -39,13 +45,71 @@ const el = (tag: string, cls?: string, text?: string) => {
     return n;
 };
 
+// ------------------------------------------------------------------------------------------------ the colour, live ---
+//
+// The mark's colour can change sixty times a second (the rotation), so the B-QRs are NOT redrawn when it does. Each is drawn
+// ONCE, in the default ink, and split into two layers: the PAPER (white, with the drawing's own coverage) and the INK (an alpha
+// mask). CSS paints the mask with `--bqr-ink`, and only that one property moves. Stacking the two is the same arithmetic as
+// drawing the ink over the paper in one pass, so the picture is the recipe's drawing with that hue — checked to within 1/255
+// against `paintBqr({ hue })` across both versions, both grounds, both backgrounds and four hues before this shipped.
+//
+// The split is exact because every dark pixel is one ink over white or over nothing: with `a` the alpha and `R` the red channel
+// (unpremultiplied, as getImageData returns it), the ink's coverage is c = (255a − Ra) / (255 − R_ink) and the paper's is
+// p = (a − c) / (1 − c). Red is used because it is the channel `BQR_INK` is furthest from white in.
+const INK_R = parseInt(BQR_INK.slice(1, 3), 16);
+const layerCache = new Map<string, Promise<{ paper: string; ink: string }>>();
+
+const layersOf = (style: BqrStyle, ground: BqrGround) => {
+    const key = `${style}/${ground}`;
+    let p = layerCache.get(key);
+    if (!p) {
+        p = (async () => {
+            const src = document.createElement("canvas");
+            src.width = src.height = SIZE;
+            await drawBqr(src.getContext("2d")!, HERE, { size: SIZE, style, ground });
+            const d = src.getContext("2d")!.getImageData(0, 0, SIZE, SIZE).data;
+            const paper = new ImageData(SIZE, SIZE), ink = new ImageData(SIZE, SIZE);
+            for (let i = 0; i < d.length; i += 4) {
+                const a = d[i + 3] / 255;
+                const c = Math.max(0, Math.min(1, (255 * a - d[i] * a) / (255 - INK_R)));
+                const pp = c < 1 ? Math.max(0, Math.min(1, (a - c) / (1 - c))) : 0;
+                paper.data[i] = paper.data[i + 1] = paper.data[i + 2] = 255;
+                paper.data[i + 3] = Math.round(pp * 255);
+                ink.data[i + 3] = Math.round(c * 255);
+            }
+            const url = (img: ImageData) => {
+                const c = document.createElement("canvas");
+                c.width = c.height = SIZE;
+                c.getContext("2d")!.putImageData(img, 0, 0);
+                return c.toDataURL("image/png");
+            };
+            return { paper: url(paper), ink: url(ink) };
+        })();
+        layerCache.set(key, p);
+    }
+    return p;
+};
+
+/** A B-QR in the live ink: the paper as an <img>, the ink as a mask painted by `--bqr-ink`. */
+const liveBqr = async (style: BqrStyle, ground: BqrGround) => {
+    const { paper, ink } = await layersOf(style, ground);
+    const box = el("div", "bqr-live");
+    box.setAttribute("role", "img");
+    box.setAttribute("aria-label", `${NAME[style]}, opens brand.333.eco/qr/`);
+    const img = el("img") as HTMLImageElement;
+    img.alt = "";
+    img.width = img.height = 320;
+    img.src = paper;
+    const mask = el("span", "bqr-ink");
+    mask.style.setProperty("-webkit-mask-image", `url(${ink})`);
+    mask.style.setProperty("mask-image", `url(${ink})`);
+    box.append(img, mask);
+    return box;
+};
+
 const figure = async (style: BqrStyle, ground: BqrGround, caption?: string) => {
     const fig = el("figure", "bqr-fig");
-    const img = el("img") as HTMLImageElement;
-    img.alt = `${NAME[style]}, opens brand.333.eco/qr/`;
-    img.width = img.height = 320;
-    img.src = await bqrDataUrl(HERE, { style, ground });
-    fig.append(img);
+    fig.append(await liveBqr(style, ground));
     const cap = el("figcaption");
     cap.append(el("b", undefined, NAME[style]));
     cap.append(document.createTextNode(caption ?? ABOUT[style]));
@@ -66,7 +130,16 @@ const groundForTheme = (): BqrGround => (isDark() ? "heart" : "paper");
 
 const versions = byId("bqr-versions");
 const now = byId("bqr-now");
+const inkReadout = byId("bqr-ink");
 let drawn: BqrGround | null = null;
+let currentInk = BQR_INK;
+/** The mark's colour as the cascade resolved it — the HUE the card is painted with (the recipe darkens it, not this file). */
+let currentHue = BQR_INK;
+
+const readout = () => {
+    now.textContent = `ground: "${drawn ?? groundForTheme()}" · ink ${currentInk} — the mark's hue at ${BQR_INK}'s darkness`;
+    inkReadout.textContent = currentInk;
+};
 
 const drawVersions = async () => {
     const ground = groundForTheme();
@@ -78,14 +151,35 @@ const drawVersions = async () => {
         return stage;
     }));
     versions.replaceChildren(...figs);
-    now.textContent = ground === "heart"
-        ? `ground: "heart" — you are reading in the dark theme, so only the heart is paper`
-        : `ground: "paper" — you are reading in the light theme, so the whole square is paper`;
+    readout();
 };
 
-new MutationObserver(() => void drawVersions()).observe(root, { attributes: true, attributeFilter: ["class"] });
+// ------------------------------------------------------------------------------------------------------ the ink ---
+//
+// page.js owns `--emblem` (the picker and the rotation write it on <html>). This reads what the CASCADE resolved — a probe
+// painted `color: var(--emblem)` — so a fixed gem (`var(--color-ruby)`) and a rotation frame (`rgb(…)`) arrive the same way,
+// and hands it to the recipe's `bqrInkFor`. Written on <main>, never on <html>: the observer watches <html>'s style, and a
+// write there would wake it again.
+const main = document.querySelector("main")!;
+const probe = el("span");
+probe.style.cssText = "position:absolute;width:0;height:0;overflow:hidden;color:var(--emblem)";
+probe.setAttribute("aria-hidden", "true");
+main.append(probe);
+
+let cardTimer: number | null = null;
+const followMark = () => {
+    currentHue = getComputedStyle(probe).color;
+    const ink = bqrInkFor(currentHue);
+    if (ink === currentInk && main.style.getPropertyValue("--bqr-ink")) return;
+    currentInk = ink;
+    main.style.setProperty("--bqr-ink", ink);
+    readout();
+    // The card is painted, not layered (its words are in other colours), so it follows at most every 0.6 s.
+    if (cardTimer === null) cardTimer = window.setTimeout(() => { cardTimer = null; void drawCard(); }, 600);
+};
+
+new MutationObserver(() => { void drawVersions(); followMark(); }).observe(root, { attributes: true, attributeFilter: ["class", "style"] });
 window.matchMedia("(prefers-color-scheme: light)").addEventListener("change", () => void drawVersions());
-void drawVersions();
 
 // -------------------------------------------------------------------------------------------------------- grounds ---
 //
@@ -113,27 +207,31 @@ const drawGrounds = async () => {
 
 // -------------------------------------------------------------------------------------------------------- anatomy ---
 //
-// The geometry, drawn in the emblem's own viewBox units from the exported constants, with the real B-QR faintly under it.
+// The geometry, drawn in the emblem's own viewBox units from the exported constants, with the real B-QR faintly under it —
+// the same two layers, the ink as an SVG alpha mask filled with `--bqr-ink`.
 // The code box needs the module matrix, so `qrcode` is loaded here the same way the recipe loads it.
 const drawAnatomy = async () => {
     const QRCode = (await import("qrcode")).default;
     const q = QRCode.create(HERE, { errorCorrectionLevel: BQR_ECC });
     const f = (v: number) => String(Number(v.toFixed(4)));
-    const SIZE = 640;
     const box = byId("bqr-anatomy");
 
     for (const style of BQR_STYLES) {
         const G = BQR_GEOMETRY[style];
         const L = bqrLayout(q.modules, HERE, { style });
         const { k, tx, ty } = bqrPlacement(SIZE);
-        const under = await bqrDataUrl(HERE, { style, size: SIZE, ground: "heart" });
+        const { paper, ink } = await layersOf(style, "heart");
         const E = EMBLEM_BOX;
         const code = L.n * L.m;
+        const at = `x="${-tx / k}" y="${-ty / k}" width="${SIZE / k}" height="${SIZE / k}"`;
 
         const fig = el("figure", "bqr-anatomy");
         fig.innerHTML =
             `<svg viewBox="-0.5 -0.5 25 25" role="img" aria-label="${NAME[style]} geometry">` +
-            `<image href="${under}" x="${-tx / k}" y="${-ty / k}" width="${SIZE / k}" height="${SIZE / k}" opacity="0.28" />` +
+            `<defs><mask id="bqr-ink-${style}" maskUnits="userSpaceOnUse" style="mask-type:alpha">` +
+            `<image href="${ink}" ${at} /></mask></defs>` +
+            `<g opacity="0.28"><image href="${paper}" ${at} />` +
+            `<rect class="a-ink" ${at} mask="url(#bqr-ink-${style})" /></g>` +
             `<rect class="a-viewbox" x="0" y="0" width="24" height="24" />` +
             `<rect class="a-bbox" x="${E.x}" y="${E.y}" width="${E.w}" height="${E.h}" />` +
             `<path class="a-outline" d="${EMBLEM_D}" stroke-width="${G.outline}" />` +
@@ -162,30 +260,29 @@ const drawAnatomy = async () => {
     }
 };
 
-// --------------------------------------------------------------------------------------------------- one green ---
-
-byId("bqr-ink").textContent = BQR_INK;
-
 // ----------------------------------------------------------------------------------------------------------- card ---
 //
-// Painted at full print size and shown smaller by CSS, so what is on screen is the pixels a consumer saves. The words are
-// set in the page's own typeface, loaded first: a card painted before the face arrives is painted in the fallback forever.
-const drawCard = async () => {
-    const canvas = byId<HTMLCanvasElement>("bqr-card");
-    const face = `"Public Sans", system-ui, sans-serif`;
-    try {
-        await Promise.all([document.fonts.load(`600 72px "Public Sans"`), document.fonts.load(`400 30px "Public Sans"`)]);
-    } catch {
-        /* offline without the font — the fallback face is still a correct card */
-    }
-    await paintQrCard(canvas.getContext("2d")!, {
+// Painted at full print size and shown smaller by CSS, so what is on screen is the pixels a consumer saves — in the live hue,
+// through the same `hue` option a consumer would pass. The words are set in the page's own typeface, loaded first: a card
+// painted before the face arrives is painted in the fallback forever.
+const card = byId<HTMLCanvasElement>("bqr-card");
+const face = `"Public Sans", system-ui, sans-serif`;
+const fontsReady = Promise.all([document.fonts.load(`600 72px "Public Sans"`), document.fonts.load(`400 30px "Public Sans"`)])
+    .catch(() => { /* offline without the font — the fallback face is still a correct card */ });
+
+async function drawCard() {
+    await fontsReady;
+    await paintQrCard(card.getContext("2d")!, {
         url: HERE,
         title: "brand.333.eco",
         caption: "Scan to see how it is drawn",
-        foot: "brand.333.eco/qr"
+        foot: "brand.333.eco/qr",
+        hue: currentHue
     }, face);
-};
+}
 
+followMark();
+void drawVersions();
 void drawGrounds();
 void drawAnatomy();
 void drawCard();
