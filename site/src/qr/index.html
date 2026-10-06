@@ -3,10 +3,14 @@
     <head>
         <!--#include head-->
         <title>B-QR — brand.333.eco</title>
-        <meta name="description" content="The B-QR: one of our codes drawn inside the B-Emblem™ — two versions, two grounds, one green, measured and decoded before it ships." />
+        <meta
+            name="description"
+            content="The B-QR: one of our codes drawn inside the B-Emblem™ — two versions, two grounds, one green, measured and decoded before it ships." />
         <link rel="canonical" href="https://brand.333.eco/qr/" />
         <meta property="og:title" content="B-QR — brand.333.eco" />
-        <meta property="og:description" content="The B-QR: one of our codes drawn inside the B-Emblem™ — two versions, two grounds, one green, measured and decoded before it ships." />
+        <meta
+            property="og:description"
+            content="The B-QR: one of our codes drawn inside the B-Emblem™ — two versions, two grounds, one green, measured and decoded before it ships." />
         <meta property="og:url" content="https://brand.333.eco/qr/" />
     </head>
     <body>
@@ -17,7 +21,12 @@
             <section class="lead">
                 <div class="wrap">
                     <h1>The B-QR</h1>
-                    <p class="sub">One of our codes, drawn inside the B-Emblem&trade;. Every code on this page is drawn live by <code>qr/bqr.ts</code>, the file a consumer vendors, and every one of them opens this page.</p>
+                    <p class="sub">
+                        One of our codes, drawn inside the B-Emblem<sup>™</sup>.
+                        Every code on this page is drawn live by
+                        <code>qr/bqr.ts</code>, the file a consumer vendors, and
+                        every one of them opens this page.
+                    </p>
                 </div>
             </section>
 
@@ -36,9 +45,9 @@
                     <p>
                         The real code fills the emblem's square body, with its
                         own quiet zone clear. The two lobes either carry
-                        decorative modules on the code's own grid, or stay
-                        white inside a thick outline. The person chooses, and
-                        the choice is a fact about their phone, kept by the app.
+                        decorative modules on the code's own grid, or stay white
+                        inside a thick outline. The person chooses, and the
+                        choice is a fact about their phone, kept by the app.
                     </p>
                     <div class="bqr-pair" id="bqr-versions"></div>
                     <p class="note mono" id="bqr-now"></p>
@@ -51,12 +60,13 @@
                     <p class="eyebrow">Dark mode &middot; v1.5.0</p>
                     <h2>Two grounds</h2>
                     <p>
-                        On a light page the B-QR is drawn on <strong>paper</strong>:
-                        the whole square is white, and it all but disappears.
-                        On a dark page that square becomes a white tile. The
-                        <strong>heart</strong> ground paints only the silhouette
-                        white and leaves the square around it transparent, so on
-                        a dark page the B-QR reads as a white heart.
+                        On a light page the B-QR is drawn on
+                        <strong>paper</strong>: the whole square is white, and
+                        it all but disappears. On a dark page that square
+                        becomes a white tile. The <strong>heart</strong> ground
+                        paints only the silhouette white and leaves the square
+                        around it transparent, so on a dark page the B-QR reads
+                        as a white heart.
                     </p>
                     <!-- Each panel sets the ROLE tokens to one theme's -l-/-d-
                          pair, so both grounds show at once whatever theme the
@@ -65,39 +75,41 @@
                     <div class="grounds" id="bqr-grounds"></div>
                     <ul class="rules">
                         <li>
-                            <strong>The code does not change between the
-                            two.</strong> It stays dark on white inside the
-                            body, quiet zone included, which is all a camera
-                            reads. Only what lies outside the silhouette
-                            changes.
+                            <strong
+                                >The code does not change between the
+                                two.</strong
+                            >
+                            It stays dark on white inside the body, quiet zone
+                            included, which is all a camera reads. Only what
+                            lies outside the silhouette changes.
                         </li>
                         <li class="no">
                             <strong>Never inverted.</strong> Light modules on a
                             dark ground is the obvious dark-mode QR, and many
                             phone scanners never try one. A dark ground is why
-                            the heart exists; it is never a reason to invert
-                            the code.
+                            the heart exists; it is never a reason to invert the
+                            code.
                         </li>
                         <li class="no">
                             <strong>The heart is for the screen only.</strong>
                             A download, a print and the card stay on paper. A
-                            transparent PNG sent to another app may be
-                            flattened onto black, and the picture a person
-                            saves must look the same wherever they send it.
+                            transparent PNG sent to another app may be flattened
+                            onto black, and the picture a person saves must look
+                            the same wherever they send it.
                         </li>
                     </ul>
                     <p class="note">
-                        <strong>Decoded before it shipped.</strong> The test
-                        was written down before it ran: the heart on
+                        <strong>Decoded before it shipped.</strong> The test was
+                        written down before it ran: the heart on
                         <code>#0a0a0f</code> must decode within 2 of 90
                         distorted cases of paper on white, in two decoders that
-                        share no code. On 2026-10-06 it matched or beat paper
-                        in every column (Green 82&middot;86 against 81&middot;85;
+                        share no code. On 2026-10-06 it matched or beat paper in
+                        every column (Green 82&middot;86 against 81&middot;85;
                         White 86&middot;87 against 86&middot;87). The control,
                         the dark ground pressed up to the code so that no quiet
-                        zone is left, failed all 90 cases in both decoders.
-                        That failure is why the body sits inside the
-                        silhouette. <code>npm run bqr:test</code>, &sect;dark-ground.
+                        zone is left, failed all 90 cases in both decoders. That
+                        failure is why the body sits inside the silhouette.
+                        <code>npm run bqr:test</code>, &sect;dark-ground.
                     </p>
                 </div>
             </section>
@@ -110,10 +122,10 @@
                     <p>
                         The mark fills only 75.34% of its own viewBox and sits
                         high and right in it, so a B-QR centers the
-                        <em>painted</em> box, never the viewBox. The body is
-                        the largest square inside the silhouette, less the
-                        outline's inner half. The diagrams and their numbers
-                        are drawn from the constants <code>bqr.ts</code>
+                        <em>painted</em> box, never the viewBox. The body is the
+                        largest square inside the silhouette, less the outline's
+                        inner half. The diagrams and their numbers are drawn
+                        from the constants <code>bqr.ts</code>
                         exports, and the decode matrix measures them again on
                         every run.
                     </p>
@@ -140,21 +152,23 @@
                             and a bank app's scan-from-gallery is the payment.
                         </li>
                         <li>
-                            <strong>One green, <code id="bqr-ink"></code>,</strong>
-                            for the code, the decoration and the outline,
-                            chosen by a rule written before the sweep ran: the
-                            lightest green that prints at ISO/IEC&nbsp;15415
-                            grade&nbsp;A and decodes within 2 of 90 cases of
-                            near-black. The prediction was wrong, and the rule's
-                            pick was kept. It is never a theme's color.
+                            <strong
+                                >One green, <code id="bqr-ink"></code>,</strong
+                            >
+                            for the code, the decoration and the outline, chosen
+                            by a rule written before the sweep ran: the lightest
+                            green that prints at ISO/IEC&nbsp;15415 grade&nbsp;A
+                            and decodes within 2 of 90 cases of near-black. The
+                            prediction was wrong, and the rule's pick was kept.
+                            It is never a theme's color.
                         </li>
                         <li>
                             <strong>Scanning outranks beauty.</strong> The code
                             is sized for the standard four-module quiet zone.
                             Green lets its decoration in to one clear module,
                             never zero, and never draws three dark decorative
-                            modules in a row, so the decoration cannot imitate
-                            a finder pattern.
+                            modules in a row, so the decoration cannot imitate a
+                            finder pattern.
                         </li>
                         <li>
                             <strong>Deterministic.</strong> The decoration is
@@ -176,16 +190,21 @@
                 <div class="wrap">
                     <h2>The printable card</h2>
                     <p>
-                        A title, the code large, one line saying what it is
-                        for, and the address in words. The code is drawn fresh
-                        at print size and is never a screen image stretched.
-                        The card is always on paper, in either theme.
+                        A title, the code large, one line saying what it is for,
+                        and the address in words. The code is drawn fresh at
+                        print size and is never a screen image stretched. The
+                        card is always on paper, in either theme.
                     </p>
                     <!-- Painted by paintQrCard from qr/bqr-card.ts at its full
                          1200 × 1560, then shown smaller by CSS — the same
                          pixels a consumer saves. -->
                     <div class="bqr-card-wrap">
-                        <canvas id="bqr-card" width="1200" height="1560" role="img" aria-label="The printable B-QR card for brand.333.eco"></canvas>
+                        <canvas
+                            id="bqr-card"
+                            width="1200"
+                            height="1560"
+                            role="img"
+                            aria-label="The printable B-QR card for brand.333.eco"></canvas>
                     </div>
                 </div>
             </section>
@@ -229,17 +248,19 @@
                     </div>
 
                     <h3>The call site</h3>
-                    <pre>// on screen: follow the theme
+                    <pre>
+// on screen: follow the theme
 img.src = await bqrDataUrl(url, { style, ground: dark ? "heart" : "paper" });
 
 // a download or a print: always paper (the default)
-const png = await bqrDataUrl(url, { style });</pre>
+const png = await bqrDataUrl(url, { style });</pre
+                    >
                     <p class="note">
                         <strong><code>ground</code> is new in v1.5.0.</strong>
                         A consumer whose lock predates it draws paper
                         everywhere, which is still correct: a white tile on a
-                        dark page scans exactly as well. The heart is the
-                        better picture, not a fix.
+                        dark page scans exactly as well. The heart is the better
+                        picture, not a fix.
                     </p>
                 </div>
             </section>
@@ -253,8 +274,8 @@ const png = await bqrDataUrl(url, { style });</pre>
                         (<code>thank.heartbank.ceo</code>) and the
                         <strong>Treasury app</strong>
                         (<code>thank.heartbank.org</code>), each vendoring the
-                        recipe behind the same <code>brand.lock</code> guard
-                        as the rest of this layer.
+                        recipe behind the same <code>brand.lock</code> guard as
+                        the rest of this layer.
                     </p>
                     <p class="note">
                         QR Code is a registered trademark of DENSO WAVE
