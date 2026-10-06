@@ -18,7 +18,7 @@ import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.unit.dp
 
 object Brand {
-    const val VERSION = "1.5.0"
+    const val VERSION = "1.6.0"
 
     /** The B-Gem media-type palette. A colour here MEANS a medium.
      *  Not a site palette, and not the six-TLD rainbow. */

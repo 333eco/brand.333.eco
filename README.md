@@ -106,8 +106,8 @@ what a stylesheet cannot say; `dist/` is generated from both.
 ## B-QR — the drawing every code of ours shares (v1.4.0)
 
 A **B-QR** is a QR code drawn inside the B-Emblem™: the real code in the emblem's square body with its quiet zone clear,
-the two lobes filled with decorative modules on the same grid (*Green B-QR*) or left white inside a thick outline
-(*White B-QR*), all in one green, `#14532d`. It is a public shorthand (2026-10-04) for a **drawing style**, not a mark:
+the two lobes filled with decorative modules on the same grid (*Full B-QR*) or left open inside a thick outline
+(*Open B-QR*; both names ruled 2026-10-06, replacing *Green* / *White*), all in one green, `#14532d`. It is a public shorthand (2026-10-04) for a **drawing style**, not a mark:
 an H3QR names whom you thank, and a B-QR is how that code is drawn.
 
 - **Ours only.** A link to one of our pages is drawn as a B-QR. A bank's code — KHQR, any EMVCo payload — is **never**
@@ -124,6 +124,10 @@ an H3QR names whom you thank, and a B-QR is how that code is drawn.
   zone included. **Never inverted** (light modules on dark): many phone scanners never try an inverted code. **`heart` is
   for the screen only** — a download, a print and the card stay `paper`, because a transparent PNG handed to another app may
   be flattened onto black. Pre-registered and decoded on `#0a0a0f` before it shipped (`bqr.test.mjs` §dark-ground).
+- **A hue, never a darkness (v1.6.0).** `hue` picks the drawing's colour family; `bqrInkFor` draws it at `#14532d`'s
+  luminance, keeping the OKLCH hue and giving up only the chroma sRGB cannot hold that dark — so no caller can draw a code
+  that prints lighter than the green. Light hues come out deep (citrine olive-brown, diamond graphite). No `hue` is the
+  green, byte for byte; the apps pass none. brand.333.eco/qr/ passes the visitor's `--emblem` (`bqr.test.mjs` §emblem-hue).
 - **Run the matrix** after any change to `qr/`: `npm i && npm run bqr:test` (jsQR + ZXing pinned here; OpenCV optional
   via `BQR_PYTHON`). It must also be seen to FAIL — break the path or the ring on purpose once and watch it catch it.
 

@@ -133,6 +133,12 @@
  *   H5 the broken control — raw diamond #f4f7ff as the ink (the TEST-ONLY `ink`, which skips `bqrInkFor` — the failure `hue`
  *      exists to make impossible) FAILS at least 80 of 90 on both decoders. Predicted: 90 of 90.
  *   Reported, gating nothing: raw citrine as an ink (90 cases), beside its derived ink.
+ *   ✅ RESULT (2026-10-06, the run after the pre-registration commit 6ba6573): every gate passed; 134 checks. H1 5/5 per version.
+ *     H2 0 of 2,010 lighter, worst 0.0015 darker. H3 hue moved ≤ 1.0° (citrine; the rest ≤ 0.3°) — better than the predicted ≤ 3°.
+ *     H4 every gem within ONE case of no hue (jsQR 76–78 vs 77, ZXing 83 vs 83); every outline preview 5/5. H5 raw diamond failed
+ *     90 of 90 on both. ⚠️ Reported, and worth keeping: raw CITRINE read 77 · 82 — on a screen it scans almost as well as the green.
+ *     What rules a raw light gem out is PRINT contrast (SC 0.337, far below grade A), which this digital matrix does not measure;
+ *     never cite H4 as the reason the darkening exists. OpenCV NOT RUN.
  */
 import { createRequire } from "node:module";
 import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, existsSync } from "node:fs";

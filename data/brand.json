@@ -8,7 +8,7 @@
         "into brand.lock, which is vendored byte-identical into every consumer,",
         "so 'which sites are on which brand version' is answerable by grep."
     ],
-    "version": "1.5.0",
+    "version": "1.6.0",
     "wordmark": {
         "$comment": [
             "The composition has an internal short-name as of 2026-09-20: B-Wordmark",
