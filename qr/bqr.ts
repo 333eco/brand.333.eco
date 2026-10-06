@@ -74,6 +74,22 @@ export const BQR_ECC = "M" as const;
 /** ⭐ §4AA — the code's modules: the green the pre-registered rule in `scripts/bqr.test.mjs` picked (header above). ⛔ Never a theme's. */
 export const BQR_INK = "#14532d";
 const PAPER = "#ffffff";
+
+/**
+ * ⭐ v1.5.0 (2026-10-06) — WHERE THE PAPER IS. `paper` (the default): the whole square is white, as every B-QR was drawn before.
+ *   `heart`: only the silhouette is white and the square around it is left transparent, so on a dark ground the B-QR reads as a
+ *   white heart instead of a white tile.
+ * ⭐ THE CODE DOES NOT CHANGE BETWEEN THE TWO: it stays dark-on-white inside the body, quiet zone included, which is all a camera
+ *   reads. Only what lies outside the silhouette changes. `scripts/bqr.test.mjs` §dark-ground decodes `heart` on the dark ground.
+ * ⛔ NEVER INVERTED (light modules on a dark ground). Many phone scanners never try an inverted code, and this matrix runs jsQR with
+ *   inversion off for exactly that reason. A dark ground is why `heart` exists; it is never a reason to invert the code.
+ * ⛔ ON SCREEN ONLY. A download, a print and the card (`bqr-card.ts`) stay `paper`: a transparent PNG handed to another app may be
+ *   flattened onto black, and the picture a person saves must be the one they will see wherever they send it.
+ */
+export type BqrGround = "paper" | "heart";
+export const BQR_GROUNDS: readonly BqrGround[] = ["paper", "heart"];
+export const BQR_GROUND_DEFAULT: BqrGround = "paper";
+export const bqrGroundOf = (s: unknown): BqrGround => (BQR_GROUNDS as readonly unknown[]).includes(s) ? s as BqrGround : BQR_GROUND_DEFAULT;
 /** The decorative module's side, as a fraction of a module — a visible gap between neighbours, so no two ever merge. */
 const DOT = 0.84;
 /** Share of decorative cells drawn dark (before the run limit thins them). */
@@ -95,6 +111,8 @@ export interface BqrOptions {
     ecc?: "L" | "M" | "Q" | "H";
     /** ⭐ §4Z — which of the two versions. Default `BQR_STYLE_DEFAULT`. */
     style?: BqrStyle;
+    /** ⭐ v1.5.0 — where the paper is (`BqrGround`, above). Default `paper`. ⛔ `heart` is for the screen, never a download or print. */
+    ground?: BqrGround;
     /** ⛔ TEST ONLY — clear modules between code and decoration (`pixels`). 0 is the broken control `scripts/bqr.test.mjs` must catch. */
     quiet?: number;
     /** ⛔ TEST ONLY — the code's colour, for the ink sweep that chose `BQR_INK`. ⛔ Never a theme's colour. */
@@ -228,10 +246,15 @@ export function paintBqr(g: CanvasRenderingContext2D, mat: BqrMatrix, seed: stri
     const L = bqrLayout(mat, seed, { style: o.style, quiet: o.quiet });
     const { k, tx, ty } = bqrPlacement(size, X, Y);
     const path = new Path2D(EMBLEM_D);
+    const ground = bqrGroundOf(o.ground);
 
     g.save();
-    g.fillStyle = PAPER; g.fillRect(X, Y, size, size);
+    // ⭐ v1.5.0 — the drawing owns its square either way: `heart` CLEARS it (a reused canvas keeps nothing from the last drawing),
+    //   then lays the paper down inside the silhouette only. The decoration, the outline and the code are drawn the same on both.
+    if (ground === "heart") g.clearRect(X, Y, size, size);
+    else { g.fillStyle = PAPER; g.fillRect(X, Y, size, size); }
     g.translate(tx, ty); g.scale(k, k);
+    if (ground === "heart") { g.fillStyle = PAPER; g.fill(path); }
     // The decoration, clipped to the silhouette.
     g.save(); g.clip(path); g.fillStyle = accent;
     const d = DOT * L.m, inset = (L.m - d) / 2;
@@ -267,10 +290,11 @@ export async function drawBqr(g: CanvasRenderingContext2D, text: string, o: BqrO
 }
 
 /** A B-QR as a PNG data URL — the on-screen preview of a code a person may also download, so what they see is what they print. */
-export async function bqrDataUrl(text: string, o: { size?: number; accent?: string; ecc?: "L" | "M" | "Q" | "H"; style?: BqrStyle } = {}): Promise<string> {
+export async function bqrDataUrl(text: string, o: { size?: number; accent?: string; ecc?: "L" | "M" | "Q" | "H"; style?: BqrStyle; ground?: BqrGround } = {}): Promise<string> {
     const size = o.size ?? 640;
     const canvas = document.createElement("canvas");
     canvas.width = size; canvas.height = size;
-    await drawBqr(canvas.getContext("2d")!, text, { size, accent: o.accent, ecc: o.ecc, style: o.style });
+    // ⛔ v1.5.0 — `ground: "heart"` only for a picture that stays on screen; a URL handed to a download takes the default `paper`.
+    await drawBqr(canvas.getContext("2d")!, text, { size, accent: o.accent, ecc: o.ecc, style: o.style, ground: o.ground });
     return canvas.toDataURL("image/png");
 }

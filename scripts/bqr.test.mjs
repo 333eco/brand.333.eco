@@ -74,6 +74,35 @@
  *     margin — about one module on the longest payload); CONTROL: the old 4-ring is caught non-white for at least one payload (the
  *     read SEES the doubled stroke). Every code module reads dark (< 128) in the green ink, in both versions.
  *   P5 unchanged — 60 clean cases, both versions, both accents, all payloads, jsQR AND ZXing — now in the green ink.
+ *
+ * ⛔ §dark-ground — PRE-REGISTERED 2026-10-06, written before the §dark-ground arm ran (founder, asked whether the B-QR should get a
+ *   real dark-mode variant or only be shown on both grounds: *"Add a dark-ground B-QR (Recommended)"*). `paintBqr` takes `ground`:
+ *   `paper` (the default — the whole square white, as before) or `heart` (only the silhouette white, the square around it transparent).
+ *   The code, the decoration and the outline are drawn the same on both. The run FAILS on any of:
+ *   G1 identity — `ground: "paper"` draws the same bytes as no ground, both versions, all payloads (the default did not move);
+ *      CONTROL: `heart` draws different bytes. (One-time, outside the gate: the default previews and cards are compared by SHA-256
+ *      with the samples this file wrote BEFORE `ground` existed — recorded in the RESULT line below, never re-run as a gate.)
+ *   G2 transparency — in a `heart` render at 1200, no pixel clearly OUTSIDE the silhouette (more than half the outline + 2 px away)
+ *      has any alpha, in both versions, including on a canvas the `paper` drawing was painted on first (the square is cleared);
+ *      and P3's read passes unchanged on `heart` (every code module right, the quiet ring and the lobes opaque white).
+ *      CONTROL: the `paper` render has opaque pixels in the same region.
+ *   G3 light ground — `heart` flattened onto white matches `paper` within 4/255 on every channel of every pixel at 640, both
+ *      versions, all payloads (on a light page the two are one picture). Predicted: within 2.
+ *   G4 decode on dark — the `heart` preview flattened onto the dark ground #0a0a0f (`--d-bg`), at 300/200/150 × the six distortions
+ *      × the five payloads (90 per version), in the default ink:
+ *      (a) every CLEAN case at 300 decodes in jsQR AND ZXing (5/5 per version), and
+ *      (b) it decodes no worse than the `paper` preview (on white, the existing matrix, default ink) by more than 2 of 90, in jsQR AND
+ *          in ZXing, per version — the same margin the ink rule used.
+ *      Predicted: within 1 case of `paper` on both decoders, both versions. (jsQR runs with inversion OFF, as everywhere here: a
+ *      code that scanned only when inverted would fail, which is the point.)
+ *   G5 the broken control — the same dark-ground preview with the ground pressed up to the code (every pixel outside the code's own
+ *      module box painted #0a0a0f, so the quiet zone is gone — the failure `heart` would have if the silhouette ever cut into the
+ *      body) FAILS at least 45 of 90 per version in jsQR AND in ZXing. If it does not, the dark arm cannot see a failure and G4
+ *      means nothing. Predicted: ≥ 85 of 90 fail on both.
+ *   Reported, gating nothing: the `paper` preview flattened onto the same dark ground (the white tile the apps show in dark mode
+ *   today), so the two dark renderings sit side by side.
+ *   ⚠️ Honest bound, written before the run: the distortions pad with WHITE, as everywhere in this file, so a rotated dark preview
+ *   sits on white corners — nearer to a phone photographing a screen on a desk than to an endless dark ground.
  */
 import { createRequire } from "node:module";
 import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, existsSync } from "node:fs";
@@ -243,8 +272,8 @@ function renderBqr(text, size, o = {}) {
     B.paintBqr(g, q.modules, text, { size, ...o });
     return c;
 }
-function pixelRead(text, quiet, style = "pixels", ringOverride) {
-    const S = 1200, c = renderBqr(text, S, { quiet, style }), px = c.getContext("2d").getImageData(0, 0, S, S).data;
+function pixelRead(text, quiet, style = "pixels", ringOverride, ground) {
+    const S = 1200, c = renderBqr(text, S, { quiet, style, ground }), px = c.getContext("2d").getImageData(0, 0, S, S).data;
     const q = QRCode.create(text, { errorCorrectionLevel: B.BQR_ECC }), L = B.bqrLayout(q.modules, text, { style, quiet }), { k, tx, ty } = B.bqrPlacement(S);
     const lum = (u, v) => { const i = (Math.round(ty + v * k) * S + Math.round(tx + u * k)) * 4; return (px[i] + px[i + 1] + px[i + 2]) / 3; };
     const ring = ringOverride ?? (style === "outline" ? OUTLINE_CLEAR : FILL_RING);
@@ -284,6 +313,52 @@ for (const style of ["pixels", "outline"]) {
     const def = renderBqr(P[0][1], 640, { style }).toBuffer("image/png");
     ok(def.equals(renderBqr(P[0][1], 640, { style, accent: B.BQR_INK }).toBuffer("image/png")), `${style}: no accent draws the same bytes as accent ${B.BQR_INK} (one green)`);
     ok(!def.equals(renderBqr(P[0][1], 640, { style, accent: "#15803d" }).toBuffer("image/png")), `${style} control: accent #15803d draws different bytes`);
+}
+
+// ---- §dark-ground G1 · G2 · G3 (pre-registered in the header, 2026-10-06) --------------------------------------------------------
+console.log("\n— §dark-ground G1 identity · G2 transparency · G3 light ground");
+const DARK = "#0a0a0f";
+/** Flatten a drawing onto a solid ground — what a page under it does. */
+const onGround = (src, color) => { const c = createCanvas(src.width, src.height), g = c.getContext("2d"); g.fillStyle = color; g.fillRect(0, 0, c.width, c.height); g.drawImage(src, 0, 0); return c; };
+for (const style of ["pixels", "outline"]) {
+    const same = P.filter(([, text]) => renderBqr(text, 640, { style }).toBuffer("image/png").equals(renderBqr(text, 640, { style, ground: "paper" }).toBuffer("image/png"))).length;
+    ok(same === P.length, `G1 ${style}: ground "paper" draws the same bytes as no ground — ${same}/${P.length} payloads`);
+    ok(!renderBqr(P[0][1], 640, { style }).toBuffer("image/png").equals(renderBqr(P[0][1], 640, { style, ground: "heart" }).toBuffer("image/png")), `G1 control ${style}: ground "heart" draws different bytes`);
+}
+{
+    const S = 1200, { k, tx, ty } = B.bqrPlacement(S);
+    // The region CLEARLY outside: not covered by the silhouette dilated by half the outline + 2 px (anti-aliasing never reaches it).
+    const outside = (style) => {
+        const c = createCanvas(S, S), g = c.getContext("2d"), p = new Path2D(B.EMBLEM_D);
+        g.translate(tx, ty); g.scale(k, k); g.fillStyle = "#000"; g.fill(p);
+        g.strokeStyle = "#000"; g.lineJoin = "round"; g.lineWidth = B.BQR_GEOMETRY[style].outline + 4 / k; g.stroke(p);
+        const a = g.getImageData(0, 0, S, S).data, out = [];
+        for (let i = 0; i < S * S; i++) if (a[i * 4 + 3] === 0) out.push(i);
+        return out;
+    };
+    for (const style of ["pixels", "outline"]) {
+        const out = outside(style);
+        const alphaIn = (c) => { const d = c.getContext("2d").getImageData(0, 0, S, S).data; return out.filter((i) => d[i * 4 + 3] > 0).length; };
+        const lit = P.map(([, text]) => alphaIn(renderBqr(text, S, { style, ground: "heart" })));
+        ok(out.length > S * S * 0.2 && lit.every((n) => n === 0), `G2 ${style}: ${out.length} px clearly outside the silhouette — ${lit.join(" · ")} with any alpha in "heart"`);
+        const reused = createCanvas(S, S), rg = reused.getContext("2d"), q = QRCode.create(P[0][1], { errorCorrectionLevel: B.BQR_ECC });
+        B.paintBqr(rg, q.modules, P[0][1], { size: S, style }); B.paintBqr(rg, q.modules, P[0][1], { size: S, style, ground: "heart" });
+        ok(alphaIn(reused) === 0, `G2 ${style}: "heart" drawn over a "paper" drawing leaves ${alphaIn(reused)} px outside (the square is cleared)`);
+        ok(alphaIn(renderBqr(P[0][1], S, { style })) > out.length * 0.99, `G2 control ${style}: "paper" is opaque across that region (${alphaIn(renderBqr(P[0][1], S, { style }))} of ${out.length} px)`);
+        for (const [name, text] of P) {
+            const v = pixelRead(text, undefined, style, undefined, "heart");
+            ok(v.wrong === 0 && v.dirty === 0 && v.lobes === 0, `G2 ${style} ${name} "heart": code modules ${v.wrong} wrong · ring ${v.dirty} non-white · lobes ${v.lobes} non-white`);
+        }
+    }
+    for (const style of ["pixels", "outline"]) {
+        let worst = 0;
+        for (const [, text] of P) {
+            const a = renderBqr(text, 640, { style }).getContext("2d").getImageData(0, 0, 640, 640).data;
+            const b = onGround(renderBqr(text, 640, { style, ground: "heart" }), "#ffffff").getContext("2d").getImageData(0, 0, 640, 640).data;
+            for (let i = 0; i < a.length; i++) if ((i & 3) !== 3) worst = Math.max(worst, Math.abs(a[i] - b[i]));
+        }
+        ok(worst <= 4, `G3 ${style}: "heart" flattened onto white differs from "paper" by at most ${worst}/255 on any channel (gate 4, predicted ≤ 2)`);
+    }
 }
 
 // ---- the images ------------------------------------------------------------------------------------------------------------------
@@ -395,6 +470,19 @@ for (const [name, text] of P) {
         const pv = renderBqr(text, 640, { accent, style });
         for (const s of [300, 200, 150]) await decodeAll(`${vname} preview`, s, name, text, accent, pv);
     }
+    // ⭐ §dark-ground G4 · G5 — the default ink only; the families are named so P5's aperture (exact names) never counts them.
+    for (const [style, vname] of Object.entries(VERSIONS)) {
+        const heart = onGround(renderBqr(text, 640, { style, ground: "heart" }), DARK);
+        for (const s of [300, 200, 150]) await decodeAll(`${vname} preview, heart on dark`, s, name, text, B.BQR_INK, heart);
+        const tile = onGround(renderBqr(text, 640, { style }), DARK);
+        for (const s of [300, 200, 150]) await decodeAll(`${vname} preview, paper on dark (reported)`, s, name, text, B.BQR_INK, tile);
+        // ⛔ The broken control: the dark ground pressed up to the code's own module box — no quiet zone left.
+        const q = QRCode.create(text, { errorCorrectionLevel: B.BQR_ECC }), L = B.bqrLayout(q.modules, text, { style }), { k, tx, ty } = B.bqrPlacement(640);
+        const x0 = Math.round(tx + L.ox * k), y0 = Math.round(ty + L.oy * k), x1 = Math.round(tx + (L.ox + L.n * L.m) * k), y1 = Math.round(ty + (L.oy + L.n * L.m) * k);
+        const br = onGround(heart, DARK), bg = br.getContext("2d"); bg.fillStyle = DARK;
+        bg.fillRect(0, 0, 640, y0); bg.fillRect(0, y1, 640, 640 - y1); bg.fillRect(0, y0, x0, y1 - y0); bg.fillRect(x1, y0, 640 - x1, y1 - y0);
+        for (const s of [300, 200, 150]) await decodeAll(`BROKEN dark ground at the code (${vname})`, s, name, text, B.BQR_INK, br);
+    }
     const pl = plainCard(text);
     for (const s of [1200, 300, 200, 150]) await decodeAll("plain card (old)", s, name, text, "—", pl);
     const nk = nakedCard(text);
@@ -464,6 +552,23 @@ const broken = cases.filter((c) => c.family.startsWith("BROKEN"));
 const bf = cols.map((k) => `${k} ${broken.filter((c) => !c[k]).length}`).join(" · ");
 ok(broken.some((c) => cols.some((k) => !c[k])), `P6: the broken control fails somewhere (failures of ${broken.length}: ${bf})`);
 
+// ---- §dark-ground G4 · G5 ------------------------------------------------------------------------------------------------------
+console.log("\n— §dark-ground G4 · G5 (rule in the header: heart on #0a0a0f within 2 of 90 of paper on white; the broken control fails ≥ 45)");
+for (const [style, vname] of Object.entries(VERSIONS)) {
+    const n = (a, k) => a.filter((c) => c[k]).length;
+    const heart = cases.filter((c) => c.family === `${vname} preview, heart on dark`);
+    const paper = cases.filter((c) => c.family === `${vname} preview` && c.accent === B.BQR_INK);
+    const tile = cases.filter((c) => c.family === `${vname} preview, paper on dark (reported)`);
+    ok(heart.length === 90 && paper.length === 90, `G4 aperture ${style}: ${heart.length} heart-on-dark · ${paper.length} paper cases (5 payloads × 3 sizes × 6 distortions = 90)`);
+    const clean = heart.filter((c) => c.distort === "clean" && c.size === 300);
+    ok(clean.length === 5 && clean.every((c) => c.jsqr && c.zxing), `G4(a) ${style}: ${clean.filter((c) => c.jsqr && c.zxing).length}/${clean.length} clean heart-on-dark previews at 300 decode in jsQR AND ZXing`);
+    ok(n(paper, "jsqr") - n(heart, "jsqr") <= 2 && n(paper, "zxing") - n(heart, "zxing") <= 2,
+        `G4(b) ${style}: heart on dark jsQR ${n(heart, "jsqr")} · ZXing ${n(heart, "zxing")} of 90 vs paper on white ${n(paper, "jsqr")} · ${n(paper, "zxing")} (margin 2; reported: paper on dark ${n(tile, "jsqr")} · ${n(tile, "zxing")})`);
+    const br = cases.filter((c) => c.family === `BROKEN dark ground at the code (${vname})`);
+    ok(br.length === 90 && br.length - n(br, "jsqr") >= 45 && br.length - n(br, "zxing") >= 45,
+        `G5 control ${style}: the ground pressed to the code fails jsQR ${br.length - n(br, "jsqr")} · ZXing ${br.length - n(br, "zxing")} of ${br.length} (≥ 45 each)`);
+}
+
 // ---- §4AA the ink ---------------------------------------------------------------------------------------------------------------
 console.log("\n— §4AA ink (rule in the header: the lightest green at ISO/IEC 15415 grade A that decodes no worse than the old ink by > 2)");
 const lin = (c) => { c /= 255; return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; };
@@ -492,6 +597,10 @@ for (const [name, text] of P.filter(([n]) => n in label)) for (const style of Ob
     await C.paintQrCard(c.getContext("2d"), { url: text, title: "Home Coffee", caption: label[name], foot: "homecoffee.heartbank.ceo", style }, "sans-serif");
     writeFileSync(join(OUT, `card-${style}-${name}.png`), c.toBuffer("image/png"));
     writeFileSync(join(OUT, `preview-${style}-${name}.png`), renderBqr(text, 640, { style }).toBuffer("image/png"));
+}
+for (const style of Object.keys(VERSIONS)) {
+    writeFileSync(join(OUT, `preview-${style}-order-here-heart.png`), renderBqr(P[0][1], 640, { style, ground: "heart" }).toBuffer("image/png"));
+    writeFileSync(join(OUT, `preview-${style}-order-here-heart-on-dark.png`), onGround(renderBqr(P[0][1], 640, { style, ground: "heart" }), DARK).toBuffer("image/png"));
 }
 writeFileSync(join(OUT, "broken-quiet0.png"), bareCard(P[0][1], { quiet: 0 }).toBuffer("image/png"));
 writeFileSync(join(OUT, "naked-control.png"), nakedCard(P[0][1]).toBuffer("image/png"));
