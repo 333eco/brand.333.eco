@@ -48,6 +48,7 @@ const SHELL = [
     "/",
     "/wordmark/",
     "/mark/",
+    "/qr/",
     "/color/",
     "/tokens/",
     "/vendor/",

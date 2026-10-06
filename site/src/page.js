@@ -28,10 +28,10 @@ const el = (tag, cls, html) => {
     return n;
 };
 
-// ---------------------------------------------------------- one script, six pages ---
+// -------------------------------------------------------- one script, seven pages ---
 //
-// This file was written for ONE document and now serves six. Every block below
-// builds into an element it looks up by id, and five of those ids are absent on
+// This file was written for ONE document and now serves seven. Every block below
+// builds into an element it looks up by id, and most of those ids are absent on
 // any given page.
 //
 // A section that is not on THIS page resolves to a DETACHED stand-in: the block
@@ -47,7 +47,8 @@ const el = (tag, cls, html) => {
 // throws at load, in dev, on the page that is missing it.
 const SECTIONS = [
     "gems", "auras", "tld-marks", "tlds", "sites", "roles", "type",
-    "aura", "aura-now", "spec-wordmark", "spec-slogan", "page-cards"
+    "aura", "aura-now", "spec-wordmark", "spec-slogan", "spec-slogan-re",
+    "spec-grounds", "page-cards"
 ];
 
 const node = (id) => {
@@ -361,6 +362,44 @@ const wordmark = (classes) =>
         `<span class="nowrap">${wordmark("beating")}</span></span>`;
     slogan.firstElementChild?.setAttribute("aria-label", "Thank with HeartBank");
     slogan.firstElementChild?.setAttribute("role", "img");
+
+    // The sister slogan (2026-10-04): the same composition with one prefix.
+    // Written with the wordmark like its sister, never as "HeartBank".
+    const sister = node("spec-slogan-re");
+    sister.innerHTML =
+        `<span class="slogan-xl">Re-Thank with ` +
+        `<span class="nowrap">${wordmark("beating")}</span></span>`;
+    sister.firstElementChild?.setAttribute("aria-label", "Re-Thank with HeartBank");
+    sister.firstElementChild?.setAttribute("role", "img");
+
+    // Both grounds at once. Each panel is pinned to one theme by its class
+    // (page.css, .ground), and holds the three compositions above, made by the
+    // same wordmark() — so a panel cannot show a wordmark the page does not.
+    const grounds = node("spec-grounds");
+    for (const [theme, label] of [
+        ["light", "light ground · <code>--l-bg</code>"],
+        ["dark", "dark ground · <code>--d-bg</code>"]
+    ]) {
+        const panel = el("div", `ground on-${theme}`);
+        panel.append(el("p", "ground-label", label));
+        const specs = el("div", "ground-specimens");
+        for (const [cls, before, name] of [
+            ["wordmark-xl", "", "HeartBank"],
+            ["slogan-xl", "Thank with ", "Thank with HeartBank"],
+            ["slogan-xl", "Re-Thank with ", "Re-Thank with HeartBank"]
+        ]) {
+            const s = el(
+                "span",
+                cls,
+                `${before}<span class="nowrap">${wordmark("beating")}</span>`
+            );
+            s.setAttribute("role", "img");
+            s.setAttribute("aria-label", name);
+            specs.append(s);
+        }
+        panel.append(specs);
+        grounds.append(panel);
+    }
 }
 
 // The home page's cards are hand-written, so their hrefs are the one part of

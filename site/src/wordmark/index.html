@@ -3,10 +3,10 @@
     <head>
         <!--#include head-->
         <title>Wordmark — brand.333.eco</title>
-        <meta name="description" content="The B-Wordmark and the B-Slogan: what a consuming site renders, drawn from the same emblem.ts and tokens.css every consumer vendors." />
+        <meta name="description" content="The B-Wordmark, the B-Slogan and its sister slogan, on both grounds: what a consuming site renders, drawn from the same emblem.ts and tokens.css every consumer vendors." />
         <link rel="canonical" href="https://brand.333.eco/wordmark/" />
         <meta property="og:title" content="Wordmark — brand.333.eco" />
-        <meta property="og:description" content="The B-Wordmark and the B-Slogan: what a consuming site renders, drawn from the same emblem.ts and tokens.css every consumer vendors." />
+        <meta property="og:description" content="The B-Wordmark, the B-Slogan and its sister slogan, on both grounds: what a consuming site renders, drawn from the same emblem.ts and tokens.css every consumer vendors." />
         <meta property="og:url" content="https://brand.333.eco/wordmark/" />
     </head>
     <body>
@@ -38,13 +38,13 @@
                     </p>
                     <div class="specimen" id="spec-wordmark"></div>
 
-                    <!-- ⚠️ There are TWO of these, one per specimen, and they
+                    <!-- ⚠️ There are THREE of these, one per specimen, and they
                          drive ONE site-wide preference — including the header
                          mark, because a toggle that left the chrome beating on
                          the same screen would read as a broken switch rather
                          than a preference. page.js wires every .beat-control on
-                         the page and repaints ALL of them on any change, so the
-                         second cannot fall out of step with the first. -->
+                         the page and repaints ALL of them on any change, so no
+                         one of them can fall out of step with the others. -->
                     <div class="beat-control">
                         <button class="ghost" type="button" aria-pressed="true">
                             beat: on
@@ -81,13 +81,13 @@
                     <h2>B-Slogan</h2>
                     <div class="specimen" id="spec-slogan"></div>
 
-                    <!-- ⚠️ There are TWO of these, one per specimen, and they
+                    <!-- ⚠️ There are THREE of these, one per specimen, and they
                          drive ONE site-wide preference — including the header
                          mark, because a toggle that left the chrome beating on
                          the same screen would read as a broken switch rather
                          than a preference. page.js wires every .beat-control on
-                         the page and repaints ALL of them on any change, so the
-                         second cannot fall out of step with the first. -->
+                         the page and repaints ALL of them on any change, so no
+                         one of them can fall out of step with the others. -->
                     <div class="beat-control">
                         <button class="ghost" type="button" aria-pressed="true">
                             beat: on
@@ -124,6 +124,59 @@
                             nowhere else.
                         </li>
                     </ul>
+
+                    <h3>The sister slogan</h3>
+                    <div class="specimen" id="spec-slogan-re"></div>
+
+                    <!-- The third switch for the same one light — see the
+                         note on the first. -->
+                    <div class="beat-control">
+                        <button class="ghost" type="button" aria-pressed="true">
+                            beat: on
+                        </button>
+                        <span class="mono"></span>
+                    </div>
+                    <p>
+                        <em>Thank</em> sets it in motion; <em>Re-Thank</em>
+                        keeps it circulating. The sister slogan is the B-Slogan
+                        with one prefix, and it follows every rule above
+                        unchanged: the mark stands in for the B in
+                        <em>Bank</em> only, the words are the site's, and the
+                        &reg; rides on HeartBank.
+                    </p>
+                    <p class="note">
+                        <strong>Written with the wordmark, never as
+                        <em>HeartBank</em> in letters.</strong> Same form as
+                        the B-Slogan, for the same reason: the slogan
+                        <em>is</em> the wordmark in a sentence.
+                    </p>
+                </div>
+            </section>
+
+            <!-- --------------------------------------------------- grounds -->
+            <!-- Built by page.js with the same wordmark() the specimens above
+                 use. Each panel maps the role tokens to one theme's -l-/-d-
+                 pair (page.css, .ground), so both show at once. -->
+            <section>
+                <div class="wrap wide">
+                    <p class="eyebrow">Dark mode</p>
+                    <h2>On both grounds</h2>
+                    <p>
+                        There is no dark wordmark and no light one. The letters
+                        take <code>--ink</code>, which the theme flips; the mark
+                        takes <code>--emblem</code>, which it does not. The
+                        variant <em>is</em> the cascade, which is why
+                        <code>&lt;img src&gt;</code> can never deliver it.
+                    </p>
+                    <div class="grounds" id="spec-grounds"></div>
+                    <p class="note">
+                        <strong>The mark keeps its colour on both grounds, and
+                        that is a contrast question per colour.</strong> Pick a
+                        gem in the swatches on the <a href="/">overview</a> and
+                        watch both panels. Some gems lose contrast on one
+                        ground, and the <a href="/color/">colour page</a>
+                        explains why a site's accent is paired per theme.
+                    </p>
                 </div>
             </section>
 

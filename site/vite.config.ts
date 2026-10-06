@@ -84,6 +84,7 @@ const NAV = [
     { dir: "", label: "overview" },
     { dir: "wordmark", label: "wordmark" },
     { dir: "mark", label: "mark" },
+    { dir: "qr", label: "B-QR" },
     { dir: "color", label: "colour" },
     { dir: "tokens", label: "tokens" },
     { dir: "vendor", label: "vendoring" }
@@ -93,7 +94,7 @@ const urlOf = (dir: string) => (dir === "" ? "/" : `/${dir}/`);
 
 // Shared chrome, resolved at BUILD time rather than by the client.
 //
-// The alternative was a copy of the header in each of six documents. That is
+// The alternative was a copy of the header in each of seven documents. That is
 // the exact failure this package is built to prevent one layer down — six
 // copies of one definition, byte-identical on the day they are written and
 // never again — so the chrome gets the same treatment the tokens get: one
@@ -147,7 +148,7 @@ function htmlPartials(srcDir: string): Plugin {
 // consumers of that one array, after rollupOptions.input and the menu.
 //
 // It matters more than it looks: this site was ONE document until the pages
-// were split out, so nothing ever had to list them. Five of the six are now
+// were split out, so nothing ever had to list them. Six of the seven are now
 // reachable only through the menu, and a hand-written sitemap would be a fifth
 // copy of the site's shape to forget.
 //
@@ -245,6 +246,13 @@ export default defineConfig({
         fs: { allow: [resolve(import.meta.dirname, "..")] }
     },
     preview: { port: 57890, host: true },
+    // ⭐ v1.5.0 — /qr/ draws live B-QRs with qr/bqr.ts, which loads `qrcode` on demand. That file sits ABOVE site/, so Vite
+    // would look for the package in the repo root's node_modules — present on a dev machine (the decode matrix's devDependency),
+    // ABSENT in CI, where the workflow installs site/ only. The alias points the bare specifier at site/'s own pinned copy,
+    // so the page builds from what `npm ci` in site/ installs and nothing else.
+    resolve: {
+        alias: { qrcode: resolve(import.meta.dirname, "node_modules/qrcode") }
+    },
     build: {
         outDir: "../dist",
         emptyOutDir: true,

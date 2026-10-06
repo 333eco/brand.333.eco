@@ -922,7 +922,7 @@ footer p {
 }
 
 /* ====================================================================== cards ===
-   The home page's index of the other five. Hand-written, because each card
+   The home page's index of the other six. Hand-written, because each card
    carries a sentence the NAV array has no place for — and asserted against the
    generated <nav> at runtime, in page.js, for exactly that reason.             */
 
@@ -1146,4 +1146,265 @@ footer p {
 .beat-control .ghost[disabled] {
     opacity: 0.5;
     cursor: not-allowed;
+}
+
+/* ==================================================================== grounds ===
+   BOTH THEMES AT ONCE. A panel pinned to one theme maps the ROLE tokens to that
+   theme's -l-/-d- pair, the same pairs theme-3block.css maps on :root, so the
+   light panel and the dark panel show side by side whatever theme the page is
+   in. Used by /wordmark/ and /qr/.
+
+   ⚠️ THE PAIRS ARE READ, NOT COPIED: every value below is a var() into
+   tokens.css, so a palette change lands here with no edit. What IS repeated is
+   the MAPPING — one line per role these panels use — and it is repeated only
+   because a theme cannot be applied to a subtree any other way. A role added
+   to the theme files and used inside a panel must be added here too.
+
+   ⚠️ DERIVED tokens (--accent-soft and its family) are resolved once on :root
+   and inherited as finished colours, so they do NOT flip inside a panel.
+   Nothing in a panel reads one; keep it that way, or the panel lies. --emblem
+   is not theme-varying at all — the mark keeps its colour on both grounds, and
+   that is the point of showing them together.                                  */
+
+.grounds {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    gap: 1rem;
+    margin: 1.75rem 0 1.25rem;
+}
+
+.ground {
+    border: 1px solid var(--line);
+    border-radius: var(--r-card);
+    background: var(--bg);
+    color: var(--ink);
+    padding: 1rem 1rem 1.1rem;
+    min-width: 0;
+}
+
+.ground.on-light {
+    color-scheme: light;
+    --bg: var(--l-bg);
+    --bg-tint: var(--l-bg-tint);
+    --surface: var(--l-surface);
+    --line: var(--l-line);
+    --line-strong: var(--l-line-strong);
+    --ink: var(--l-ink);
+    --ink-dim: var(--l-ink-dim);
+    --ink-faint: var(--l-ink-faint);
+}
+
+.ground.on-dark {
+    color-scheme: dark;
+    --bg: var(--d-bg);
+    --bg-tint: var(--d-bg-tint);
+    --surface: var(--d-surface);
+    --line: var(--d-line);
+    --line-strong: var(--d-line-strong);
+    --ink: var(--d-ink);
+    --ink-dim: var(--d-ink-dim);
+    --ink-faint: var(--d-ink-faint);
+}
+
+.ground-label {
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    letter-spacing: var(--track-spelt);
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0 0 0.85rem;
+}
+
+/* A token name is case-sensitive; the label's capitals must not reach it. */
+.ground-label code {
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: inherit;
+}
+
+.ground-note {
+    font-size: var(--text-small);
+    color: var(--ink-dim);
+    margin: 0.85rem 0 0;
+}
+
+/* The wordmark specimens, at panel size. Every margin on the mark is derived
+   from the font size, so it stays seated on the baseline at any size. */
+.ground .wordmark-xl {
+    font-size: var(--text-title);
+}
+
+.ground .slogan-xl {
+    font-size: var(--text-sub);
+}
+
+.ground-specimens {
+    display: grid;
+    gap: 0.9rem;
+    justify-items: center;
+    padding-block: 0.5rem;
+    color: var(--emblem);
+}
+
+/* ======================================================================= B-QR ===
+   The codes on /qr/ are <img> elements holding the recipe's own PNG — the way a
+   consumer shows one (bqrDataUrl) — so the square behind each is the ground the
+   recipe painted, and a stage shows it against the page's own --bg.            */
+
+.bqr-pair {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    gap: 1.25rem;
+    margin-top: 1.75rem;
+}
+
+.bqr-stage {
+    border: 1px solid var(--line);
+    border-radius: var(--r-card);
+    background: var(--bg);
+    padding: 1.5rem 1rem 1.1rem;
+}
+
+.bqr-fig {
+    margin: 0;
+    text-align: center;
+}
+
+.bqr-fig img {
+    display: block;
+    width: min(100%, 16rem);
+    height: auto;
+    aspect-ratio: 1;
+    margin: 0 auto;
+}
+
+.bqr-fig figcaption {
+    font-size: var(--text-small);
+    color: var(--ink-dim);
+    margin-top: 0.6rem;
+}
+
+.bqr-fig figcaption b {
+    display: block;
+    color: var(--ink);
+    font-weight: 600;
+}
+
+.ground-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+}
+
+.ground-row .bqr-fig img {
+    width: 100%;
+}
+
+#bqr-now {
+    font-size: var(--text-small);
+}
+
+/* The geometry, in the emblem's own viewBox units. Strokes are ink at three
+   weights of emphasis and three dash patterns — never a gem, which would turn a
+   content colour into a diagram key. */
+.bqr-anatomy {
+    margin: 0;
+    border: 1px solid var(--line);
+    border-radius: var(--r-card);
+    background: var(--surface);
+    padding: 1.25rem 1rem 1rem;
+}
+
+.bqr-anatomy svg {
+    display: block;
+    width: min(100%, 17rem);
+    height: auto;
+    margin: 0 auto;
+    overflow: visible;
+}
+
+.bqr-anatomy svg * {
+    fill: none;
+    vector-effect: non-scaling-stroke;
+}
+
+
+.a-viewbox {
+    stroke: var(--ink-faint);
+    stroke-width: 1;
+    stroke-dasharray: 1 4;
+}
+
+.a-bbox {
+    stroke: var(--ink-dim);
+    stroke-width: 1;
+    stroke-dasharray: 5 4;
+}
+
+/* The outline keeps its real width in viewBox units, so it is the one stroke
+   that scales — a 0.96 outline must look six times a 0.16 one. */
+.bqr-anatomy .a-outline {
+    stroke: var(--ink-dim);
+    stroke-opacity: 0.55;
+    vector-effect: none;
+}
+
+.a-body {
+    stroke: var(--ink);
+    stroke-width: 1.5;
+}
+
+.a-code {
+    stroke: var(--ink);
+    stroke-width: 1;
+    stroke-dasharray: 2 2;
+}
+
+.bqr-anatomy figcaption {
+    margin-top: 0.9rem;
+    font-size: var(--text-small);
+    color: var(--ink-dim);
+}
+
+.bqr-anatomy figcaption b {
+    color: var(--ink);
+    font-weight: 600;
+}
+
+.legend {
+    list-style: none;
+    margin: 0.5rem 0 0;
+    padding: 0;
+    font-size: var(--text-micro);
+    display: grid;
+    gap: 0.3rem;
+}
+
+.legend li {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+}
+
+.legend .key {
+    flex: none;
+    width: 1.6rem;
+    height: 0;
+    border-top: 1px solid var(--ink);
+}
+
+.legend .k-viewbox { border-top: 1px dotted var(--ink-faint); }
+.legend .k-bbox { border-top: 1px dashed var(--ink-dim); }
+.legend .k-outline { border-top: 3px solid color-mix(in oklab, var(--ink-dim) 55%, transparent); }
+.legend .k-body { border-top: 2px solid var(--ink); }
+.legend .k-code { border-top: 1px dashed var(--ink); }
+.legend .k-none { border-top: 0; }
+
+.bqr-card-wrap canvas {
+    display: block;
+    width: min(100%, 19rem);
+    height: auto;
+    margin: 1.75rem auto 0;
+    border: 1px solid var(--line);
+    border-radius: var(--r-card);
 }
