@@ -73,7 +73,7 @@ scripts/
   bqr.test.mjs        the B-QR decode matrix (`npm run bqr:test`) — three decoders, pre-registered
 site/                 the guidelines pages -> brand.333.eco (an installable PWA)
   src/partials/       header, footer, head — resolved at BUILD time, not by the
-                      client, so six documents share ONE copy of the chrome
+                      client, so seven documents share ONE copy of the chrome
   src/*/index.html    one directory per page; vite.config.ts's NAV array is the
                       single source for BOTH rollupOptions.input and the menu
 brand.lock            every package file -> sha256, plus a version
@@ -118,6 +118,12 @@ an H3QR names whom you thank, and a B-QR is how that code is drawn.
   in a row, so it cannot imitate a finder pattern. The green was chosen by a rule written into the test **before** the
   sweep ran (lightest green at ISO/IEC 15415 grade A that decodes within 2/90 of near-black on two decoders); the
   prediction was wrong and the rule's pick was kept.
+- **Two grounds (v1.5.0).** `ground: "paper"` (the default) paints the whole square white, as every B-QR before it.
+  `ground: "heart"` paints only the silhouette white and leaves the square around it transparent, so on a dark screen the
+  B-QR reads as a white heart instead of a white tile. The code is identical on both — dark on white inside the body, quiet
+  zone included. **Never inverted** (light modules on dark): many phone scanners never try an inverted code. **`heart` is
+  for the screen only** — a download, a print and the card stay `paper`, because a transparent PNG handed to another app may
+  be flattened onto black. Pre-registered and decoded on `#0a0a0f` before it shipped (`bqr.test.mjs` §dark-ground).
 - **Run the matrix** after any change to `qr/`: `npm i && npm run bqr:test` (jsQR + ZXing pinned here; OpenCV optional
   via `BQR_PYTHON`). It must also be seen to FAIL — break the path or the ring on purpose once and watch it catch it.
 

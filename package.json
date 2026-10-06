@@ -1,6 +1,6 @@
 {
     "name": "@333eco/brand",
-    "version": "1.4.0",
+    "version": "1.5.0",
     "description": "The canonical brand layer for the institution — design tokens, themes, motion, and the B-Emblem. A READ-ONLY MIRROR; institution repos vendor this layer, they do not install it.",
     "license": "Apache-2.0",
     "author": "Thon Ly",

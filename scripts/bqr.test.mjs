@@ -103,6 +103,17 @@
  *   today), so the two dark renderings sit side by side.
  *   ⚠️ Honest bound, written before the run: the distortions pad with WHITE, as everywhere in this file, so a rotated dark preview
  *   sits on white corners — nearer to a phone photographing a screen on a desk than to an endless dark ground.
+ *   ✅ RESULT (2026-10-06, the run after the pre-registration commit e1fbdb4): every gate passed; 117 checks (87 before).
+ *     G1 5/5 per version, and the one-time comparison: all 14 samples this file wrote BEFORE `ground` existed (previews, cards,
+ *     the broken and naked controls) are byte-identical after it — the default did not move. G2 0 lit px of 436,488 (pixels) and
+ *     338,719 (outline) clearly outside; the reused canvas 0. G3 0/255 on both — better than the predicted ≤ 2: on white the two
+ *     grounds are one picture. G4 heart on dark: pixels jsQR 82 · ZXing 86 against paper on white 81 · 85; outline 86 · 87 against
+ *     86 · 87; the clean 300s 5/5 in both. The prediction (within 1) held; the dark ground cost nothing and was one case AHEAD on
+ *     pixels — within noise, not a finding. Reported: paper on dark (the white tile) 81 · 85 and 86 · 87, the same as on white.
+ *     G5 the ground pressed to the code failed 90 of 90 on both decoders, both versions (predicted ≥ 85).
+ *     ⚠️ Caught in that first run, by reading its output and not its verdict: the control's family began `BROKEN`, and P6 selects
+ *     its cases by that prefix — so P6 read "failures of 300" with the new controls inside it, a P6 that could no longer fail on its
+ *     own. Renamed `CONTROL …` before the run recorded here; P6 is back to its 120 (jsQR 69 · ZXing 50, as before). OpenCV NOT RUN.
  */
 import { createRequire } from "node:module";
 import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, existsSync } from "node:fs";
@@ -481,7 +492,7 @@ for (const [name, text] of P) {
         const x0 = Math.round(tx + L.ox * k), y0 = Math.round(ty + L.oy * k), x1 = Math.round(tx + (L.ox + L.n * L.m) * k), y1 = Math.round(ty + (L.oy + L.n * L.m) * k);
         const br = onGround(heart, DARK), bg = br.getContext("2d"); bg.fillStyle = DARK;
         bg.fillRect(0, 0, 640, y0); bg.fillRect(0, y1, 640, 640 - y1); bg.fillRect(0, y0, x0, y1 - y0); bg.fillRect(x1, y0, 640 - x1, y1 - y0);
-        for (const s of [300, 200, 150]) await decodeAll(`BROKEN dark ground at the code (${vname})`, s, name, text, B.BQR_INK, br);
+        for (const s of [300, 200, 150]) await decodeAll(`CONTROL dark ground at the code (${vname})`, s, name, text, B.BQR_INK, br);
     }
     const pl = plainCard(text);
     for (const s of [1200, 300, 200, 150]) await decodeAll("plain card (old)", s, name, text, "—", pl);
@@ -564,7 +575,7 @@ for (const [style, vname] of Object.entries(VERSIONS)) {
     ok(clean.length === 5 && clean.every((c) => c.jsqr && c.zxing), `G4(a) ${style}: ${clean.filter((c) => c.jsqr && c.zxing).length}/${clean.length} clean heart-on-dark previews at 300 decode in jsQR AND ZXing`);
     ok(n(paper, "jsqr") - n(heart, "jsqr") <= 2 && n(paper, "zxing") - n(heart, "zxing") <= 2,
         `G4(b) ${style}: heart on dark jsQR ${n(heart, "jsqr")} · ZXing ${n(heart, "zxing")} of 90 vs paper on white ${n(paper, "jsqr")} · ${n(paper, "zxing")} (margin 2; reported: paper on dark ${n(tile, "jsqr")} · ${n(tile, "zxing")})`);
-    const br = cases.filter((c) => c.family === `BROKEN dark ground at the code (${vname})`);
+    const br = cases.filter((c) => c.family === `CONTROL dark ground at the code (${vname})`);
     ok(br.length === 90 && br.length - n(br, "jsqr") >= 45 && br.length - n(br, "zxing") >= 45,
         `G5 control ${style}: the ground pressed to the code fails jsQR ${br.length - n(br, "jsqr")} · ZXing ${br.length - n(br, "zxing")} of ${br.length} (≥ 45 each)`);
 }
