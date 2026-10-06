@@ -29,3 +29,32 @@
         });
     }
 </script>
+
+<!-- ⚠️ DEV REMOVES ANY SERVICE WORKER IT FINDS, and reloads once if one was in
+     control. Not registering one in dev is not enough: a worker that a
+     PRODUCTION build registered on this origin (a `vite preview` on the dev
+     port) outlives that server and sits in front of the dev server, serving
+     every file cache-first. Found 2026-10-06: the stylesheet it had cached
+     never changed again, so new rules never arrived and the page looked broken
+     for reasons that were not in the code. The preview now has its own port
+     (vite.config.ts); this is the property that holds if one lands here anyway.
+     ⚠️ A CLASSIC inline script, on purpose. Vite lifts an inline MODULE script
+     out to `index.html?html-proxy…`, a sub-request the stale worker answers
+     from its cache — so a module version of this cleanup can be served as the
+     old code that never cleans up. The document itself is network-first under
+     that worker, so a script that lives IN the document always arrives.
+     "%MODE%" is Vite's own build mode, substituted into the HTML. -->
+<script>
+    if ("%MODE%" !== "production" && "serviceWorker" in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function (rs) {
+            if (!rs.length) return;
+            Promise.all(rs.map(function (r) { return r.unregister(); }))
+                .then(function () { return window.caches ? caches.keys() : []; })
+                .then(function (keys) {
+                    return Promise.all(keys.filter(function (k) { return k.indexOf("brand-") === 0; })
+                        .map(function (k) { return caches.delete(k); }));
+                })
+                .then(function () { if (navigator.serviceWorker.controller) location.reload(); });
+        });
+    }
+</script>

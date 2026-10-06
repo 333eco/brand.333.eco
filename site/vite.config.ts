@@ -245,7 +245,10 @@ export default defineConfig({
         host: true,
         fs: { allow: [resolve(import.meta.dirname, "..")] }
     },
-    preview: { port: 57890, host: true },
+    // ⚠️ The preview has its OWN port. It serves the production build, which registers the service worker; on the dev
+    // server's port that worker outlives the preview and serves the dev server's files cache-first (found 2026-10-06 —
+    // the stylesheet stopped changing). partials/footer.html also removes a stray worker in dev.
+    preview: { port: 57891, host: true },
     // ⭐ v1.5.0 — /qr/ draws live B-QRs with qr/bqr.ts, which loads `qrcode` on demand. That file sits ABOVE site/, so Vite
     // would look for the package in the repo root's node_modules — present on a dev machine (the decode matrix's devDependency),
     // ABSENT in CI, where the workflow installs site/ only. The alias points the bare specifier at site/'s own pinned copy,

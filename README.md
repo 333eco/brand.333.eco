@@ -275,7 +275,8 @@ node scripts/generate.mjs            # rewrite dist/
 node scripts/generate.mjs --check    # prove dist/ is current (CI)
 node scripts/check-brand.mjs         # prove brand.lock matches css/ + emblem/
 node scripts/check-brand.mjs --write # rewrite brand.lock after a change
-cd site && npm run dev               # the guidelines page, localhost:57890
+cd site && npm run dev               # the guidelines page, localhost:57890 (hot reload)
+cd site && npm run build && npm run preview   # the production build, localhost:57891 — its OWN port: the build registers a service worker
 ```
 
 **Bump `version` in `data/brand.json`** with any change to `css/` or `emblem/`,
