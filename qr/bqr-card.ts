@@ -35,16 +35,33 @@ export interface BqrCard {
  */
 export const CARD = { W: 1200, H: 1560, title: 140, code: { x: 80, y: 205, size: 1040 }, caption: 1318, foot: 1416 } as const;
 
+/**
+ * ⭐ v1.6.1 (2026-10-11) — ONE LINE OF WORDS, PLACED, NEVER ALIGNED: measured, its size reduced until it fits `maxW`, and drawn from
+ *   its left edge at the center minus half its width.
+ * ⛔⛔ Never `textAlign = "center"`, never the `maxWidth` argument of `fillText`: Safari on iOS 26 ignores BOTH for a line it shapes
+ *   as a complex script. A Khmer caption started AT the center line (a shop owner's print, 2026-10-11) — measured on the Simulator,
+ *   the same call drew its ink at 602–902 on a 1200 card in iOS 26.5 and at 447–748 in iOS 17.0, 18.0 and 18.2, while `measureText`
+ *   gave 309 in every one; a Latin line was centered in all of them, and a Khmer line wider than `maxWidth` ran off the card in 26.5.
+ *   So the placement is computed from `measureText`, which was right everywhere, and the fit is the font size, which every engine honors.
+ */
+function placeLine(g: CanvasRenderingContext2D, text: string, y: number, weight: number, size: number, face: string, maxW: number): void {
+    g.font = `${weight} ${size}px ${face}`;
+    let w = g.measureText(text).width;
+    if (w > maxW) {
+        g.font = `${weight} ${Math.max(1, Math.floor((size * maxW) / w))}px ${face}`;
+        w = g.measureText(text).width;
+    }
+    g.fillText(text, (CARD.W - w) / 2, y);
+}
+
 /** Paint the card into any 2D context. `face` is the font family the words are set in (the page's own, Khmer included). */
 export async function paintQrCard(g: CanvasRenderingContext2D, c: BqrCard, face: string): Promise<void> {
     const { W, H } = CARD;
     g.fillStyle = "#ffffff"; g.fillRect(0, 0, W, H);
     await drawBqr(g, c.url, { ...CARD.code, accent: c.accent, style: c.style, hue: c.hue });
-    g.fillStyle = "#16141c"; g.textAlign = "center"; g.textBaseline = "middle";
-    g.font = `600 72px ${face}`;
-    g.fillText(c.title, W / 2, CARD.title, W - 120);
-    g.font = `500 54px ${face}`;
-    g.fillText(c.caption, W / 2, CARD.caption, W - 120);
-    g.fillStyle = "#6b6878"; g.font = `400 30px ${face}`;
-    g.fillText(c.foot, W / 2, CARD.foot, W - 120);
+    g.fillStyle = "#16141c"; g.textAlign = "left"; g.textBaseline = "middle";
+    placeLine(g, c.title, CARD.title, 600, 72, face, W - 120);
+    placeLine(g, c.caption, CARD.caption, 500, 54, face, W - 120);
+    g.fillStyle = "#6b6878";
+    placeLine(g, c.foot, CARD.foot, 400, 30, face, W - 120);
 }

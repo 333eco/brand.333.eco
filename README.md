@@ -128,6 +128,10 @@ an H3QR names whom you thank, and a B-QR is how that code is drawn.
   luminance, keeping the OKLCH hue and giving up only the chroma sRGB cannot hold that dark — so no caller can draw a code
   that prints lighter than the green. Light hues come out deep (citrine olive-brown, diamond graphite). No `hue` is the
   green, byte for byte; the apps pass none. brand.333.eco/qr/ passes the visitor's `--emblem` (`bqr.test.mjs` §emblem-hue).
+- **The card's words are PLACED, never aligned (v1.6.1).** `paintQrCard` measures each line, shrinks its size until it fits,
+  and draws it from the left at the center minus half its width. Safari on iOS 26 ignores `textAlign = "center"` and the
+  `maxWidth` argument for a complex script: a Khmer caption printed starting at the center line. Measured on the Simulator
+  (ink 602–902 of 1200 in iOS 26.5, 447–748 in 17.0 and 18.x; `measureText` 309 in all). ⛔ Never go back to `textAlign`.
 - **Run the matrix** after any change to `qr/`: `npm i && npm run bqr:test` (jsQR + ZXing pinned here; OpenCV optional
   via `BQR_PYTHON`). It must also be seen to FAIL — break the path or the ring on purpose once and watch it catch it.
 
