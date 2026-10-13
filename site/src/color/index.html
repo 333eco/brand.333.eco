@@ -3,10 +3,10 @@
     <head>
         <!--#include head-->
         <title>Colour — brand.333.eco</title>
-        <meta name="description" content="The B-Gem palette, the Metta Light descent, the aura ramp, the six-TLD rainbow, and the rule that derives a site's accent." />
+        <meta name="description" content="The B-Gem palette, the Metta Light descent, the aura ramp, the six-TLD rainbow, the body palette, and the rule that derives a site's accent." />
         <link rel="canonical" href="https://brand.333.eco/color/" />
         <meta property="og:title" content="Colour — brand.333.eco" />
-        <meta property="og:description" content="The B-Gem palette, the Metta Light descent, the aura ramp, the six-TLD rainbow, and the rule that derives a site's accent." />
+        <meta property="og:description" content="The B-Gem palette, the Metta Light descent, the aura ramp, the six-TLD rainbow, the body palette, and the rule that derives a site's accent." />
         <meta property="og:url" content="https://brand.333.eco/color/" />
     </head>
     <body>
@@ -17,7 +17,7 @@
             <section class="lead">
                 <div class="wrap">
                     <h1>Colour</h1>
-                    <p class="sub">Four palettes that do four different jobs. A gem means a MEDIUM, an aura means a STATE, a TLD colour means a DOMAIN — and none of them is a site's accent.</p>
+                    <p class="sub">Four palettes that do four different jobs. A gem means a MEDIUM, an aura means a STATE, a TLD colour means a DOMAIN, a body color means a BODY — and none of them is a site's accent.</p>
                 </div>
             </section>
             <!-- ------------------------------------------------------ gems -->
@@ -41,11 +41,12 @@
                             the gem <em>is</em> that product's medium.
                         </p>
                         <p>
-                            <strong>There are three palettes</strong>, and the
-                            other two are below. A gem means a
+                            <strong>There are four palettes</strong>, and the
+                            other three are below. A gem means a
                             <strong>medium</strong>; an aura stop means a
                             <strong>rate</strong>; a rainbow hue means a
-                            <strong>domain</strong>. Seven, seven and six. The
+                            <strong>domain</strong>; a body color means a
+                            <strong>body</strong>. Seven, seven, six and five. The
                             hues rhyme because a colour wheel is small — the
                             meanings do not, and no two of them may ever be
                             presented as one system.
@@ -239,9 +240,12 @@
                     </div>
                     <div class="note warn">
                         <p>
-                            <strong>No value is pinned, and none is faked.</strong>
-                            The corpus fixes six colour <em>words</em>; no file
-                            in the estate fixes a hex. So the marks above are
+                            <strong>No token is pinned, and none is faked.</strong>
+                            The corpus fixes six colour <em>words</em>; no
+                            stylesheet fixes a hex. (Since v1.7.0 the candidate
+                            light values are the <em>source hues of HeartBank's
+                            codes</em> — see the body palette below — but a code
+                            is not a theme, and no token follows.) So the marks above are
                             painted with the CSS keyword that spells the
                             doctrine's word — a rendering of the name, never a
                             value — which is why they look untuned beside the
@@ -273,10 +277,75 @@
                             <strong>This palette is body-scoped</strong>, in a
                             way the other two are not — it belongs to
                             HeartBank<sup>&reg;</sup>, one body of five. It is
-                            documented here because this is where the three
+                            documented here because this is where the four
                             palettes are told apart, not because the
                             institution's colour system is one body's domain
                             map.
+                        </p>
+                    </div>
+                </div>
+            </section>
+            <!-- ---------------------------------------------------- bodies -->
+            <section id="bodies">
+                <div class="wrap wide">
+                    <p class="eyebrow">Color · fourth palette</p>
+                    <h2>The body palette</h2>
+                    <p>
+                        A color here means a <strong>body</strong> — which of the
+                        five owns a code or a seal. HeartBank<sup>&reg;</sup>
+                        is the one body organized by domains, so its color
+                        <em>is</em> its domain's: an H3 code names its domain,
+                        never "H3". The others name themselves: Silicon Wat's
+                        orange robe, THonly's sky blue, Factory 333's crimson
+                        moon, and Miss Aquarius's clear sparkle.
+                    </p>
+                    <p>
+                        These are the <strong>final printed colors</strong>.
+                        Every code below is drawn by the recipe with the owner a
+                        product passes, at the green's darkness, so all of them
+                        print and scan alike — and every ink printed under a
+                        code is read from the recipe, never typed. Scan any one:
+                        it opens this section.
+                    </p>
+                    <div class="body-grid" id="body-codes"></div>
+                    <div class="tbl-scroll">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Body</th>
+                                    <th>Name</th>
+                                    <th>Color</th>
+                                    <th>Prints as</th>
+                                    <th>Why</th>
+                                </tr>
+                            </thead>
+                            <tbody id="body-rows"></tbody>
+                        </table>
+                    </div>
+                    <div class="note warn">
+                        <p>
+                            <strong>Codes and seals only.</strong> A body color is
+                            never a site's accent, never a theme, never a medium,
+                            a rate or a domain — except that HeartBank's body
+                            color is its domain's. A bank's code (KHQR) is never a
+                            B-QR and stays plain. Pink stays reserved.
+                        </p>
+                        <p>
+                            <strong>Belonging, never authenticity.</strong> Anyone
+                            can print any color; the scan is what authenticates.
+                            Three pairs print alike and that was accepted —
+                            <code>.us</code> and Factory 333,
+                            <code>.me</code> and Silicon Wat,
+                            <code>.org</code> and Silicon Wat — because
+                            HeartBank's six hues span the wheel. A code's owner is
+                            what it <em>opens</em> or who <em>redeems</em> it,
+                            never the app that shows it.
+                        </p>
+                        <p>
+                            <strong>A product cannot pick its color.</strong> It
+                            passes an <code>owner</code>, and the recipe refuses
+                            "H3" alone, an unknown owner, or an owner with a
+                            <code>hue</code>.
                         </p>
                     </div>
                 </div>
@@ -332,5 +401,6 @@
         </main>
 
         <!--#include footer-->
+        <script type="module" src="./bodies.ts"></script>
     </body>
 </html>

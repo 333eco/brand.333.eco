@@ -17,10 +17,10 @@
         "Every code prints at the B-QR recipe's darkness (bqrInkFor), so only the hue differs and all bodies scan alike."
     ],
     "bodies": [
-        { "body": "H3", "name": "HeartBank®", "color": "rainbow — each code in its DOMAIN's hue", "owners": ["heartbank.us", "heartbank.me", "heartbank.org", "heartbank.ceo", "heartbank.net", "heartbank.com"], "why": "a rainbow is sunlight through water; H3 is the Water body" },
+        { "body": "H3", "name": "HeartBank®", "color": "rainbow — each code in its domain's hue", "owners": ["heartbank.us", "heartbank.me", "heartbank.org", "heartbank.ceo", "heartbank.net", "heartbank.com"], "why": "a rainbow is sunlight through water; H3 is the Water body" },
         { "body": "SW", "name": "Silicon Wat℠", "color": "orange robe", "owners": ["SW"], "prints": "deep ochre", "why": "the robe's kāsāya; SW is the Fire body" },
         { "body": "TH", "name": "THonly™", "color": "sky blue", "owners": ["TH"], "why": "Mind is the Air body; the sky" },
         { "body": "F333", "name": "Factory 333™", "color": "crimson moon", "owners": ["F333"], "why": "the workshop on the far side of the Moon; a red moon is lit by Earth's sunrises and sunsets, and F333 is the Earth body" },
-        { "body": "MA", "name": "Miss Aquarius℠", "color": "clear sparkle", "owners": ["MA"], "prints": "graphite", "motion": "on screen the glint moves only when the VIEWER moves (tilt, pointer, scroll) — never by itself; still under reduced motion and in print", "why": "space holds the four colors and has none of its own; the light that crosses it sparkles" }
+        { "body": "MA", "name": "Miss Aquarius℠", "color": "clear sparkle", "owners": ["MA"], "prints": "graphite", "motion": "on screen the glint moves only when the viewer moves (tilt, pointer, scroll) — never by itself; still under reduced motion and in print", "why": "space holds the four colors and has none of its own; the light that crosses it sparkles" }
     ]
 }

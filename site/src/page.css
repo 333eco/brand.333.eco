@@ -293,6 +293,32 @@ button.ghost:hover {
 
 /* ----------------------------------------------------------------- swatch --- */
 
+/* /color/ — the body palette: each owner's code, drawn by the recipe (site/src/color/bodies.ts). */
+.body-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(11.5rem, 1fr));
+    margin: 1.5rem 0;
+}
+.body-code {
+    margin: 0;
+    padding: 0.75rem;
+    border: 1px solid var(--line);
+    border-radius: var(--r-card);
+    background: #fff; /* a code is read on paper: the drawing's own ground, in either theme */
+    display: grid;
+    justify-items: center;
+    gap: 0.5rem;
+}
+.body-code figcaption {
+    display: grid;
+    justify-items: center;
+    gap: 0.15rem;
+    color: #111;
+    font-size: 0.85rem;
+    text-align: center;
+}
+
 .grid {
     display: grid;
     gap: 0.75rem;

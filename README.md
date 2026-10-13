@@ -107,7 +107,8 @@ what a stylesheet cannot say; `dist/` is generated from both.
 
 A **B-QR** is a QR code drawn inside the B-Emblem™: the real code in the emblem's square body with its quiet zone clear,
 the two lobes filled with decorative modules on the same grid (*Full B-QR*) or left open inside a thick outline
-(*Open B-QR*; both names ruled 2026-10-06, replacing *Green* / *White*), all in one green, `#14532d`. It is a public shorthand (2026-10-04) for a **drawing style**, not a mark:
+(*Open B-QR*; both names ruled 2026-10-06, replacing *Green* / *White*), all in one ink — the green `#14532d` by default, or
+its owner's since v1.7.0 (the body palette, below; ⚠️ *one green for every app* is SUPERSEDED as of 2026-10-12). It is a public shorthand (2026-10-04) for a **drawing style**, not a mark:
 an H3QR names whom you thank, and a B-QR is how that code is drawn.
 
 - **Ours only.** A link to one of our pages is drawn as a B-QR. A bank's code — KHQR, any EMVCo payload — is **never**

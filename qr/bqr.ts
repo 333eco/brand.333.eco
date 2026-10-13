@@ -29,8 +29,10 @@
  * modules · `outline` — the *Open B-QR*, the lobes left open inside a thick outline, no decoration. (Public names RULED 2026-10-06,
  * replacing *Green B-QR* / *White B-QR*: a color name stops being true once the color can change — see `hue` below.)
  *
- * ⭐ ONE GREEN, `BQR_INK` = #14532d, for the code, its decoration and its outline — ⛔ never a theme's colour (a light theme must not
- *   reach the code). Chosen by a rule written into the test BEFORE its sweep ran: the LIGHTEST candidate that prints at ISO/IEC 15415
+ * ⭐ ONE INK for the code, its decoration and its outline — `BQR_INK` = #14532d by default; ⚠️ SUPERSEDED 2026-10-12 as a rule for
+ *   every app: a product's code takes its OWNER's ink (v1.7.0, `BqrOwner` below), and the green stays the default and
+ *   `heartbank.ceo`'s — ⛔ never a theme's colour (a light theme must not reach the code). The green itself was
+ *   chosen by a rule written into the test BEFORE its sweep ran: the LIGHTEST candidate that prints at ISO/IEC 15415
  *   symbol-contrast grade A (Rpaper 0.85 − Rink ≥ 0.70) and decodes no worse than the old near-black by more than 2 of 90 cases on two
  *   independent decoders. The prediction (#106430) was wrong and the rule's pick was kept — ⛔ never move the rule to a preferred shade.
  * ⭐ DETERMINISTIC: the decoration is seeded from a hash of the text, so the same address always draws the same picture and the preview
@@ -98,8 +100,9 @@ export const bqrGroundOf = (s: unknown): BqrGround => (BQR_GROUNDS as readonly u
  *   sRGB cannot hold that dark. So a caller can pick ruby, citrine or even diamond and still never draw a code that prints below
  *   grade A or scans worse than the green: ⭐ the darkness is a PROPERTY of the recipe, not a rule a caller must remember.
  *   Light hues come out deep — citrine as an olive-brown, diamond as a graphite — and that is the honest result, not a defect.
- * ⭐ No `hue` = `BQR_INK` itself, verbatim, so every drawing that passes none is byte-identical to v1.5.0 — the apps pass none and
- *   keep the one green (founder 2026-10-06: the brand page's B-QRs follow the selected `--emblem`; the apps were not ruled).
+ * ⭐ No `hue` = `BQR_INK` itself, verbatim, so every drawing that passes none is byte-identical to v1.5.0 (founder 2026-10-06: the
+ *   brand page's B-QRs follow the selected `--emblem`). ⚠️ SUPERSEDED 2026-10-12: *"the apps pass none and keep the one green"* —
+ *   products now pass an `owner` (the body palette), never a `hue`.
  *   `scripts/bqr.test.mjs` §emblem-hue decodes every gem's derivation before it shipped.
  */
 const lin8 = (c: number) => { c /= 255; return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; };

@@ -9,7 +9,8 @@
 //
 // ⭐ v1.6.0 — THE B-QRs FOLLOW THE MARK'S COLOR (founder 2026-10-06): each is drawn in the hue of the visitor's `--emblem`, at
 // the green's darkness, by the recipe's own `bqrInkFor` — so a ruby or a diamond B-QR here prints and scans like the green
-// (`bqr.test.mjs` §emblem-hue). The apps pass no hue and keep the one green; this page is the only caller that passes one.
+// (`bqr.test.mjs` §emblem-hue). This page is the only caller that passes a `hue`; ⚠️ *the apps keep the one green* is SUPERSEDED
+// (2026-10-12): products pass an `owner`, the body palette (/color/#bodies).
 //
 // ⚠️ Loaded on /qr/ only, beside page.js (which every page loads). It owns no id page.js knows about, so page.js's SECTIONS
 // whitelist does not list these — and these lookups throw on a missing id instead of falling back, for the reason that list
