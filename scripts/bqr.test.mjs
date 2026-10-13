@@ -139,6 +139,27 @@
  *     90 of 90 on both. ⚠️ Reported, and worth keeping: raw CITRINE read 77 · 82 — on a screen it scans almost as well as the green.
  *     What rules a raw light gem out is PRINT contrast (SC 0.337, far below grade A), which this digital matrix does not measure;
  *     never cite H4 as the reason the darkening exists. OpenCV NOT RUN.
+ *
+ * ⛔ §body-palette — PRE-REGISTERED 2026-10-12, written and pushed before the §body-palette arm existed (founder, the same night:
+ *   one color per BODY, on codes and seals only — *"H3: rainbow colors / SW: orange robe / TH: sky blue / F333: red moon / MA: diamond
+ *   sparkle"*, amended *"The H3 codes should inherit the color of its domain"* and *"crimson moon"*; canon MA memory
+ *   `project_brand_identity` §body-palette; roadmap A383). v1.7.0 adds `owner` (`BqrOwner`): the six `heartbank.{TLD}` domains for
+ *   H3, and `SW` · `TH` · `F333` · `MA` for the other bodies. ⛔ `H3` alone is NOT an owner (its color is its domain's). Each owner
+ *   maps to a SOURCE hue in `BQR_OWNER_HUES`; the ink is `bqrInkFor(source)`, so `owner` inherits every property `hue` has. The run
+ *   FAILS on any of:
+ *   B1 identity — `owner: "heartbank.ceo"` draws the same bytes as no `hue`, both versions, all payloads (Shops may adopt it without
+ *      moving a pixel); CONTROL: `owner: "SW"` draws different bytes.
+ *   B2 the guard is a property — `owner` with `hue` throws; an unknown owner throws; `"H3"` throws. CONTROL: each of the ten owners
+ *      alone does not throw.
+ *   B3 one source per value — each `heartbank.{TLD}` source hue equals `data/tlds.json`'s candidate LIGHT value for that domain's
+ *      hue word, except `heartbank.ceo` = `BQR_INK` (founder: Shops unchanged); `data/bodies.json` names exactly the five bodies
+ *      (H3 · SW · TH · F333 · MA), its H3 entry names the six domains, and no hex appears in it (semantics only, like gems.json).
+ *   B4 darkness — every owner's ink is never lighter than `BQR_INK` and within 0.004 of its luminance (H2's rule, per owner).
+ *   B5 decode — for each of the ten owners, the `pixels` bare card at 300/200/150 × the six distortions × the five payloads (90)
+ *      decodes no worse than the no-hue card by more than 2 of 90 in jsQR AND ZXing, and its `outline` preview at 300, clean,
+ *      decodes 5/5 in both. Predicted: all ten within 2 on both decoders (every gem was within 1 on 2026-10-06).
+ *   Reported, gating nothing: each owner's ink, and the OKLab distance of the pairs the founder accepted as near-identical
+ *   (`heartbank.us` ↔ F333 · `heartbank.me` ↔ SW · `heartbank.org` ↔ SW) and of the pair to print-test (TH ↔ MA).
  */
 import { createRequire } from "node:module";
 import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, existsSync } from "node:fs";
