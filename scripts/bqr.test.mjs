@@ -160,6 +160,13 @@
  *      decodes 5/5 in both. Predicted: all ten within 2 on both decoders (every gem was within 1 on 2026-10-06).
  *   Reported, gating nothing: each owner's ink, and the OKLab distance of the pairs the founder accepted as near-identical
  *   (`heartbank.us` ↔ F333 · `heartbank.me` ↔ SW · `heartbank.org` ↔ SW) and of the pair to print-test (TH ↔ MA).
+ *   ✅ RESULT (2026-10-12, the run after the pre-registration commit aeb8f15): every gate passed. B1 5/5 per version; B2 all three
+ *     refusals thrown, 10/10 owners alone clean; B3 no mismatch, bodies.json hex-free; B4 all ten at the green's darkness
+ *     (us #95001d · me #7e2f00 · org #604300 · ceo #14532d · net #0042a2 · com #632b94 · SW #703a00 · TH #004e6b · F333 #960011 ·
+ *     MA #46484f). B5 every owner within ONE case of no hue (jsQR 76–78 vs 77, ZXing 83 vs 83); every outline preview 5/5 — the
+ *     prediction (within 2) held. Reported ΔEok: us ↔ F333 0.011 · me ↔ SW 0.036 · org ↔ SW 0.038 (accepted) · TH ↔ MA 0.073.
+ *     ⭐ Seen to FAIL: heartbank.us's source one digit off (#c8102f) → B3 "mismatched: heartbank.us"; restored. OpenCV NOT RUN.
+ *     ⚠️ Digital decode only — PRINT contrast is guaranteed by the darkness rule (B4), and the TH ↔ MA print test is still owed.
  */
 import { createRequire } from "node:module";
 import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, existsSync } from "node:fs";
@@ -477,11 +484,48 @@ function plainCard(text) {
     return c;
 }
 /** The card's emblem with no words, at a chosen ECC or quiet ring — the ECC sweep, and ⛔ the BROKEN control (quiet < 4). */
-function bareCard(text, { quiet, ecc = B.BQR_ECC, style = "pixels", ink, accent, hue } = {}) {
+// ---- §body-palette B1 · B2 · B3 · B4 (pre-registered in the header, 2026-10-12, commit aeb8f15) -----------------------------------
+console.log("\n— §body-palette B1 identity · B2 the guard · B3 one source · B4 darkness");
+const OWNERS = [...B.BQR_OWNERS];
+ok(OWNERS.length === 10, `aperture: ${OWNERS.length} owners (${OWNERS.join(" · ")})`);
+for (const style of ["pixels", "outline"]) {
+    const same = P.filter(([, text]) => renderBqr(text, 640, { style }).toBuffer("image/png").equals(renderBqr(text, 640, { style, owner: "heartbank.ceo" }).toBuffer("image/png"))).length;
+    ok(same === P.length, `B1 ${style}: owner heartbank.ceo draws the same bytes as no hue — ${same}/${P.length} payloads`);
+    ok(!renderBqr(P[0][1], 640, { style }).toBuffer("image/png").equals(renderBqr(P[0][1], 640, { style, owner: "SW" }).toBuffer("image/png")), `B1 control ${style}: owner SW draws different bytes`);
+}
+{
+    const throws = (o) => { try { renderBqr(P[0][1], 64, o); return false; } catch { return true; } };
+    ok(throws({ owner: "SW", hue: "#f28500" }), "B2: owner with hue throws");
+    ok(throws({ owner: "XYZ" }), "B2: an unknown owner throws");
+    ok(throws({ owner: "H3" }), "B2: \"H3\" alone throws (an H3 code names its domain)");
+    const quiet = OWNERS.filter((o) => !throws({ owner: o }));
+    ok(quiet.length === OWNERS.length, `B2 control: each owner alone does not throw — ${quiet.length}/${OWNERS.length}`);
+}
+{
+    const tlds = JSON.parse(readFileSync(join(ROOT, "data", "tlds.json"), "utf8"));
+    const pairs = tlds.candidateValues.pairs;
+    const bad = tlds.tlds.filter((t) => {
+        const want = t.tld === "heartbank.ceo" ? B.BQR_INK : pairs[t.hue]?.light?.toLowerCase();
+        return (B.BQR_OWNER_HUES[t.tld] ?? "").toLowerCase() !== want;
+    }).map((t) => t.tld);
+    ok(tlds.tlds.length === 6 && bad.length === 0, `B3: the six domain sources equal tlds.json's candidate LIGHT values (heartbank.ceo = ${B.BQR_INK}) — mismatched: ${bad.join(", ") || "none"}`);
+    const raw = readFileSync(join(ROOT, "data", "bodies.json"), "utf8"), bodies = JSON.parse(raw).bodies;
+    const names = bodies.map((b) => b.body).join(" · "), h3 = bodies.find((b) => b.body === "H3")?.owners ?? [];
+    const listed = bodies.flatMap((b) => b.owners).sort().join(","), coded = [...OWNERS].sort().join(",");
+    const hexes = raw.replace(/"\$comment"[\s\S]*?\],/, "").match(/#[0-9a-f]{3,8}\b/gi) ?? [];
+    ok(names === "H3 · SW · TH · F333 · MA" && h3.length === 6 && h3.every((d) => tlds.tlds.some((t) => t.tld === d)) && listed === coded && hexes.length === 0,
+        `B3: bodies.json names ${names}; H3 owns ${h3.length} domains; its owners ${listed === coded ? "match" : "DIFFER FROM"} BQR_OWNERS; hexes in it: ${hexes.length}`);
+}
+{
+    const rows = OWNERS.map((o) => { const ink = B.bqrOwnerInk(o), L = lumH(ink); return { o, ink, lighter: L > INK_L + 1e-12, far: INK_L - L > 0.004 }; });
+    ok(rows.every((r) => !r.lighter && !r.far), `B4: every owner's ink at the green's darkness — ${rows.map((r) => `${r.o} ${r.ink}`).join(" · ")}`);
+}
+
+function bareCard(text, { quiet, ecc = B.BQR_ECC, style = "pixels", ink, accent, hue, owner } = {}) {
     const c = createCanvas(C.CARD.W, C.CARD.H), g = c.getContext("2d");
     g.fillStyle = "#fff"; g.fillRect(0, 0, C.CARD.W, C.CARD.H);
     const q = QRCode.create(text, { errorCorrectionLevel: ecc });
-    B.paintBqr(g, q.modules, text, { ...C.CARD.code, quiet, style, ink, accent, hue });
+    B.paintBqr(g, q.modules, text, { ...C.CARD.code, quiet, style, ink, accent, hue, owner });
     return c;
 }
 /** ⭐ The SAME code pixels with the emblem cut away (code box + quiet ring copied onto white) — separates what the decoration costs
@@ -593,6 +637,12 @@ for (const [name, text] of P) {
             for (const s of [300, 200, 150]) await decodeAll(fam, s, name, text, gemHex[gem], rc);
         }
     }
+    // ⭐ §body-palette B5 — every owner's card beside the no-hue card ("HUE (none)", drawn above).
+    for (const owner of OWNERS) {
+        const oc = bareCard(text, { owner });
+        for (const s of [300, 200, 150]) await decodeAll(`OWNER ${owner}`, s, name, text, B.bqrOwnerInk(owner), oc);
+        await decodeAll(`OWNER ${owner} outline preview`, 300, name, text, B.bqrOwnerInk(owner), renderBqr(text, 640, { style: "outline", owner }));
+    }
     const pl = plainCard(text);
     for (const s of [1200, 300, 200, 150]) await decodeAll("plain card (old)", s, name, text, "—", pl);
     const nk = nakedCard(text);
@@ -693,6 +743,26 @@ console.log("\n— §emblem-hue H4 · H5 (rule in the header: each gem's hue wit
     const rd = cases.filter((c) => c.family === "CONTROL raw diamond ink"), rc = cases.filter((c) => c.family === "raw citrine ink (reported)");
     ok(rd.length === 90 && rd.length - n(rd, "jsqr") >= 80 && rd.length - n(rd, "zxing") >= 80,
         `H5 control: raw diamond as the ink fails jsQR ${rd.length - n(rd, "jsqr")} · ZXing ${rd.length - n(rd, "zxing")} of ${rd.length} (≥ 80 each; reported: raw citrine reads ${n(rc, "jsqr")} · ${n(rc, "zxing")})`);
+}
+
+// ---- §body-palette B5 + the reported pairs --------------------------------------------------------------------------------------
+console.log("\n— §body-palette B5 (rule in the header: each owner within 2 of 90 of no hue; outline clean 5/5)");
+{
+    const n = (a, k) => a.filter((c) => c[k]).length;
+    const base = cases.filter((c) => c.family === "HUE (none)");
+    for (const owner of OWNERS) {
+        const h = cases.filter((c) => c.family === `OWNER ${owner}`), op = cases.filter((c) => c.family === `OWNER ${owner} outline preview` && c.distort === "clean");
+        ok(h.length === 90 && n(base, "jsqr") - n(h, "jsqr") <= 2 && n(base, "zxing") - n(h, "zxing") <= 2 && op.length === 5 && op.every((c) => c.jsqr && c.zxing),
+            `B5 ${owner} ${B.bqrOwnerInk(owner)}: jsQR ${n(h, "jsqr")} · ZXing ${n(h, "zxing")} of ${h.length} vs no hue ${n(base, "jsqr")} · ${n(base, "zxing")} · outline clean 300 ${op.filter((c) => c.jsqr && c.zxing).length}/${op.length}`);
+    }
+    // Reported, gating nothing: the OKLab distance of the accepted near-identical pairs and the pair to print-test.
+    const lab = (hex) => {
+        const v = parseInt(hex.slice(1), 16), [r, g, b] = [v >> 16, (v >> 8) & 255, v & 255].map(linH);
+        const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b), m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b), q = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b);
+        return [0.2104542553 * l + 0.793617785 * m - 0.0040720468 * q, 1.9779984951 * l - 2.428592205 * m + 0.4505937099 * q, 0.0259040371 * l + 0.7827717662 * m - 0.808675766 * q];
+    };
+    const dE = (a, b) => Math.hypot(...lab(B.bqrOwnerInk(a)).map((x, i) => x - lab(B.bqrOwnerInk(b))[i]));
+    console.log(`  reported ΔEok: heartbank.us ↔ F333 ${dE("heartbank.us", "F333").toFixed(3)} · heartbank.me ↔ SW ${dE("heartbank.me", "SW").toFixed(3)} · heartbank.org ↔ SW ${dE("heartbank.org", "SW").toFixed(3)} (accepted) · TH ↔ MA ${dE("TH", "MA").toFixed(3)} (print-test)`);
 }
 
 // ---- §4AA the ink ---------------------------------------------------------------------------------------------------------------

@@ -24,7 +24,13 @@
         "`cssNamed` below is the CSS keyword that spells the doctrine's word. It is",
         "a RENDERING OF THE NAME, never a pinned value — that is why it is a",
         "keyword and not a hex, and why it is allowed to look untuned beside the",
-        "measured gems."
+        "measured gems.",
+        "",
+        "⭐ 2026-10-12 — THE RAINBOW'S FIRST CARRIER: H3's CODES. The founder ruled one color per body on codes and",
+        "seals (data/bodies.json), and for H3 the body color is its domain's. The candidate LIGHT values below are",
+        "therefore the SOURCE hues of H3's B-QRs (qr/bqr.ts BQR_OWNER_HUES; bqr.test.mjs §body-palette B3 binds the two),",
+        "except heartbank.ceo, which keeps the live green #14532d. The B-QR recipe derives each ink, so the light/dark-pair",
+        "problem above does not arise for codes. Still NO --color-tld-* tokens: codes are not a theme."
     ],
     "order": "Spectrum order, red through violet. The assignments were made per-domain, one at a time, by heart-idiom — that they compose a complete rainbow was found afterwards, and showing them out of spectrum order would hide the only property that makes the allusion earned.",
     "scope": "HeartBank® — one body of five. This palette is body-scoped in a way the gems and the aura ramp are not; it is documented here because the brand layer is where the three palettes are told apart, not because the institution's colour system is one body's domain map.",

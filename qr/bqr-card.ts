@@ -1,4 +1,4 @@
-import { drawBqr, type BqrStyle } from "./bqr";
+import { drawBqr, type BqrStyle, type BqrOwner } from "./bqr";
 
 /**
  * ⭐ A PRINTABLE B-QR CARD — one layout for every code of ours a person may want on paper or in a chat: the title on top (a shop's
@@ -27,6 +27,8 @@ export interface BqrCard {
     style?: BqrStyle;
     /** ⭐ v1.6.0 — the drawing's color family, at the green's darkness (`bqrInkFor`). Absent = `BQR_INK`. ⭐ Pass the SAME as the preview. */
     hue?: string;
+    /** ⭐ v1.7.0 — the owner (`BqrOwner`): the body, or for H3 the domain, whose color the card takes. ⛔ Never with `hue`. ⭐ Pass the SAME as the preview. */
+    owner?: BqrOwner;
 }
 
 /**
@@ -58,7 +60,7 @@ function placeLine(g: CanvasRenderingContext2D, text: string, y: number, weight:
 export async function paintQrCard(g: CanvasRenderingContext2D, c: BqrCard, face: string): Promise<void> {
     const { W, H } = CARD;
     g.fillStyle = "#ffffff"; g.fillRect(0, 0, W, H);
-    await drawBqr(g, c.url, { ...CARD.code, accent: c.accent, style: c.style, hue: c.hue });
+    await drawBqr(g, c.url, { ...CARD.code, accent: c.accent, style: c.style, hue: c.hue, owner: c.owner });
     g.fillStyle = "#16141c"; g.textAlign = "left"; g.textBaseline = "middle";
     placeLine(g, c.title, CARD.title, 600, 72, face, W - 120);
     placeLine(g, c.caption, CARD.caption, 500, 54, face, W - 120);

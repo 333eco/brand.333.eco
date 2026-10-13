@@ -127,7 +127,13 @@ an H3QR names whom you thank, and a B-QR is how that code is drawn.
 - **A hue, never a darkness (v1.6.0).** `hue` picks the drawing's color family; `bqrInkFor` draws it at `#14532d`'s
   luminance, keeping the OKLCH hue and giving up only the chroma sRGB cannot hold that dark — so no caller can draw a code
   that prints lighter than the green. Light hues come out deep (citrine olive-brown, diamond graphite). No `hue` is the
-  green, byte for byte; the apps pass none. brand.333.eco/qr/ passes the visitor's `--emblem` (`bqr.test.mjs` §emblem-hue).
+  green, byte for byte. brand.333.eco/qr/ passes the visitor's `--emblem` (`bqr.test.mjs` §emblem-hue).
+- **A code takes its OWNER's color (v1.7.0) — the body palette.** Products pass `owner`, never `hue`: the six `heartbank.{TLD}`
+  domains for HeartBank® (its body color is its domain's), and `SW` (orange robe) · `TH` (sky blue) · `F333` (crimson moon) ·
+  `MA` (clear sparkle — graphite in print; on screen the glint moves only with the viewer, never by itself). `heartbank.ceo`
+  draws the green byte for byte, so Shops moves nothing. ⛔ `"H3"` alone, an unknown owner, or `owner` with `hue` THROWS — a
+  product inherits its body's color and cannot pick one. Semantics in `data/bodies.json` (no hexes); sources in `BQR_OWNER_HUES`;
+  pre-registered and decoded before it shipped (`bqr.test.mjs` §body-palette). ⚠️ It says BELONGING, never authenticity.
 - **The card's words are PLACED, never aligned (v1.6.1).** `paintQrCard` measures each line, shrinks its size until it fits,
   and draws it from the left at the center minus half its width. Safari on iOS 26 ignores `textAlign = "center"` and the
   `maxWidth` argument for a complex script: a Khmer caption printed starting at the center line. Measured on the Simulator
@@ -199,9 +205,12 @@ fine: a bare specifier the Tailwind plugin resolves. Verified to reach `dist`.
 - **A site's accent is DERIVED**, never picked: take the gem whose media type
   *is* that product's medium. Two values cannot derive — `--accent-ink`, and
   `--accent-soft` on a light ground. Measure and pin them per site.
-- **THERE ARE THREE PALETTES AND THEY ARE NOT ONE SYSTEM.** A gem means a
+- **THERE ARE FOUR PALETTES AND THEY ARE NOT ONE SYSTEM.** A gem means a
   **medium** (7, `gems.json`); an aura stop means a **rate** (7, `auras.json`);
-  a rainbow hue means a **domain** (6, `tlds.json`). The hues rhyme because a
+  a rainbow hue means a **domain** (6, `tlds.json`); a body color means a
+  **body** (5, `bodies.json`, codes and seals only — v1.7.0, 2026-10-12). They
+  meet in exactly one place: HeartBank®'s body color IS its domain's, so the
+  rainbow's first carrier is H3's codes. The hues rhyme because a
   colour wheel is small. The two sevens are *different sets* — the aura ramp
   carries indigo and ends at violet, the gems carry no indigo and end at
   diamond.

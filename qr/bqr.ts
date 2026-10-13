@@ -147,6 +147,40 @@ export function bqrInkFor(hue: string): string {
     for (let i = 0; i < 32; i++) { const L = (lo + hi) / 2; if (luminance(rgbOf(at(L))!) > INK_LUM) hi = L; else lo = L; }
     return at(lo);
 }
+
+/**
+ * ⭐ v1.7.0 — THE BODY PALETTE (founder 2026-10-12; MA memory `project_brand_identity` §body-palette; roadmap A383). A code's OWNER
+ *   picks its color family, one per body, on codes and seals only: H3 names a DOMAIN (its body color is its domain's, the six-TLD
+ *   rainbow), and every other body names itself — SW orange robe · TH sky blue · F333 crimson moon · MA clear sparkle. The ink is
+ *   `bqrInkFor(source)`, so an owner inherits every property `hue` has: never lighter than the green, the hue kept.
+ * ⛔ `"H3"` alone is not an owner, and an owner never travels with a `hue`: `paintBqr` throws on either — a product inherits its
+ *   body's color and cannot pick one (rule 1 as a property). The palette says BELONGING, never authenticity: anyone can print any
+ *   color; the scan authenticates.
+ * ⭐ `heartbank.ceo` IS `BQR_INK`, byte for byte (Shops unchanged). The other domain sources are `data/tlds.json`'s candidate LIGHT
+ *   values; `scripts/bqr.test.mjs` §body-palette B3 fails if either file moves without the other.
+ */
+export type BqrOwner =
+    | "heartbank.us" | "heartbank.me" | "heartbank.org" | "heartbank.ceo" | "heartbank.net" | "heartbank.com"
+    | "SW" | "TH" | "F333" | "MA";
+export const BQR_OWNER_HUES: Readonly<Record<BqrOwner, string>> = {
+    "heartbank.us": "#c8102e",   // red — HeartBank® Storage
+    "heartbank.me": "#c95103",   // orange — Thank Your Future Kindness℠
+    "heartbank.org": "#9a6f0b",  // gold — Treasury (prints olive-brown: gold cannot print light)
+    "heartbank.ceo": BQR_INK,    // green — Shops, the live green, unchanged
+    "heartbank.net": "#0f52ba",  // blue — the institutional site, /b/
+    "heartbank.com": "#935dc9",  // purple — Chronicle, the B-Store
+    SW: "#f28500",               // orange robe — prints deep ochre, the robe's kāsāya
+    TH: "#38bdf8",               // sky blue
+    F333: "#c1121f",             // crimson moon
+    MA: "#f4f7ff",               // clear sparkle — prints graphite; on screen the glint moves only with the viewer, never by itself
+};
+export const BQR_OWNERS = Object.keys(BQR_OWNER_HUES) as readonly BqrOwner[];
+/** The ink a code owned by `owner` is drawn in. ⛔ Throws on anything that is not a `BqrOwner` — `"H3"` included. */
+export function bqrOwnerInk(owner: BqrOwner): string {
+    if (!Object.prototype.hasOwnProperty.call(BQR_OWNER_HUES, owner))
+        throw new Error(`B-QR: "${String(owner)}" is not an owner. H3 codes name their domain (heartbank.org, heartbank.ceo, …); the other bodies are SW, TH, F333, MA.`);
+    return bqrInkFor(BQR_OWNER_HUES[owner]);
+}
 /** The decorative module's side, as a fraction of a module — a visible gap between neighbours, so no two ever merge. */
 const DOT = 0.84;
 /** Share of decorative cells drawn dark (before the run limit thins them). */
@@ -174,8 +208,12 @@ export interface BqrOptions {
     quiet?: number;
     /** ⛔ TEST ONLY — the code's colour, for the ink sweep that chose `BQR_INK`. ⛔ Never a theme's colour. */
     ink?: string;
-    /** ⭐ v1.6.0 — the drawing's color family, drawn at `BQR_INK`'s darkness (`bqrInkFor`). Default: `BQR_INK` itself. */
+    /** ⭐ v1.6.0 — the drawing's color family, drawn at `BQR_INK`'s darkness (`bqrInkFor`). Default: `BQR_INK` itself.
+     *  ⛔ Products pass `owner`, never `hue`; `hue` is for the brand page following a visitor's `--emblem`. */
     hue?: string;
+    /** ⭐ v1.7.0 — the body (for H3, the domain) that owns this code; its color comes from the body palette (`bqrOwnerInk`).
+     *  ⛔ Never together with `hue`. */
+    owner?: BqrOwner;
 }
 export interface BqrLayout {
     /** Modules across the code. */
@@ -302,7 +340,9 @@ export function bqrPlacement(size: number, x = 0, y = 0): { k: number; tx: numbe
 export function paintBqr(g: CanvasRenderingContext2D, mat: BqrMatrix, seed: string, o: BqrOptions): void {
     // ⭐ §4AA — one green for the whole drawing: the decoration and the outline default to the code's own ink.
     // ⭐ v1.6.0 — `hue` sets the code, the decoration and the outline at once, darkened by `bqrInkFor`; none = `BQR_INK`, verbatim.
-    const inkOfHue = o.hue ? bqrInkFor(o.hue) : BQR_INK;
+    // ⭐ v1.7.0 — `owner` sets it from the body palette instead; ⛔ both at once throws (a product cannot pick its own color).
+    if (o.owner !== undefined && o.hue !== undefined) throw new Error("B-QR: pass `owner` or `hue`, never both — a product's code takes its body's color.");
+    const inkOfHue = o.owner !== undefined ? bqrOwnerInk(o.owner) : o.hue ? bqrInkFor(o.hue) : BQR_INK;
     const X = o.x ?? 0, Y = o.y ?? 0, size = o.size, accent = o.accent || inkOfHue;
     const L = bqrLayout(mat, seed, { style: o.style, quiet: o.quiet });
     const { k, tx, ty } = bqrPlacement(size, X, Y);
@@ -351,11 +391,11 @@ export async function drawBqr(g: CanvasRenderingContext2D, text: string, o: BqrO
 }
 
 /** A B-QR as a PNG data URL — the on-screen preview of a code a person may also download, so what they see is what they print. */
-export async function bqrDataUrl(text: string, o: { size?: number; accent?: string; ecc?: "L" | "M" | "Q" | "H"; style?: BqrStyle; ground?: BqrGround; hue?: string } = {}): Promise<string> {
+export async function bqrDataUrl(text: string, o: { size?: number; accent?: string; ecc?: "L" | "M" | "Q" | "H"; style?: BqrStyle; ground?: BqrGround; hue?: string; owner?: BqrOwner } = {}): Promise<string> {
     const size = o.size ?? 640;
     const canvas = document.createElement("canvas");
     canvas.width = size; canvas.height = size;
     // ⛔ v1.5.0 — `ground: "heart"` only for a picture that stays on screen; a URL handed to a download takes the default `paper`.
-    await drawBqr(canvas.getContext("2d")!, text, { size, accent: o.accent, ecc: o.ecc, style: o.style, ground: o.ground, hue: o.hue });
+    await drawBqr(canvas.getContext("2d")!, text, { size, accent: o.accent, ecc: o.ecc, style: o.style, ground: o.ground, hue: o.hue, owner: o.owner });
     return canvas.toDataURL("image/png");
 }

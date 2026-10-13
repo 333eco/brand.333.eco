@@ -1,5 +1,5 @@
 {
-    "version": "1.6.1",
+    "version": "1.7.0",
     "files": {
         "css/metta.css": "9bfe986c46c303bf9a48be85322d68e3d626571a424ef3a8aa81faaf5c866692",
         "css/motion.css": "9bfbe39c0de6a9dfaf9fdc2c61e327b3c8e70221c34dff9befd85da448b9e0c2",
@@ -10,7 +10,7 @@
         "emblem/emblem.path.txt": "8377c7bc7f9ab629058b6ee1d9ec058eedb5f473328bf5017bba056f214c2707",
         "emblem/emblem.svg": "368f520ad2d2f9db50d83ca9cd7aee9475948dc8e38c61b7afa13f7717fef903",
         "emblem/emblem.ts": "6e150389eed576c392ff6231c0b38b8fea5d4c11f7a5b21936bb25afab069890",
-        "qr/bqr-card.ts": "a62e4ef6de80f353265b7b5839bc4d049d3516c20d775ed788b77da7c84342ca",
-        "qr/bqr.ts": "f9e5df6a22fbca5483d3a6e1d91cd70cd0941f51e173c557fcc72836ecfab8bf"
+        "qr/bqr-card.ts": "55b4cf3d742bb758f789fd18f91737e8da1169610b6b953ad71e95d8bb713168",
+        "qr/bqr.ts": "b980b3187281b8828fe18b019c11615865d1494802ec3ed175f0b0a7e5aba0e5"
     }
 }
