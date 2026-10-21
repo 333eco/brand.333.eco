@@ -6,7 +6,7 @@ name: RFC 3161 trusted timestamps
 # chain fail together on the question that decides the matter: whether the forum
 # accepts a blockchain as evidence. Two chains is the same exhibit twice. An
 # RFC 3161 timestamp fails for unrelated reasons — it is signed by a named legal
-# authority, is recognised by courts today, and under eIDAS Art. 41 a *qualified*
+# authority, is recognized by courts today, and under eIDAS Art. 41 a *qualified*
 # timestamp carries a presumption of the accuracy of its date. What it does NOT
 # have is permanence: its trust anchor expires, and the authority may close.
 # Bitcoin has permanence and no legal standing; a TSA has legal standing and no

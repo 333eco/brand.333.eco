@@ -7,7 +7,7 @@
 #
 #   OpenTimestamps -> Bitcoin.  No expiry, no authority, no legal presumption.
 #                               Worthless if a court will not take a blockchain.
-#   RFC 3161       -> a TSA.    Statutory presumption under eIDAS, recognised by
+#   RFC 3161       -> a TSA.    Statutory presumption under eIDAS, recognized by
 #                               courts today. But its trust anchor EXPIRES, and
 #                               it depends on the authority still standing.
 #

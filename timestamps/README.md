@@ -7,10 +7,10 @@ other.
 |  | OpenTimestamps → Bitcoin | RFC 3161 → a trust authority |
 |---|---|---|
 | Trust basis | cryptoeconomic; no authority | legal/PKI; a named, supervised authority |
-| Recognised by a court today | uncertain, needs explaining | yes, routinely |
+| Recognized by a court today | uncertain, needs explaining | yes, routinely |
 | Legal presumption | none | **yes**, for a *qualified* timestamp (eIDAS Art. 41) |
 | Expires | never | **yes** — the signing cert has an end date |
-| Depends on an organisation surviving | no | yes |
+| Depends on an organization surviving | no | yes |
 | Cost | free | free |
 
 Bitcoin has permanence and no legal standing. A TSA has legal standing and no
