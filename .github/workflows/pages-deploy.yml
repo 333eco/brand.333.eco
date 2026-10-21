@@ -28,6 +28,13 @@ name: Deploy to GitHub Pages
 on:
     push:
         branches: [main]
+        # A timestamping commit must not redeploy the site: the proofs live NEXT TO
+        # nothing the site serves, and **/*.ots is the entry that is easy to miss.
+        # paths-ignore skips a push only when EVERY changed file matches.
+        paths-ignore:
+            - "timestamps/**"
+            - "TIMESTAMPS.md"
+            - "**/*.ots"
     workflow_dispatch:
 
 permissions:

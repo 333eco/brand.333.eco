@@ -87,7 +87,8 @@ const NAV = [
     { dir: "qr", label: "B-QR" },
     { dir: "color", label: "colour" },
     { dir: "tokens", label: "tokens" },
-    { dir: "vendor", label: "vendoring" }
+    { dir: "vendor", label: "vendoring" },
+    { dir: "sign", label: "hand sign" }
 ];
 
 const urlOf = (dir: string) => (dir === "" ? "/" : `/${dir}/`);

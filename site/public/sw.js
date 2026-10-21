@@ -52,6 +52,7 @@ const SHELL = [
     "/color/",
     "/tokens/",
     "/vendor/",
+    "/sign/",
     "/manifest.webmanifest",
     "/icon.svg"
 ];

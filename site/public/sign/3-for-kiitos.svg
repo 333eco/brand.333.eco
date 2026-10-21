@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 300" width="240" height="300" role="img" aria-labelledby="t d">
+    <title id="t">3 for Kiitos</title>
+    <desc id="d">A right hand seen from the back, held upright: thumb, index and middle finger spread apart, ring and little finger folded down. Drawn by hand as vector clip art, no AI image model.</desc>
+    <!-- 3 for Kiitos (v0, provisional). The back of the hand faces the viewer:
+         the person being thanked sees a "3". Skin tone is the hand custom
+         property (fallback below) so one drawing serves every tone; the line is
+         currentColor, so it follows the theme of the page that draws it (black
+         when the file is opened on its own). The index and middle finger never touch. -->
+    <g id="hand" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <!-- 1. outlines of the three extended digits -->
+        <g stroke="currentColor" stroke-width="34">
+            <path d="M96 172 L70 60" />
+            <path d="M132 168 L146 42" />
+            <path d="M72 214 L26 160" />
+        </g>
+        <!-- 2. cuff, then the back of the hand -->
+        <rect x="92" y="266" width="68" height="30" rx="7" fill="var(--sleeve, #8a8aa0)" stroke="currentColor" stroke-width="4" />
+        <path d="M58 182 Q56 160 86 160 L168 160 Q198 162 198 192 L192 236 Q188 264 156 268 L96 268 Q64 264 60 232 Z"
+              fill="var(--hand, #e3b48a)" stroke="currentColor" stroke-width="4" />
+        <!-- 3. the folded ring and little finger, seen as knuckles -->
+        <g fill="var(--hand, #e3b48a)" stroke="currentColor" stroke-width="4">
+            <circle cx="167" cy="166" r="19" />
+            <circle cx="189" cy="192" r="17" />
+        </g>
+        <!-- 4. skin of the three extended digits, over the outlines -->
+        <g stroke="var(--hand, #e3b48a)" stroke-width="26">
+            <path d="M96 172 L70 60" />
+            <path d="M132 168 L146 42" />
+            <path d="M72 214 L26 160" />
+        </g>
+        <!-- 5. nails -->
+        <g stroke="#fff" stroke-opacity=".45" stroke-width="11">
+            <path d="M70.5 62 L74.6 79" />
+            <path d="M145.8 44 L143.8 62" />
+            <path d="M27.5 162 L36 172" />
+        </g>
+    </g>
+</svg>
