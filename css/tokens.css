@@ -196,7 +196,7 @@
     --d-line-strong: rgba(255, 255, 255, 0.18);
     --d-ink: #f5f5f7;
     --d-ink-dim: #9b9ba5;
-    --d-ink-faint: #6b6b76;
+    --d-ink-faint: #888893; /* 3.75 → 5.63:1 on --d-bg (2026-11-20, /beautify round 1b) */
     --d-scrim: rgba(6, 6, 10, 0.72);
     --d-soft-mix: 55%; /* accent lifted TOWARD WHITE on a dark ground */
     --d-soft-with: #ffffff;
@@ -210,7 +210,7 @@
     --l-line-strong: rgba(20, 16, 30, 0.28);
     --l-ink: #16141c;
     --l-ink-dim: #5b5766;
-    --l-ink-faint: #8b8796;
+    --l-ink-faint: #6e6a79; /* 3.39 → 5.09:1 on --l-bg, 4.70 on a surface (2026-11-20, /beautify round 1b) */
     --l-scrim: rgba(20, 16, 30, 0.4);
     --l-soft-mix: 78%; /* accent darkened toward black on a light ground */
     --l-soft-with: #000000;

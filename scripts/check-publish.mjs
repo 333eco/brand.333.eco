@@ -93,7 +93,10 @@ const DEV_ONLY = new Set([
     "test",
     "node_modules",
     ".git",
-    ".github"
+    ".github",
+    "sign", //       the 3 for Kiitos definition (frozen, OTS-stamped): published by the site at /sign/, not part of the code mirror
+    "timestamps", // this repository's own RFC 3161 proofs and their CA roots: they prove the repo, not the package
+    ".claude" //     a local agent folder, never tracked (added 2026-11-20: v1.8.0 was the first bump since sign/ and timestamps/ arrived on 10/21, and CI would have refused it)
 ]);
 
 const topLevel = readdirSync(BASE, { withFileTypes: true })

@@ -18,7 +18,7 @@ import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.unit.dp
 
 object Brand {
-    const val VERSION = "1.7.1"
+    const val VERSION = "1.8.0"
 
     /** The B-Gem media-type palette. A colour here MEANS a medium.
      *  Not a site palette, and not the six-TLD rainbow. */
@@ -61,7 +61,7 @@ object Brand {
         lineStrong = Color(0xFF000000),
         ink = Color(0xFFF5F5F7),
         inkDim = Color(0xFF9B9BA5),
-        inkFaint = Color(0xFF6B6B76),
+        inkFaint = Color(0xFF888893),
         scrim = Color(0xFF000000)
     )
 
@@ -74,7 +74,7 @@ object Brand {
         lineStrong = Color(0xFFFFFFFF),
         ink = Color(0xFF16141C),
         inkDim = Color(0xFF5B5766),
-        inkFaint = Color(0xFF8B8796),
+        inkFaint = Color(0xFF6E6A79),
         scrim = Color(0xFFFFFFFF)
     )
 

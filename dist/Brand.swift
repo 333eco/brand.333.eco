@@ -14,7 +14,7 @@
 import SwiftUI
 
 public enum Brand {
-    public static let version = "1.7.1"
+    public static let version = "1.8.0"
 
     /// The B-Gem media-type palette. A colour here MEANS a medium.
     /// ⚠️ Not a site palette, and not the six-TLD rainbow. Using a gem as an
@@ -97,7 +97,7 @@ public enum Brand {
         lineStrong: Color(red: 0.0000, green: 0.0000, blue: 0.0000),
         ink: Color(red: 0.9608, green: 0.9608, blue: 0.9686),
         inkDim: Color(red: 0.6078, green: 0.6078, blue: 0.6471),
-        inkFaint: Color(red: 0.4196, green: 0.4196, blue: 0.4627),
+        inkFaint: Color(red: 0.5333, green: 0.5333, blue: 0.5765),
         scrim: Color(red: 0.0000, green: 0.0000, blue: 0.0000)
     )
 
@@ -110,7 +110,7 @@ public enum Brand {
         lineStrong: Color(red: 1.0000, green: 1.0000, blue: 1.0000),
         ink: Color(red: 0.0863, green: 0.0784, blue: 0.1098),
         inkDim: Color(red: 0.3569, green: 0.3412, blue: 0.4000),
-        inkFaint: Color(red: 0.5451, green: 0.5294, blue: 0.5882),
+        inkFaint: Color(red: 0.4314, green: 0.4157, blue: 0.4745),
         scrim: Color(red: 1.0000, green: 1.0000, blue: 1.0000)
     )
 
