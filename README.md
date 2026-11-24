@@ -139,13 +139,19 @@ an H3QR names whom you thank, and a B-QR is how that code is drawn.
   marker stands at the heart's point and its three markers mirror about the heart's own line (`bqrTurned`; always, no option). It
   shipped by the founder's override of a failed scan gate, kept on the record in `scripts/bqr.test.mjs` §turn. A small ™ stands in the
   bottom lobe: it names the **B-Emblem™**, never *B-QR* (unmarked), and shows which way is up. `lobe: "none"` or `autograph` (a person's own
-  strokes, *Open* only, ⛔ throws in *Full*) are for a person's own picture. The other three positions mean nothing yet, so ⛔ nothing is
-  drawn in one, and the top lobe keeps its dots. Codes printed before keep working.
+  strokes, *Open* only, ⛔ throws in *Full*) are for a person's own picture. Codes printed before keep working. ⚠️ Superseded by v1.11.0: *always turned* (only a B-Link
+  is) and *the top lobe keeps its dots* (in our own codes).
 - **Centered, and a coded top lobe (v1.10.0, founder 2026-11-24).** The ™, and an autograph in its place, stand at the bottom lobe's center, each
   version's own (`BQR_LOBE_CENTER`, solved from the silhouette by the test). An autograph is FITTED to its box: its own shape kept, wherever on
   the pad it was drawn. `coded` puts 96 bits in the TOP lobe (Open only, ⛔ throws in Full): for a mark in a person's picture, where its caller
   writes a short fingerprint of that picture, so a heart pasted on another is caught with no network. ⛔ Never a person, a serial, a claim or a
   key; nothing about it is secret. Our own codes keep their dots.
+- **Four positions, read from the address (v1.11.0, founder 2026-11-24: *"keep all four positions"*).** The middle marker stands at the POINT for a B-Link,
+  STANDARD for any other address of the estate, and at the NOTCH or NON-STANDARD for the same two drawn by an outsider through our API
+  (`by: "outside"`, which only the API passes). `bqrPosition` reads the address; a caller never chooses. ⛔ Any other address THROWS: our heart never
+  frames an address someone chose. ⛔ A position is a declaration, never a proof: nothing public may say one shows who drew it.
+- **B-Watermark℠ (v1.11.0)** = the invisible mark, the B-QR, its position, B-Autograph℠ and B-Fingerprint℠, in a person's own picture: `/watermark/`. The
+  fingerprint is `qr/fingerprint.ts`, open and self-contained (`npm run fingerprint:test`).
 - **The card's words are PLACED, never aligned (v1.6.1).** `paintQrCard` measures each line, shrinks its size until it fits,
   and draws it from the left at the center minus half its width. Safari on iOS 26 ignores `textAlign = "center"` and the
   `maxWidth` argument for a complex script: a Khmer caption printed starting at the center line. Measured on the Simulator

@@ -35,9 +35,9 @@
  *   chosen by a rule written into the test BEFORE its sweep ran: the LIGHTEST candidate that prints at ISO/IEC 15415
  *   symbol-contrast grade A (Rpaper 0.85 − Rink ≥ 0.70) and decodes no worse than the old near-black by more than 2 of 90 cases on two
  *   independent decoders. The prediction (#106430) was wrong and the rule's pick was kept — ⛔ never move the rule to a preferred shade.
- * ⭐ ONE MIRROR LINE (v1.9.0, founder 2026-11-23): the code is drawn turned a quarter counterclockwise (`bqrTurned`), so its middle
- *   position marker stands at the heart's point and its three markers mirror about the heart's own line. Measured in §turn; nothing
- *   printed before is reprinted (a code reads at any angle).
+ * ⭐ FOUR POSITIONS (v1.11.0, founder 2026-11-24): the middle position marker stands where the ADDRESS puts it (`bqrPosition`): at the heart's point
+ *   for a B-Link, standard for any other address of the estate; the notch and non-standard are the same two from outside. At the point and
+ *   the notch the code's mirror line is the heart's (v1.9.0, §turn). Nothing printed before is reprinted (a code reads at any angle).
  * ⭐ DETERMINISTIC: the decoration is seeded from a hash of the text, so the same address always draws the same picture and the preview
  *   a person sees is the card they download.
  *
@@ -256,8 +256,10 @@ export interface BqrOptions {
     fitAutograph?: boolean;
     /** ⭐ v1.10.0 — 96 bits in the TOP lobe, for a mark in a person's picture, in the `outline` version only (⛔ throws in `pixels`). */
     coded?: readonly number[];
-    /** ⛔ TEST ONLY — `false` draws the code upright, the drawing before v1.9.0 (`scripts/bqr.test.mjs` §turn, the baseline). */
-    turn?: boolean;
+    /** ⭐ v1.11.0 — who draws it. ⛔ Only our API passes "outside"; an app never says where the middle marker stands (the address does). */
+    by?: BqrBy;
+    /** ⛔ TEST ONLY — the position, whatever the address says. */
+    position?: BqrPosition;
     /** ⭐ v1.6.0 — the drawing's color family, drawn at `BQR_INK`'s darkness (`bqrInkFor`). Default: `BQR_INK` itself.
      *  ⛔ Products pass `owner`, never `hue`; `hue` is for the brand page following a visitor's `--emblem`. */
     hue?: string;
@@ -381,14 +383,44 @@ function drawAutograph(g: CanvasRenderingContext2D, a: BqrAutograph, ink: string
 }
 
 /**
- * ⭐ v1.9.0 (founder 2026-11-23) — the code turned a quarter COUNTERCLOCKWISE, so its middle position marker stands at the heart's point.
- *   The emblem mirrors about one line, point to notch; a code's three markers mirror about one line too, through the middle one. Upright
- *   the two lines cross; turned, they are the same line. Decoders read a code at any angle, so nothing printed before stops working.
+ * ⭐ v1.11.0 (founder 2026-11-24: *"keep all four positions"*) — WHERE THE MIDDLE MARKER STANDS SAYS WHAT KIND OF ADDRESS IT IS, read from the address
+ *   itself: at the heart's POINT for a B-Link, STANDARD (top left) for any other address of the estate; the NOTCH and NON-STANDARD (bottom
+ *   right) are the same two, drawn by an outsider through our API (`by: "outside"`; nothing passes it until that API exists). The point and
+ *   the notch are the two where the code's own mirror line is the heart's (§turn), so a B-Link is the symmetric one. A camera reads any angle.
+ * ⛔ A declaration, never a proof: anyone can draw any position, so nothing public may say that one shows who drew it.
  */
-export function bqrTurned(mat: BqrMatrix): BqrMatrix {
-    const n = mat.size, data = new Uint8Array(n * n);
-    for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) data[r * n + c] = mat.data[c * n + (n - 1 - r)] ? 1 : 0;
-    return { size: n, data };
+export type BqrPosition = "point" | "notch" | "standard" | "non-standard";
+export type BqrBy = "us" | "outside";
+/** Every domain a B-QR may open a page of: the estate's (b.333.eco's own list; §position K4 holds the two equal). */
+export const BQR_HOSTS: readonly string[] = [
+    "333.eco", "heartbank.org", "heartbank.net", "heartbank.com", "heartbank.ceo", "heartbank.me", "heartbank.us",
+    "thonly.org", "thonly.com", "thonly.net", "siliconwat.com", "siliconwat.org", "siliconwat.dev",
+    "missaquarius.org", "missaquarius.com", "playsey.app", "sayyourname.app", "seysays.org",
+];
+/** What a code's text is: a B-Link, another estate address, or no address at all (a bare gift code). ⛔ Throws for an address anywhere else: our
+ *  heart never frames an address someone chose. `localhost` and the estate's Firebase preview hosts are a developer's phone. */
+export function bqrKind(text: string, hosts: readonly string[] = BQR_HOSTS): "b-link" | "estate" | "text" {
+    if (!/^[a-z][a-z0-9+.-]*:/i.test(text.trim())) return "text";
+    let u: URL;
+    try { u = new URL(text.trim()); } catch { throw new Error("B-QR: that isn't an address."); }
+    if (/^(localhost|127\.0\.0\.1|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+)$/.test(u.hostname) || /^(thank3-heartbank-com|heartbank-bc44f)(--[a-z0-9-]+)?\.(web\.app|firebaseapp\.com)$/.test(u.hostname)) return "estate";
+    if (u.protocol !== "https:" || u.port || u.username || u.password || !hosts.some((d) => u.hostname === d || u.hostname.endsWith("." + d))) throw new Error("B-QR: only an https address of the estate (" + u.hostname + ").");
+    return u.hostname === "b.333.eco" ? "b-link" : "estate";
+}
+export function bqrPosition(text: string, by: BqrBy = "us"): BqrPosition {
+    return bqrKind(text) === "b-link" ? (by === "outside" ? "notch" : "point") : by === "outside" ? "non-standard" : "standard";
+}
+/** Quarter turns counterclockwise from upright. */
+export const BQR_TURNS: Readonly<Record<BqrPosition, 0 | 1 | 2 | 3>> = { standard: 0, point: 1, "non-standard": 2, notch: 3 };
+/** The matrix turned that many quarters counterclockwise. Decoders read a code at any angle, so nothing printed before stops working. */
+export function bqrTurned(mat: BqrMatrix, quarters = 1): BqrMatrix {
+    let m: BqrMatrix = mat;
+    for (let q = 0; q < quarters; q++) {
+        const n = m.size, data = new Uint8Array(n * n), from = m.data;
+        for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) data[r * n + c] = from[c * n + (n - 1 - r)] ? 1 : 0;
+        m = { size: n, data };
+    }
+    return m;
 }
 
 /**
@@ -441,8 +473,6 @@ export function bqrLobeCells(mat: BqrMatrix, o: { style?: BqrStyle } = {}): [num
     if (out.length < 2 * BQR_CODED_BITS) throw new Error("B-QR: this code is too coarse for coded modules.");
     return out.slice(0, 2 * BQR_CODED_BITS);
 }
-/** A drawn cell as the DECODER sees it (the code's own upright grid), for reading coded modules back from a photo of the drawing. */
-export const bqrUpright = (n: number, [c, r]: readonly [number, number]): [number, number] => [n - 1 - r, c];
 
 // ---- drawing ------------------------------------------------------------------------------------------------------------------------
 
@@ -454,8 +484,9 @@ export function bqrPlacement(size: number, x = 0, y = 0): { k: number; tx: numbe
 
 /** Paint a B-QR from a module matrix into a 2D context. Synchronous; `drawBqr` makes the matrix. */
 export function paintBqr(g: CanvasRenderingContext2D, upright: BqrMatrix, seed: string, o: BqrOptions): void {
-    // ⭐ v1.9.0 — always turned: one drawing, whoever asks. The layout is the grid's, so the decoration and the outline do not move.
-    const mat = o.turn === false ? upright : bqrTurned(upright);
+    // ⭐ v1.11.0 — turned by what the address IS (`bqrPosition`; it throws for an address outside the estate). The layout is the grid's, so the
+    //   decoration and the outline do not move.
+    const where = bqrPosition(seed, o.by), mat = bqrTurned(upright, BQR_TURNS[o.position ?? where]);
     // ⭐ §4AA — one green for the whole drawing: the decoration and the outline default to the code's own ink.
     // ⭐ v1.6.0 — `hue` sets the code, the decoration and the outline at once, darkened by `bqrInkFor`; none = `BQR_INK`, verbatim.
     // ⭐ v1.7.0 — `owner` sets it from the body palette instead; ⛔ both at once throws (a product cannot pick its own color).
@@ -517,11 +548,11 @@ export async function drawBqr(g: CanvasRenderingContext2D, text: string, o: BqrO
 }
 
 /** A B-QR as a PNG data URL — the on-screen preview of a code a person may also download, so what they see is what they print. */
-export async function bqrDataUrl(text: string, o: { size?: number; accent?: string; ecc?: "L" | "M" | "Q" | "H"; style?: BqrStyle; ground?: BqrGround; hue?: string; owner?: BqrOwner; lobe?: BqrLobe; autograph?: BqrAutograph } = {}): Promise<string> {
+export async function bqrDataUrl(text: string, o: { size?: number; accent?: string; ecc?: "L" | "M" | "Q" | "H"; style?: BqrStyle; ground?: BqrGround; hue?: string; owner?: BqrOwner; lobe?: BqrLobe; autograph?: BqrAutograph; by?: BqrBy } = {}): Promise<string> {
     const size = o.size ?? 640;
     const canvas = document.createElement("canvas");
     canvas.width = size; canvas.height = size;
     // ⛔ v1.5.0 — `ground: "heart"` only for a picture that stays on screen; a URL handed to a download takes the default `paper`.
-    await drawBqr(canvas.getContext("2d")!, text, { size, accent: o.accent, ecc: o.ecc, style: o.style, ground: o.ground, hue: o.hue, owner: o.owner, lobe: o.lobe, autograph: o.autograph });
+    await drawBqr(canvas.getContext("2d")!, text, { size, accent: o.accent, ecc: o.ecc, style: o.style, ground: o.ground, hue: o.hue, owner: o.owner, lobe: o.lobe, autograph: o.autograph, by: o.by });
     return canvas.toDataURL("image/png");
 }

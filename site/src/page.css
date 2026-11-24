@@ -1490,3 +1490,18 @@ footer p {
 .sm {
     font-size: 0.72em;
 }
+
+/* /watermark/ — B-Watermark℠: the pictures, the four positions, the pad. */
+.wm-two { display: grid; gap: 18px; grid-template-columns: 1fr; margin: 18px 0; }
+.wm-four { display: grid; gap: 18px; grid-template-columns: repeat(2, 1fr); margin: 18px 0; }
+@media (min-width: 720px) { .wm-two { grid-template-columns: 3fr 2fr; align-items: center; } #wm-compare { grid-template-columns: 1fr 1fr; align-items: start; } .wm-four { grid-template-columns: repeat(4, 1fr); } }
+.wm-pic canvas, .wm-fig canvas { display: block; width: 100%; height: auto; border-radius: 14px; }
+.wm-small canvas { max-width: 360px; margin: 0 auto; border-radius: 0; background: #fff; border-radius: 14px; }
+.wm-cells { max-width: 560px; margin: 18px 0; }
+.wm-fig { margin: 0; }
+.wm-four .wm-fig canvas { border-radius: 12px; }
+.wm-padrow { display: flex; gap: 14px; align-items: flex-end; flex-wrap: wrap; margin: 14px 0; }
+.wm-pad { width: min(360px, 100%); aspect-ratio: 5 / 3; border: 1px dashed currentColor; border-radius: 14px; background: #fff; touch-action: none; cursor: crosshair; -webkit-user-select: none; user-select: none; }
+.wm-pad svg { display: block; width: 100%; height: 100%; fill: none; stroke: #46484f; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
+.wm-table { overflow-x: auto; margin: 18px 0; }
+.wm-table td { overflow-wrap: anywhere; }

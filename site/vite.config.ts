@@ -85,6 +85,7 @@ const NAV = [
     { dir: "wordmark", label: "wordmark" },
     { dir: "mark", label: "mark" },
     { dir: "qr", label: "B-QR" },
+    { dir: "watermark", label: "B-Watermark" },
     { dir: "color", label: "colour" },
     { dir: "tokens", label: "tokens" },
     { dir: "vendor", label: "vendoring" },

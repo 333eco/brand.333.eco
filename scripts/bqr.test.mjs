@@ -286,6 +286,7 @@
  *   §turn's own checks (T1–T3, T5, T6) run on a B-Link, where the turn now lives; every code that points elsewhere is upright again, the drawing
  *   §turn's failed gate compared against. ⛔ A position is a declaration, never a proof: anyone can draw any position, and nothing public may say
  *   that one shows who drew it. Predicted: all pass first time but K5's dots, if the stream depends on the matrix (it must not).
+ *   ✅ RESULT (2026-11-24): K1–K5 pass on the first run, K5's dots included (the stream is the text's). §turn's own checks run on `turn: true`.
  */
 import { createRequire } from "node:module";
 import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, existsSync } from "node:fs";
@@ -449,20 +450,22 @@ for (const ecc of ["L", "M", "Q", "H"]) for (const [name, text] of P) {
 
 // ---- P3 pixels + P4 determinism ---------------------------------------------------------------------------------------------------
 console.log("\n— P3 pixels · P4 determinism");
+/** §turn's `turn` and §position's positions, said in the recipe's TEST ONLY word. */
+function paint(g, m, text, { turn, ...o }) { B.paintBqr(g, m, text, turn === undefined ? o : { ...o, position: turn ? "point" : "standard" }); }
 function renderBqr(text, size, o = {}) {
     const c = createCanvas(size, size), g = c.getContext("2d");
     const q = QRCode.create(text, { errorCorrectionLevel: o.ecc ?? B.BQR_ECC });
-    B.paintBqr(g, q.modules, text, { size, ...o });
+    paint(g, q.modules, text, { size, ...o });
     return c;
 }
 /** The matrix as it is DRAWN, written HERE — a read that used `bqrTurned` would grade the recipe with its own code (§turn). */
-const drawnAs = (m, turn = true) => { const n = m.size; return (r, c) => !!(turn ? m.data[c * n + (n - 1 - r)] : m.data[r * n + c]); };
+const drawnAs = (m, turn = false) => { const n = m.size; return (r, c) => !!(turn ? m.data[c * n + (n - 1 - r)] : m.data[r * n + c]); };
 function pixelRead(text, quiet, style = "pixels", ringOverride, ground, o = {}) {
     const S = 1200, c = renderBqr(text, S, { quiet, style, ground, turn: o.turn }), px = c.getContext("2d").getImageData(0, 0, S, S).data;
     const q = QRCode.create(text, { errorCorrectionLevel: B.BQR_ECC }), L = B.bqrLayout(q.modules, text, { style, quiet }), { k, tx, ty } = B.bqrPlacement(S);
     const lum = (u, v) => { const i = (Math.round(ty + v * k) * S + Math.round(tx + u * k)) * 4; return (px[i] + px[i + 1] + px[i + 2]) / 3; };
     const ring = ringOverride ?? (style === "outline" ? OUTLINE_CLEAR : FILL_RING);
-    let wrong = 0, dirty = 0; const want = drawnAs(q.modules, o.readAs ?? true);
+    let wrong = 0, dirty = 0; const want = drawnAs(q.modules, o.readAs ?? o.turn ?? false);
     for (let r = -ring; r < L.n + ring; r++) for (let cc = -ring; cc < L.n + ring; cc++) {
         const inCode = r >= 0 && r < L.n && cc >= 0 && cc < L.n;
         for (const [du, dv] of [[.5, .5], [.2, .2], [.8, .2], [.2, .8], [.8, .8]]) {
@@ -527,7 +530,7 @@ for (const style of ["pixels", "outline"]) {
         const lit = P.map(([, text]) => alphaIn(renderBqr(text, S, { style, ground: "heart" })));
         ok(out.length > S * S * 0.2 && lit.every((n) => n === 0), `G2 ${style}: ${out.length} px clearly outside the silhouette — ${lit.join(" · ")} with any alpha in "heart"`);
         const reused = createCanvas(S, S), rg = reused.getContext("2d"), q = QRCode.create(P[0][1], { errorCorrectionLevel: B.BQR_ECC });
-        B.paintBqr(rg, q.modules, P[0][1], { size: S, style }); B.paintBqr(rg, q.modules, P[0][1], { size: S, style, ground: "heart" });
+        paint(rg, q.modules, P[0][1], { size: S, style }); paint(rg, q.modules, P[0][1], { size: S, style, ground: "heart" });
         ok(alphaIn(reused) === 0, `G2 ${style}: "heart" drawn over a "paper" drawing leaves ${alphaIn(reused)} px outside (the square is cleared)`);
         ok(alphaIn(renderBqr(P[0][1], S, { style })) > out.length * 0.99, `G2 control ${style}: "paper" is opaque across that region (${alphaIn(renderBqr(P[0][1], S, { style }))} of ${out.length} px)`);
         for (const [name, text] of P) {
@@ -603,18 +606,18 @@ console.log("\n— §turn T1 one mirror line · T2 the turn · T3 nothing else m
         ok(rows.every((r) => r.t < 0.01), `T1 ${style}: turned, the middle marker is on the line and the other two mirror — worst ${Math.max(...rows.map((r) => r.t)).toFixed(4)} units`);
         ok(rows.every((r) => r.uMiddle > 1 && r.uSet > 1), `T1 control ${style}: upright, the middle marker is ${Math.min(...rows.map((r) => r.uMiddle)).toFixed(2)}+ units off the line, so its mirror image has no marker`);
         for (const [name, text] of P) {
-            const v = pixelRead(text, undefined, style), q = QRCode.create(text, { errorCorrectionLevel: B.BQR_ECC }), n = q.modules.size, w = drawnAs(q.modules);
+            const v = pixelRead(text, undefined, style, undefined, undefined, { turn: true }), q = QRCode.create(text, { errorCorrectionLevel: B.BQR_ECC }), n = q.modules.size, w = drawnAs(q.modules, true);
             const marker = (r0, c0) => { for (let r = 0; r < 7; r++) for (let c = 0; c < 7; c++) { const edge = r === 0 || r === 6 || c === 0 || c === 6, core = r > 1 && r < 5 && c > 1 && c < 5; if (w(r0 + r, c0 + c) !== (edge || core)) return false; } return true; };
             ok(v.wrong === 0 && marker(0, 0) && marker(n - 7, 0) && marker(n - 7, n - 7) && !marker(0, n - 7), `T2 ${style} ${name}: ${v.wrong} wrong modules; markers top left, bottom left, bottom right, none top right`);
         }
-        const wrongIfUpright = P.map(([, text]) => pixelRead(text, undefined, style, undefined, undefined, { readAs: false }).wrong);
+        const wrongIfUpright = P.map(([, text]) => pixelRead(text, undefined, style, undefined, undefined, { turn: true, readAs: false }).wrong);
         ok(wrongIfUpright.every((n) => n > 100), `T2 control ${style}: read as the upright matrix, ${Math.min(...wrongIfUpright)}+ samples are wrong`);
         for (const ground of ["paper", "heart"]) {
             let outside = 0, insideDiff = 0;
             for (const [, text] of P) {
                 const S = 1200, q = QRCode.create(text, { errorCorrectionLevel: B.BQR_ECC }), L = B.bqrLayout(q.modules, text, { style }), { k, tx, ty } = B.bqrPlacement(S);
                 const x0 = Math.round(tx + L.ox * k), y0 = Math.round(ty + L.oy * k), x1 = Math.round(tx + (L.ox + L.n * L.m) * k), y1 = Math.round(ty + (L.oy + L.n * L.m) * k);
-                const a = renderBqr(text, S, { style, ground }).getContext("2d").getImageData(0, 0, S, S).data, b = renderBqr(text, S, { style, ground, turn: false }).getContext("2d").getImageData(0, 0, S, S).data;
+                const a = renderBqr(text, S, { style, ground, turn: true }).getContext("2d").getImageData(0, 0, S, S).data, b = renderBqr(text, S, { style, ground, turn: false }).getContext("2d").getImageData(0, 0, S, S).data;
                 for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) { const i = (y * S + x) * 4; if (a[i] === b[i] && a[i + 1] === b[i + 1] && a[i + 2] === b[i + 2] && a[i + 3] === b[i + 3]) continue; if (x >= x0 && x < x1 && y >= y0 && y < y1) insideDiff++; else outside++; }
             }
             ok(outside === 0, `T3 ${style} ${ground}: ${outside} pixels differ outside the code's box`);
@@ -697,7 +700,7 @@ const lobeCenter = (style) => {
     const rnd = (seed) => Array.from({ length: 96 }, (_, i) => (Math.imul(i + 1 + seed * 97, 2654435761) >>> 15) & 1);
     ok(throws2({ style: "pixels", coded: rnd(1) }) && throws2({ coded: rnd(1) }) && throws2({ style: "outline", coded: rnd(1).slice(1) }) && throws2({ style: "outline", coded: rnd(1).map((x) => x * 2) }) && !throws2({ style: "outline", coded: rnd(1) }), "L2: coded modules throw in `pixels`, with no style, short, or not bits");
     ok(renderBqr(T, 640, { style: "outline" }).toBuffer("image/png").equals(renderBqr(T, 640, { style: "outline", coded: undefined }).toBuffer("image/png")) && !renderBqr(T, 640, { style: "outline" }).toBuffer("image/png").equals(renderBqr(T, 640, { style: "outline", coded: rnd(1) }).toBuffer("image/png")), "L2: none draws what it drew; some draw something");
-    for (const [n, extra] of [["", {}], [" and an autograph", { autograph: AUTO }]]) { const SZ = 1200, data = renderBqr(T, SZ, { style: "outline", coded: rnd(2), ...extra }).getContext("2d").getImageData(0, 0, SZ, SZ).data, pl = B.bqrPlacement(SZ), w = drawnAs(mk); let wrong = 0, dirty = 0;
+    for (const [n, extra] of [["", {}], [" and an autograph", { autograph: AUTO }]]) { const SZ = 1200, data = renderBqr(T, SZ, { style: "outline", coded: rnd(2), ...extra }).getContext("2d").getImageData(0, 0, SZ, SZ).data, pl = B.bqrPlacement(SZ), w = drawnAs(mk, true); let wrong = 0, dirty = 0;
         for (let r = -OUTLINE_CLEAR; r < L.n + OUTLINE_CLEAR; r++) for (let cc = -OUTLINE_CLEAR; cc < L.n + OUTLINE_CLEAR; cc++) { const i = (Math.round(pl.ty + (L.oy + (r + .5) * L.m) * pl.k) * SZ + Math.round(pl.tx + (L.ox + (cc + .5) * L.m) * pl.k)) * 4, y = (data[i] + data[i + 1] + data[i + 2]) / 3; if (r >= 0 && r < L.n && cc >= 0 && cc < L.n) { if ((y < 128) !== w(r, cc)) wrong++; } else if (y < 250) dirty++; }
         ok(wrong === 0 && dirty === 0, `L3 coded${n}: the code reads back ${wrong} wrong, its ring ${dirty} non-white`); }
     const readCoded = (coded) => { const SZ = 1200, data = renderBqr(T, SZ, { style: "outline", coded }).getContext("2d").getImageData(0, 0, SZ, SZ).data, pl = B.bqrPlacement(SZ); return cells.map(([c, r]) => { const i = (Math.round(pl.ty + (L.oy + (r + .5) * L.m) * pl.k) * SZ + Math.round(pl.tx + (L.ox + (c + .5) * L.m) * pl.k)) * 4; return data[i] < 160 ? 1 : 0; }); };
@@ -705,6 +708,38 @@ const lobeCenter = (style) => {
     ok(bad === 0, `L5: 20 words of 96 bits read back, each twice, ${bad} wrong`);
     { const b = rnd(5), r = readCoded(b.map((x, i) => (i === 40 ? 1 - x : x))); ok(r[40] !== b[40] && r[136] !== b[40], "L5 control: one flipped bit is seen, in both its places"); }
     function throws2(o) { try { renderBqr(T, 64, o); return false; } catch { return true; } }
+}
+
+// ---- §position K1 · K2 · K3 · K4 · K5 (pre-registered in the header, 2026-11-24, commit d21c803) -------------------------------------
+console.log("\n— §position K1 the table · K2 the pixels · K3 refused · K4 the list · K5 nothing else moves");
+{
+    const no = (f) => { try { f(); return false; } catch { return true; } }, at = (t, by) => B.bqrPosition(t, by), BL = ["https://b.333.eco/7k2m9qx", "HTTPS://B.333.ECO/7K2M9QX4B8T3", "https://b.333.eco/" + "a".repeat(26), "https://b.333.eco/7k2m9qx/qr", "https://B.333.eco/7K2M-9QX4-B8T3/about"];
+    ok(BL.every((t) => at(t) === "point" && at(t, "outside") === "notch"), "K1: every B-Link is the point, or the notch from outside");
+    const EST = B.BQR_HOSTS.flatMap((d) => [`https://${d}/`, `https://x.y.${d}/a?b=c#d`]).filter((t) => !/\/\/b\.333\.eco/.test(t));
+    ok(EST.length === 36 && EST.every((t) => at(t) === "standard" && at(t, "outside") === "non-standard"), `K1: ${EST.length} other estate addresses are standard, or non-standard from outside`);
+    ok(at("ABCD-EFGH-JKMN") === "standard" && at("ABCD EFGH", "outside") === "non-standard" && B.bqrKind("ABCD") === "text", "K1: a bare code is no address");
+    const EVIL = ["https://b.333.eco.evil.example/7K2M9QX", "https://b-333.eco/7K2M9QX", "https://333.eco.evil.example/", "https://evil333.eco/", "https://example.com/?u=https://b.333.eco/7K2M9QX", "https://b.333.есо/7K2M9QX", "http://b.333.eco/7K2M9QX", "https://b.333.eco:8443/x", "https://me@b.333.eco/x", "https://me:pw@heartbank.org/", "javascript:alert(1)", "mailto:a@333.eco", "bitcoin:1abc", "https://"];
+    ok(EVIL.every((t) => no(() => at(t)) && no(() => at(t, "outside"))), `K1 control · K3: ${EVIL.length} other addresses are refused, whoever draws (${EVIL.filter((t) => !no(() => at(t))).join(" ") || "none through"})`);
+    ok(EVIL.every((t) => no(() => renderBqr(t, 64))) && !no(() => renderBqr(BL[1], 64)), "K3: paintBqr itself refuses them");
+    ok(["http://localhost:5390/?tag=x", "http://127.0.0.1:8080/", "http://192.168.1.20:5173/a", "https://thank3-heartbank-com--p28-ab12cd34.web.app/?tag=x", "https://heartbank-bc44f.web.app/b/x"].every((t) => at(t) === "standard") && no(() => at("https://evil.web.app/")) && no(() => at("https://heartbank-bc44f.evil.app/")), "K3: a developer's phone draws; another project's host does not");
+    ok(BL.concat(EST).every((t) => no(() => B.bqrKind(t, []))), "K3 control: with the list emptied every estate address is refused");
+    const sib = new URL("../../b.333.eco/src/estate.ts", import.meta.url);
+    if (existsSync(sib)) { const list = [...readFileSync(sib, "utf8").match(/export const DOMAINS = \[([\s\S]*?)\];/)[1].matchAll(/"([^"]+)"/g)].map((m) => m[1]); ok(JSON.stringify([...list].sort()) === JSON.stringify([...B.BQR_HOSTS].sort()), `K4: the list is b.333.eco's own (${list.length})`); }
+    else console.log("· K4: b.333.eco isn't checked out beside this repo, so its list wasn't read");
+    /** The matrix turned here, `q` quarters counterclockwise: a read that used the recipe's own turn would grade it with itself. */
+    const turnedHere = (m, q) => { let a = Array.from({ length: m.size }, (_, r) => Array.from({ length: m.size }, (_, c) => (m.data[r * m.size + c] ? 1 : 0))); for (let k = 0; k < q; k++) a = a[0].map((_, i) => a.map((row) => row[row.length - 1 - i])); return a; };
+    const S = 1200, corner = { standard: [0, 0], point: [1, 0], "non-standard": [1, 1], notch: [0, 1] };
+    for (const style of ["pixels", "outline"]) for (const [where, text, o, q] of [["standard", P[0][1], {}, 0], ["point", BL[1], {}, 1], ["non-standard", P[0][1], { by: "outside" }, 2], ["notch", BL[1], { by: "outside" }, 3]]) {
+        const px = renderBqr(text, S, { style, ...o }).getContext("2d").getImageData(0, 0, S, S).data, m = QRCode.create(text, { errorCorrectionLevel: B.BQR_ECC }).modules, L = B.bqrLayout(m, text, { style }), { k, tx, ty } = B.bqrPlacement(S), w = turnedHere(m, q); let wrong = 0, other = 0; const w2 = turnedHere(m, (q + 1) % 4);
+        for (let r = 0; r < L.n; r++) for (let c = 0; c < L.n; c++) { const i = (Math.round(ty + (L.oy + (r + .5) * L.m) * k) * S + Math.round(tx + (L.ox + (c + .5) * L.m) * k)) * 4, dark = px[i] < 128; if (dark !== !!w[r][c]) wrong++; if (dark !== !!w2[r][c]) other++; }
+        const far = corner[where], e = L.n - 7, empty = [(1 - far[0]) * e, (1 - far[1]) * e], isMarker = (r0, c0) => { for (let r = 0; r < 7; r++) for (let c = 0; c < 7; c++) { const edge = r === 0 || r === 6 || c === 0 || c === 6, core = r > 1 && r < 5 && c > 1 && c < 5; if (!!w[r0 + r][c0 + c] !== (edge || core)) return false; } return true; };
+        ok(wrong === 0 && other > 50 && isMarker(far[0] * e, far[1] * e) && !isMarker(...empty), `K2 ${style} ${where}: ${wrong} modules wrong (a quarter further, ${other}); the middle marker stands ${["top", "bottom"][far[0]]} ${["left", "right"][far[1]]}`);
+    }
+    for (const style of ["pixels", "outline"]) {
+        const text = P[0][1], { k, tx, ty } = B.bqrPlacement(S), m = QRCode.create(text, { errorCorrectionLevel: B.BQR_ECC }).modules, L = B.bqrLayout(m, text, { style }), all = ["standard", "point", "non-standard", "notch"].map((position) => renderBqr(text, S, { style, position }).getContext("2d").getImageData(0, 0, S, S).data); let moved = 0, inside = 0;
+        for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) { const i = (y * S + x) * 4, u = (x - tx) / k, v = (y - ty) / k, inCode = u > L.ox - 0.05 && u < L.ox + L.n * L.m + 0.05 && v > L.oy - 0.05 && v < L.oy + L.n * L.m + 0.05, same = all.every((a) => a[i] === all[0][i] && a[i + 3] === all[0][i + 3]); if (!same) inCode ? inside++ : moved++; }
+        ok(moved === 0 && inside > 1000, `K5 ${style}: ${moved} pixels differ outside the code's box, ${inside} inside it`);
+    }
 }
 
 // ---- the images ------------------------------------------------------------------------------------------------------------------
@@ -769,7 +804,7 @@ function bareCard(text, { quiet, ecc = B.BQR_ECC, style = "pixels", ink, accent,
     const c = createCanvas(C.CARD.W, C.CARD.H), g = c.getContext("2d");
     g.fillStyle = "#fff"; g.fillRect(0, 0, C.CARD.W, C.CARD.H);
     const q = QRCode.create(text, { errorCorrectionLevel: ecc });
-    B.paintBqr(g, q.modules, text, { ...C.CARD.code, quiet, style, ink, accent, hue, owner, turn, lobe, autograph });
+    paint(g, q.modules, text, { ...C.CARD.code, quiet, style, ink, accent, hue, owner, turn, lobe, autograph });
     return c;
 }
 /** ⭐ The SAME code pixels with the emblem cut away (code box + quiet ring copied onto white) — separates what the decoration costs
@@ -889,7 +924,7 @@ for (const [name, text] of P) {
         await decodeAll(`OWNER ${owner} outline preview`, 300, name, text, B.bqrOwnerInk(owner), renderBqr(text, 640, { style: "outline", owner }));
     }
     // ⭐ §turn T4 · T6 — turned against upright, same sizes and distortions; and the turned card at every quarter.
-    for (const [style, vname] of Object.entries(VERSIONS)) for (const [tn, turn] of [["turned", undefined], ["upright", false]]) {
+    for (const [style, vname] of Object.entries(VERSIONS)) for (const [tn, turn] of [["turned", true], ["upright", false]]) {
         const tc = bareCard(text, { style, turn });
         for (const s of [300, 200, 150]) await decodeAll(`TURN ${tn} card (${vname})`, s, name, text, B.BQR_INK, tc);
         const tp = renderBqr(text, 640, { style, turn });
@@ -1089,7 +1124,7 @@ if (process.env.BQR_TURN_WIDE) {
     const score = {}, add = (k, j, z) => { score[k] ??= { n: 0, j: 0, z: 0 }; score[k].n++; score[k].j += j; score[k].z += z; };
     const run = async (key, text, base) => { for (const s of [300, 200, 150]) for (const fn of Object.values(DISTORT)) { const img = await fn(scale(base, s)), id = img.getContext("2d").getImageData(0, 0, img.width, img.height); add(key, jsQR(id.data, id.width, id.height, { inversionAttempts: "dontInvert" })?.data === text ? 1 : 0, (await zx.readBarcodes(id, { formats: ["QRCode"], tryHarder: true, maxNumberOfSymbols: 1 }))[0]?.text === text ? 1 : 0); } };
     for (const text of W) {
-        for (const style of ["pixels", "outline"]) for (const [tn, turn] of [["turned", undefined], ["upright", false]]) {
+        for (const style of ["pixels", "outline"]) for (const [tn, turn] of [["turned", true], ["upright", false]]) {
             await run(`${style} card|${tn}`, text, bareCard(text, { style, turn }));
             await run(`${style} preview|${tn}`, text, renderBqr(text, 640, { style, turn }));
             await run(`${style} heart on dark|${tn}`, text, onGround(renderBqr(text, 640, { style, ground: "heart", turn }), DARK));
