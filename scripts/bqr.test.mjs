@@ -267,6 +267,25 @@
  *     the preview (codes of every length; a mark's is always the shortest), so it is for a mark in a picture, never a printed card.
  *   ⛔ What the bits SAY is not the recipe's: a mark's caller writes a short fingerprint of the picture the heart is drawn for, and ⛔ never a
  *   person, a serial, a claim or a key. Our own codes keep their dots.
+ *
+ * ⛔ §position — PRE-REGISTERED 2026-11-24, written and pushed before the recipe moves (founder: *"rename 'contra-standard' to 'non-standard'; 'points
+ *   elsewhere' means estate's URL except B.333.eco; keep all four positions"*). The middle position marker stands at the POINT (bottom left) for a
+ *   B-Link drawn by us · the NOTCH (top right) for a B-Link drawn by an outsider through our API · STANDARD (top left) for any other address of
+ *   the estate drawn by us · NON-STANDARD (bottom right) for one drawn by an outsider through our API. The recipe reads the ADDRESS; a caller
+ *   says only `by: "outside"`, which no app of ours passes and only the API will. The run FAILS on any of:
+ *   K1 the table — `bqrPosition` answers the four for B-Links (both cases, capitals, all three lengths, with /about and /qr) and for every other
+ *      estate host; a bare code (no address) is standard. CONTROL: `b.333.eco.evil.example`, `b-333.eco` and `333.eco.evil.example` are never a
+ *      B-Link and never of the estate.
+ *   K2 the pixels — read back at 1,200 px in both versions: each position's drawing is the matrix turned 0 (standard), 1 (point), 2 (non-standard)
+ *      or 3 (notch) quarters counterclockwise, with a matrix turned HERE; the middle marker's center stands in the corner named.
+ *   K3 refused — an http(s) address outside the estate throws in `paintBqr`, whoever draws (⛔ our heart never frames an address someone chose);
+ *      `localhost` and the estate's own Firebase preview hosts draw (a developer's phone); a user part, a port or plain http on an estate host
+ *      throws. CONTROL: with the list emptied (TEST ONLY) every estate address throws.
+ *   K4 the list — `BQR_HOSTS` is b.333.eco's own `DOMAINS`, read from its checkout beside this one.
+ *   K5 nothing else moves — outside the code's own box the four drawings of one address are the same pixels (the ™ and the dots never turn).
+ *   §turn's own checks (T1–T3, T5, T6) run on a B-Link, where the turn now lives; every code that points elsewhere is upright again, the drawing
+ *   §turn's failed gate compared against. ⛔ A position is a declaration, never a proof: anyone can draw any position, and nothing public may say
+ *   that one shows who drew it. Predicted: all pass first time but K5's dots, if the stream depends on the matrix (it must not).
  */
 import { createRequire } from "node:module";
 import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, existsSync } from "node:fs";
