@@ -135,6 +135,12 @@ an H3QR names whom you thank, and a B-QR is how that code is drawn.
   draws the green byte for byte, so Shops moves nothing. ⛔ `"H3"` alone, an unknown owner, or `owner` with `hue` THROWS — a
   product inherits its body's color and cannot pick one. Semantics in `data/bodies.json` (no hexes); sources in `BQR_OWNER_HUES`;
   pre-registered and decoded before it shipped (`bqr.test.mjs` §body-palette). ⚠️ It says BELONGING, never authenticity.
+- **Turned, with a small ™ (v1.9.0, founder 2026-11-24).** The code is drawn turned a quarter counterclockwise, so its middle position
+  marker stands at the heart's point and its three markers mirror about the heart's own line (`bqrTurned`; always, no option). It
+  shipped by the founder's override of a failed scan gate, kept on the record in `scripts/bqr.test.mjs` §turn. A small ™ stands in the
+  bottom lobe: it names the **B-Emblem™**, never *B-QR* (unmarked), and shows which way is up. `lobe: "none"` or `autograph` (a person's own
+  strokes, *Open* only, ⛔ throws in *Full*) are for a person's own picture. The other three positions mean nothing yet, so ⛔ nothing is
+  drawn in one, and the top lobe keeps its dots. Codes printed before keep working.
 - **The card's words are PLACED, never aligned (v1.6.1).** `paintQrCard` measures each line, shrinks its size until it fits,
   and draws it from the left at the center minus half its width. Safari on iOS 26 ignores `textAlign = "center"` and the
   `maxWidth` argument for a complex script: a Khmer caption printed starting at the center line. Measured on the Simulator

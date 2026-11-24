@@ -14,7 +14,7 @@
 import SwiftUI
 
 public enum Brand {
-    public static let version = "1.8.0"
+    public static let version = "1.9.0"
 
     /// The B-Gem media-type palette. A colour here MEANS a medium.
     /// ⚠️ Not a site palette, and not the six-TLD rainbow. Using a gem as an

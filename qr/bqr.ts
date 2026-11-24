@@ -35,6 +35,9 @@
  *   chosen by a rule written into the test BEFORE its sweep ran: the LIGHTEST candidate that prints at ISO/IEC 15415
  *   symbol-contrast grade A (Rpaper 0.85 − Rink ≥ 0.70) and decodes no worse than the old near-black by more than 2 of 90 cases on two
  *   independent decoders. The prediction (#106430) was wrong and the rule's pick was kept — ⛔ never move the rule to a preferred shade.
+ * ⭐ ONE MIRROR LINE (v1.9.0, founder 2026-11-23): the code is drawn turned a quarter counterclockwise (`bqrTurned`), so its middle
+ *   position marker stands at the heart's point and its three markers mirror about the heart's own line. Measured in §turn; nothing
+ *   printed before is reprinted (a code reads at any angle).
  * ⭐ DETERMINISTIC: the decoration is seeded from a hash of the text, so the same address always draws the same picture and the preview
  *   a person sees is the card they download.
  *
@@ -55,6 +58,34 @@ export const BQR_BODY = { x: 4.0588, y: 8.5913, s: 11.35 } as const;
 export const BQR_QUIET = 4;
 /** ⭐ §4Z — `pixels`: clear modules left between the code and the decoration. ⛔ Never 0 (the measured failure). */
 export const BQR_FILL_RING = 1;
+/**
+ * ⭐ v1.9.0 (founder 2026-11-24) — the BOTTOM LOBE. Every B-QR of ours carries a small ™ there: it names the B-Emblem™, this drawing (⛔ never
+ *   "B-QR", which stays unmarked), and shows which way is up. `none` leaves the lobe as it was; `autograph` (below) draws a person's own
+ *   hand instead. Both are for a person's OWN picture, where a ™ would read as a claim on their work. The TOP lobe keeps its dots.
+ */
+export type BqrLobe = "tm" | "none";
+export const BQR_LOBE_DEFAULT: BqrLobe = "tm";
+/** The ™: its centre, its cap height, and the quiet space around it, in viewBox units. Drawn as bars, so it needs no font. */
+export const BQR_TM = { cx: 18.25, cy: 14.12, h: 1.05, pad: 0.5 } as const;
+const TM = { t: 0.2, w: 0.84, gap: 0.13, m: 1.06 } as const;   // stroke · T's width · the gap · M's width, as parts of the cap height
+export const bqrTmBox = () => { const w = BQR_TM.h * (TM.w + TM.gap + TM.m); return { x: BQR_TM.cx - w / 2, y: BQR_TM.cy - BQR_TM.h / 2, w, h: BQR_TM.h }; };
+/** The autograph's box in the bottom lobe, 5 : 3. ⭐ Not the largest that fits (5.2 × 3.12 at 15.65): that one stood so near the code that one
+ *  decoder lost 10 of 1,080 cards; this one, set further out, loses none (measured 2026-11-24, `scripts/bqr.test.mjs` §tm S5). */
+export const BQR_AUTOGRAPH = { x: 16.38, y: 12.86, w: 4.47, h: 2.68 } as const;
+/** A person's B-Autograph℠, as points on a 100 × 60 pad: numbers only, ⛔ never a path's text (nothing here is ever parsed or injected). */
+export interface BqrAutograph { strokes: readonly (readonly (readonly [number, number])[])[] }
+export const BQR_PAD_W = 100, BQR_PAD_H = 60, BQR_AUTOGRAPH_PEN = 3, BQR_AUTOGRAPH_POINTS = 4000;
+/** True for something that can be drawn as an autograph. */
+export function isAutograph(a: unknown): a is BqrAutograph {
+    const s = (a as BqrAutograph | null)?.strokes;
+    if (!Array.isArray(s) || !s.length || s.length > 200) return false;
+    let n = 0;
+    for (const k of s) {
+        if (!Array.isArray(k) || !k.length) return false;
+        for (const p of k) { if (!Array.isArray(p) || p.length !== 2 || !Number.isFinite(p[0]) || !Number.isFinite(p[1]) || ++n > BQR_AUTOGRAPH_POINTS) return false; }
+    }
+    return true;
+}
 
 /** ⭐ §4Z — the two versions, by internal name. ⛔ Neither name is ever shown: a person sees two pictures and two plain words. */
 export type BqrStyle = "pixels" | "outline";
@@ -211,6 +242,14 @@ export interface BqrOptions {
     quiet?: number;
     /** ⛔ TEST ONLY — the code's colour, for the ink sweep that chose `BQR_INK`. ⛔ Never a theme's colour. */
     ink?: string;
+    /** ⭐ v1.9.0 — the bottom lobe: the ™ (default), or nothing in a person's own picture. */
+    lobe?: BqrLobe;
+    /** ⭐ v1.9.0 — a person's autograph in the bottom lobe, in the `outline` version only (⛔ throws in `pixels`); it replaces the ™. */
+    autograph?: BqrAutograph;
+    /** ⛔ TEST ONLY — `false` lets an autograph leave its box, for the check that must see it. */
+    clipAutograph?: boolean;
+    /** ⛔ TEST ONLY — `false` draws the code upright, the drawing before v1.9.0 (`scripts/bqr.test.mjs` §turn, the baseline). */
+    turn?: boolean;
     /** ⭐ v1.6.0 — the drawing's color family, drawn at `BQR_INK`'s darkness (`bqrInkFor`). Default: `BQR_INK` itself.
      *  ⛔ Products pass `owner`, never `hue`; `hue` is for the brand page following a visitor's `--emblem`. */
     hue?: string;
@@ -298,12 +337,53 @@ function stream(seed: string): () => number {
     };
 }
 
+/** Does a cell (its top left, its side) touch the sign's rounded quiet space? */
+function touchesSign(x: number, y: number, m: number): boolean {
+    const b = bqrTmBox(), rx = b.w / 2 + BQR_TM.pad, ry = b.h / 2 + BQR_TM.pad;
+    const nx = Math.max(x, Math.min(BQR_TM.cx, x + m)) - BQR_TM.cx, ny = Math.max(y, Math.min(BQR_TM.cy, y + m)) - BQR_TM.cy;
+    return (nx / rx) ** 2 + (ny / ry) ** 2 < 1;
+}
+/** The ™ as bars, in viewBox units. */
+function drawTm(g: CanvasRenderingContext2D): void {
+    const b = bqrTmBox(), h = b.h, t = TM.t * h, w = TM.w * h, x1 = b.x + w + TM.gap * h, mw = TM.m * h, y = b.y;
+    g.fillRect(b.x, y, w, t); g.fillRect(b.x + w / 2 - t / 2, y, t, h);
+    g.beginPath(); g.moveTo(x1, y + h); g.lineTo(x1, y); g.lineTo(x1 + t * 1.05, y); g.lineTo(x1 + mw / 2, y + h * 0.56); g.lineTo(x1 + mw - t * 1.05, y); g.lineTo(x1 + mw, y);
+    g.lineTo(x1 + mw, y + h); g.lineTo(x1 + mw - t, y + h); g.lineTo(x1 + mw - t, y + h * 0.42); g.lineTo(x1 + mw / 2, y + h * 0.86); g.lineTo(x1 + t, y + h * 0.42); g.lineTo(x1 + t, y + h);
+    g.closePath(); g.fill();
+}
+/** A person's autograph in its box: each stroke through the middles of its points, so a finger's corners come out round. */
+function drawAutograph(g: CanvasRenderingContext2D, a: BqrAutograph, ink: string, clip: boolean): void {
+    const B = BQR_AUTOGRAPH, k = B.w / BQR_PAD_W;
+    g.save();
+    if (clip) { g.beginPath(); g.rect(B.x, B.y, B.w, B.h); g.clip(); }
+    g.translate(B.x, B.y); g.scale(k, k);
+    g.strokeStyle = ink; g.fillStyle = ink; g.lineWidth = BQR_AUTOGRAPH_PEN; g.lineCap = "round"; g.lineJoin = "round";
+    for (const s of a.strokes) {
+        if (s.length === 1) { g.beginPath(); g.arc(s[0][0], s[0][1], BQR_AUTOGRAPH_PEN / 2, 0, Math.PI * 2); g.fill(); continue; }
+        g.beginPath(); g.moveTo(s[0][0], s[0][1]);
+        for (let i = 1; i < s.length - 1; i++) g.quadraticCurveTo(s[i][0], s[i][1], (s[i][0] + s[i + 1][0]) / 2, (s[i][1] + s[i + 1][1]) / 2);
+        g.lineTo(s[s.length - 1][0], s[s.length - 1][1]); g.stroke();
+    }
+    g.restore();
+}
+
+/**
+ * ⭐ v1.9.0 (founder 2026-11-23) — the code turned a quarter COUNTERCLOCKWISE, so its middle position marker stands at the heart's point.
+ *   The emblem mirrors about one line, point to notch; a code's three markers mirror about one line too, through the middle one. Upright
+ *   the two lines cross; turned, they are the same line. Decoders read a code at any angle, so nothing printed before stops working.
+ */
+export function bqrTurned(mat: BqrMatrix): BqrMatrix {
+    const n = mat.size, data = new Uint8Array(n * n);
+    for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) data[r * n + c] = mat.data[c * n + (n - 1 - r)] ? 1 : 0;
+    return { size: n, data };
+}
+
 /**
  * Where everything goes, in viewBox units. The module grid is the code's own, extended over the whole emblem; a decorative cell
  * is a candidate when it lies outside the code's quiet box AND its dot clears the outline; it is dark by the seeded stream unless
  * that would make a third dark cell in a row or a column.
  */
-export function bqrLayout(mat: BqrMatrix, seed: string, o: { style?: BqrStyle; quiet?: number } = {}): BqrLayout {
+export function bqrLayout(mat: BqrMatrix, seed: string, o: { style?: BqrStyle; quiet?: number; lobe?: BqrLobe } = {}): BqrLayout {
     const style = bqrStyleOf(o.style), G = BQR_GEOMETRY[style];
     const quiet = o.quiet ?? G.ring;
     const n = mat.size;
@@ -315,7 +395,7 @@ export function bqrLayout(mat: BqrMatrix, seed: string, o: { style?: BqrStyle; q
     const c0 = Math.floor((EMBLEM_BOX.x - ox) / m) - 1, c1 = Math.ceil((EMBLEM_BOX.x + EMBLEM_BOX.w - ox) / m) + 1;
     const r0 = Math.floor((EMBLEM_BOX.y - oy) / m) - 1, r1 = Math.ceil((EMBLEM_BOX.y + EMBLEM_BOX.h - oy) / m) + 1;
     const clear = (DOT / 2) * m * Math.SQRT2 + G.outline / 2 + 0.15 * m;
-    const rand = stream(seed);
+    const rand = stream(seed), sign = (o.lobe ?? BQR_LOBE_DEFAULT) === "tm";
     const dark = new Set<string>();
     const deco: [number, number][] = [];
     const on = (c: number, r: number) => dark.has(`${c},${r}`);
@@ -326,7 +406,10 @@ export function bqrLayout(mat: BqrMatrix, seed: string, o: { style?: BqrStyle; q
         if (!insideEmblem(cx, cy) || edgeDistance(cx, cy) < clear) continue;
         if (p >= DENSITY) continue;
         if ((on(c - 1, r) && on(c - 2, r)) || (on(c, r - 1) && on(c, r - 2))) continue;   // ⛔ never three in a run
-        dark.add(`${c},${r}`); deco.push([c, r]);
+        dark.add(`${c},${r}`);
+        // ⭐ A whole dot or none: the sign never cuts one. It is dropped AFTER it counted for the run rule, so no other dot moves (§tm S3).
+        if (sign && touchesSign(ox + c * m, oy + r * m, m)) continue;
+        deco.push([c, r]);
     }
     return { n, m, ox, oy, deco, style, outline: G.outline };
 }
@@ -340,14 +423,18 @@ export function bqrPlacement(size: number, x = 0, y = 0): { k: number; tx: numbe
 }
 
 /** Paint a B-QR from a module matrix into a 2D context. Synchronous; `drawBqr` makes the matrix. */
-export function paintBqr(g: CanvasRenderingContext2D, mat: BqrMatrix, seed: string, o: BqrOptions): void {
+export function paintBqr(g: CanvasRenderingContext2D, upright: BqrMatrix, seed: string, o: BqrOptions): void {
+    // ⭐ v1.9.0 — always turned: one drawing, whoever asks. The layout is the grid's, so the decoration and the outline do not move.
+    const mat = o.turn === false ? upright : bqrTurned(upright);
     // ⭐ §4AA — one green for the whole drawing: the decoration and the outline default to the code's own ink.
     // ⭐ v1.6.0 — `hue` sets the code, the decoration and the outline at once, darkened by `bqrInkFor`; none = `BQR_INK`, verbatim.
     // ⭐ v1.7.0 — `owner` sets it from the body palette instead; ⛔ both at once throws (a product cannot pick its own color).
     if (o.owner !== undefined && o.hue !== undefined) throw new Error("B-QR: pass `owner` or `hue`, never both — a product's code takes its body's color.");
     const inkOfHue = o.owner !== undefined ? bqrOwnerInk(o.owner) : o.hue ? bqrInkFor(o.hue) : BQR_INK;
     const X = o.x ?? 0, Y = o.y ?? 0, size = o.size, accent = o.accent || inkOfHue;
-    const L = bqrLayout(mat, seed, { style: o.style, quiet: o.quiet });
+    if (o.autograph !== undefined && (bqrStyleOf(o.style) !== "outline" || !isAutograph(o.autograph))) throw new Error("B-QR: an autograph is drawn in the `outline` version (the Open B-QR) only, from a person's own strokes.");
+    const lobe: BqrLobe = o.autograph ? "none" : o.lobe ?? BQR_LOBE_DEFAULT;
+    const L = bqrLayout(mat, seed, { style: o.style, quiet: o.quiet, lobe });
     const { k, tx, ty } = bqrPlacement(size, X, Y);
     const path = new Path2D(EMBLEM_D);
     const ground = bqrGroundOf(o.ground);
@@ -367,6 +454,9 @@ export function paintBqr(g: CanvasRenderingContext2D, mat: BqrMatrix, seed: stri
     // The outline.
     // ⭐ §4Z — `outline` (Version 2) draws this wider, over a heart left white (§4AA: six times as wide).
     g.strokeStyle = accent; g.lineWidth = L.outline; g.lineJoin = "round"; g.stroke(path);
+    // ⭐ v1.9.0 — the bottom lobe, in the code's own ink.
+    if (o.autograph) drawAutograph(g, o.autograph, accent, o.clipAutograph !== false);
+    else if (lobe === "tm") { g.fillStyle = accent; drawTm(g); }
     g.restore();
 
     // ⭐ The code, in DEVICE pixels with every edge rounded, one rect per run — scaled sub-pixel rects leave hairline seams
@@ -394,11 +484,11 @@ export async function drawBqr(g: CanvasRenderingContext2D, text: string, o: BqrO
 }
 
 /** A B-QR as a PNG data URL — the on-screen preview of a code a person may also download, so what they see is what they print. */
-export async function bqrDataUrl(text: string, o: { size?: number; accent?: string; ecc?: "L" | "M" | "Q" | "H"; style?: BqrStyle; ground?: BqrGround; hue?: string; owner?: BqrOwner } = {}): Promise<string> {
+export async function bqrDataUrl(text: string, o: { size?: number; accent?: string; ecc?: "L" | "M" | "Q" | "H"; style?: BqrStyle; ground?: BqrGround; hue?: string; owner?: BqrOwner; lobe?: BqrLobe; autograph?: BqrAutograph } = {}): Promise<string> {
     const size = o.size ?? 640;
     const canvas = document.createElement("canvas");
     canvas.width = size; canvas.height = size;
     // ⛔ v1.5.0 — `ground: "heart"` only for a picture that stays on screen; a URL handed to a download takes the default `paper`.
-    await drawBqr(canvas.getContext("2d")!, text, { size, accent: o.accent, ecc: o.ecc, style: o.style, ground: o.ground, hue: o.hue, owner: o.owner });
+    await drawBqr(canvas.getContext("2d")!, text, { size, accent: o.accent, ecc: o.ecc, style: o.style, ground: o.ground, hue: o.hue, owner: o.owner, lobe: o.lobe, autograph: o.autograph });
     return canvas.toDataURL("image/png");
 }

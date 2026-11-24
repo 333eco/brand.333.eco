@@ -1485,3 +1485,8 @@ footer p {
     border: 1px solid var(--line);
     border-radius: var(--r-card);
 }
+
+/* the service mark, small (Default 2) */
+.sm {
+    font-size: 0.72em;
+}
