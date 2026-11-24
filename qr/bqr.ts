@@ -65,13 +65,19 @@ export const BQR_FILL_RING = 1;
  */
 export type BqrLobe = "tm" | "none";
 export const BQR_LOBE_DEFAULT: BqrLobe = "tm";
-/** The ™: its centre, its cap height, and the quiet space around it, in viewBox units. Drawn as bars, so it needs no font. */
-export const BQR_TM = { cx: 18.25, cy: 14.12, h: 1.05, pad: 0.5 } as const;
+/**
+ * ⭐ v1.10.0 (founder 2026-11-24: *"horizontally and vertically center the ™ and the [autograph] within the bottom lobe"*) — the lobe's CENTER,
+ *   each version's own: midway between the code's last column and the outline's inner edge on its row, and midway between the outline's
+ *   inner edges on its column. Solved from the silhouette; `scripts/bqr.test.mjs` §center solves it again and holds these.
+ */
+export const BQR_LOBE_CENTER = { pixels: { x: 17.86, y: 14.15 }, outline: { x: 17.62, y: 14.16 } } as const;
+/** The ™: its cap height and the quiet space around it, in viewBox units. Drawn as bars, so it needs no font. */
+export const BQR_TM = { h: 1.05, pad: 0.5 } as const;
 const TM = { t: 0.2, w: 0.84, gap: 0.13, m: 1.06 } as const;   // stroke · T's width · the gap · M's width, as parts of the cap height
-export const bqrTmBox = () => { const w = BQR_TM.h * (TM.w + TM.gap + TM.m); return { x: BQR_TM.cx - w / 2, y: BQR_TM.cy - BQR_TM.h / 2, w, h: BQR_TM.h }; };
-/** The autograph's box in the bottom lobe, 5 : 3. ⭐ Not the largest that fits (5.2 × 3.12 at 15.65): that one stood so near the code that one
- *  decoder lost 10 of 1,080 cards; this one, set further out, loses none (measured 2026-11-24, `scripts/bqr.test.mjs` §tm S5). */
-export const BQR_AUTOGRAPH = { x: 16.38, y: 12.86, w: 4.47, h: 2.68 } as const;
+export const bqrTmBox = (style: keyof typeof BQR_LOBE_CENTER = "pixels") => { const w = BQR_TM.h * (TM.w + TM.gap + TM.m), c = BQR_LOBE_CENTER[style]; return { x: c.x - w / 2, y: c.y - BQR_TM.h / 2, w, h: BQR_TM.h }; };
+/** The autograph's box, 5 : 3, centered in the Open version's bottom lobe. Its width is the largest that loses no reading (§center C3). */
+const AUTOGRAPH_W = 4.27;
+export const BQR_AUTOGRAPH = { x: BQR_LOBE_CENTER.outline.x - AUTOGRAPH_W / 2, y: BQR_LOBE_CENTER.outline.y - AUTOGRAPH_W * 0.3, w: AUTOGRAPH_W, h: AUTOGRAPH_W * 0.6 } as const;
 /** A person's B-Autograph℠, as points on a 100 × 60 pad: numbers only, ⛔ never a path's text (nothing here is ever parsed or injected). */
 export interface BqrAutograph { strokes: readonly (readonly (readonly [number, number])[])[] }
 export const BQR_PAD_W = 100, BQR_PAD_H = 60, BQR_AUTOGRAPH_PEN = 3, BQR_AUTOGRAPH_POINTS = 4000;
@@ -246,8 +252,10 @@ export interface BqrOptions {
     lobe?: BqrLobe;
     /** ⭐ v1.9.0 — a person's autograph in the bottom lobe, in the `outline` version only (⛔ throws in `pixels`); it replaces the ™. */
     autograph?: BqrAutograph;
-    /** ⛔ TEST ONLY — `false` lets an autograph leave its box, for the check that must see it. */
-    clipAutograph?: boolean;
+    /** ⛔ TEST ONLY — `false` draws an autograph where it was drawn on the pad, not fitted and centered, for the checks that must see it. */
+    fitAutograph?: boolean;
+    /** ⭐ v1.10.0 — 96 bits in the TOP lobe, for a mark in a person's picture, in the `outline` version only (⛔ throws in `pixels`). */
+    coded?: readonly number[];
     /** ⛔ TEST ONLY — `false` draws the code upright, the drawing before v1.9.0 (`scripts/bqr.test.mjs` §turn, the baseline). */
     turn?: boolean;
     /** ⭐ v1.6.0 — the drawing's color family, drawn at `BQR_INK`'s darkness (`bqrInkFor`). Default: `BQR_INK` itself.
@@ -338,28 +346,33 @@ function stream(seed: string): () => number {
 }
 
 /** Does a cell (its top left, its side) touch the sign's rounded quiet space? */
-function touchesSign(x: number, y: number, m: number): boolean {
-    const b = bqrTmBox(), rx = b.w / 2 + BQR_TM.pad, ry = b.h / 2 + BQR_TM.pad;
-    const nx = Math.max(x, Math.min(BQR_TM.cx, x + m)) - BQR_TM.cx, ny = Math.max(y, Math.min(BQR_TM.cy, y + m)) - BQR_TM.cy;
+function touchesSign(x: number, y: number, m: number, style: BqrStyle): boolean {
+    const b = bqrTmBox(style), c = BQR_LOBE_CENTER[style], rx = b.w / 2 + BQR_TM.pad, ry = b.h / 2 + BQR_TM.pad;
+    const nx = Math.max(x, Math.min(c.x, x + m)) - c.x, ny = Math.max(y, Math.min(c.y, y + m)) - c.y;
     return (nx / rx) ** 2 + (ny / ry) ** 2 < 1;
 }
 /** The ™ as bars, in viewBox units. */
-function drawTm(g: CanvasRenderingContext2D): void {
-    const b = bqrTmBox(), h = b.h, t = TM.t * h, w = TM.w * h, x1 = b.x + w + TM.gap * h, mw = TM.m * h, y = b.y;
+function drawTm(g: CanvasRenderingContext2D, style: BqrStyle): void {
+    const b = bqrTmBox(style), h = b.h, t = TM.t * h, w = TM.w * h, x1 = b.x + w + TM.gap * h, mw = TM.m * h, y = b.y;
     g.fillRect(b.x, y, w, t); g.fillRect(b.x + w / 2 - t / 2, y, t, h);
     g.beginPath(); g.moveTo(x1, y + h); g.lineTo(x1, y); g.lineTo(x1 + t * 1.05, y); g.lineTo(x1 + mw / 2, y + h * 0.56); g.lineTo(x1 + mw - t * 1.05, y); g.lineTo(x1 + mw, y);
     g.lineTo(x1 + mw, y + h); g.lineTo(x1 + mw - t, y + h); g.lineTo(x1 + mw - t, y + h * 0.42); g.lineTo(x1 + mw / 2, y + h * 0.86); g.lineTo(x1 + t, y + h * 0.42); g.lineTo(x1 + t, y + h);
     g.closePath(); g.fill();
 }
 /** A person's autograph in its box: each stroke through the middles of its points, so a finger's corners come out round. */
-function drawAutograph(g: CanvasRenderingContext2D, a: BqrAutograph, ink: string, clip: boolean): void {
-    const B = BQR_AUTOGRAPH, k = B.w / BQR_PAD_W;
+/** ⭐ v1.10.0 — FITTED: the drawing keeps its own shape, grows to fill its box (at most twice the pad's own scale) and stands at the lobe's center,
+ *   wherever on the pad it was drawn. It cannot leave its box, so it can never reach the code. */
+function drawAutograph(g: CanvasRenderingContext2D, a: BqrAutograph, ink: string, fit: boolean): void {
+    const B = BQR_AUTOGRAPH, pad = B.w / BQR_PAD_W, pen = BQR_AUTOGRAPH_PEN * pad;
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    for (const s of a.strokes) for (const [x, y] of s) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
+    const k = fit ? Math.min(2 * pad, (B.w - pen) / Math.max(x1 - x0, 1e-6), (B.h - pen) / Math.max(y1 - y0, 1e-6)) : pad;
     g.save();
-    if (clip) { g.beginPath(); g.rect(B.x, B.y, B.w, B.h); g.clip(); }
-    g.translate(B.x, B.y); g.scale(k, k);
-    g.strokeStyle = ink; g.fillStyle = ink; g.lineWidth = BQR_AUTOGRAPH_PEN; g.lineCap = "round"; g.lineJoin = "round";
+    if (fit) { g.translate(B.x + B.w / 2, B.y + B.h / 2); g.scale(k, k); g.translate(-(x0 + x1) / 2, -(y0 + y1) / 2); }
+    else { g.translate(B.x, B.y); g.scale(k, k); }
+    g.strokeStyle = ink; g.fillStyle = ink; g.lineWidth = pen / k; g.lineCap = "round"; g.lineJoin = "round";
     for (const s of a.strokes) {
-        if (s.length === 1) { g.beginPath(); g.arc(s[0][0], s[0][1], BQR_AUTOGRAPH_PEN / 2, 0, Math.PI * 2); g.fill(); continue; }
+        if (s.length === 1) { g.beginPath(); g.arc(s[0][0], s[0][1], pen / k / 2, 0, Math.PI * 2); g.fill(); continue; }
         g.beginPath(); g.moveTo(s[0][0], s[0][1]);
         for (let i = 1; i < s.length - 1; i++) g.quadraticCurveTo(s[i][0], s[i][1], (s[i][0] + s[i + 1][0]) / 2, (s[i][1] + s[i + 1][1]) / 2);
         g.lineTo(s[s.length - 1][0], s[s.length - 1][1]); g.stroke();
@@ -408,11 +421,28 @@ export function bqrLayout(mat: BqrMatrix, seed: string, o: { style?: BqrStyle; q
         if ((on(c - 1, r) && on(c - 2, r)) || (on(c, r - 1) && on(c, r - 2))) continue;   // ⛔ never three in a run
         dark.add(`${c},${r}`);
         // ⭐ A whole dot or none: the sign never cuts one. It is dropped AFTER it counted for the run rule, so no other dot moves (§tm S3).
-        if (sign && touchesSign(ox + c * m, oy + r * m, m)) continue;
+        if (sign && touchesSign(ox + c * m, oy + r * m, m, style)) continue;
         deco.push([c, r]);
     }
     return { n, m, ox, oy, deco, style, outline: G.outline };
 }
+
+/** ⭐ v1.10.0 — the top lobe's coded cells, as [column, row] on the DRAWN (turned) code's grid, nearest the code first; bit i is in cells i and
+ *   i + 96. A checkerboard, so no two stand side by side. ⛔ Throws when a code is too coarse for them (a mark's 12 characters never is). */
+export const BQR_CODED_BITS = 96;
+export function bqrLobeCells(mat: BqrMatrix, o: { style?: BqrStyle } = {}): [number, number][] {
+    const L = bqrLayout(mat, "", { style: o.style ?? "outline", lobe: "none" }), clear = (DOT / 2) * L.m * Math.SQRT2 + L.outline / 2 + 0.15 * L.m, out: [number, number][] = [];
+    const r0 = Math.floor((EMBLEM_BOX.y - L.oy) / L.m) - 1, c0 = Math.floor((EMBLEM_BOX.x - L.ox) / L.m) - 1, c1 = Math.ceil((EMBLEM_BOX.x + EMBLEM_BOX.w - L.ox) / L.m) + 1;
+    for (let r = -BQR_QUIET - 1; r >= r0; r--) for (let c = c0; c <= c1; c++) {
+        if ((c + r) & 1) continue;
+        const cx = L.ox + (c + 0.5) * L.m, cy = L.oy + (r + 0.5) * L.m;
+        if (insideEmblem(cx, cy) && edgeDistance(cx, cy) >= clear) out.push([c, r]);
+    }
+    if (out.length < 2 * BQR_CODED_BITS) throw new Error("B-QR: this code is too coarse for coded modules.");
+    return out.slice(0, 2 * BQR_CODED_BITS);
+}
+/** A drawn cell as the DECODER sees it (the code's own upright grid), for reading coded modules back from a photo of the drawing. */
+export const bqrUpright = (n: number, [c, r]: readonly [number, number]): [number, number] => [n - 1 - r, c];
 
 // ---- drawing ------------------------------------------------------------------------------------------------------------------------
 
@@ -433,6 +463,7 @@ export function paintBqr(g: CanvasRenderingContext2D, upright: BqrMatrix, seed: 
     const inkOfHue = o.owner !== undefined ? bqrOwnerInk(o.owner) : o.hue ? bqrInkFor(o.hue) : BQR_INK;
     const X = o.x ?? 0, Y = o.y ?? 0, size = o.size, accent = o.accent || inkOfHue;
     if (o.autograph !== undefined && (bqrStyleOf(o.style) !== "outline" || !isAutograph(o.autograph))) throw new Error("B-QR: an autograph is drawn in the `outline` version (the Open B-QR) only, from a person's own strokes.");
+    if (o.coded !== undefined && (bqrStyleOf(o.style) !== "outline" || o.coded.length !== BQR_CODED_BITS || !o.coded.every((b) => b === 0 || b === 1))) throw new Error("B-QR: coded modules are 96 bits in the `outline` version (the Open B-QR) only.");
     const lobe: BqrLobe = o.autograph ? "none" : o.lobe ?? BQR_LOBE_DEFAULT;
     const L = bqrLayout(mat, seed, { style: o.style, quiet: o.quiet, lobe });
     const { k, tx, ty } = bqrPlacement(size, X, Y);
@@ -454,9 +485,11 @@ export function paintBqr(g: CanvasRenderingContext2D, upright: BqrMatrix, seed: 
     // The outline.
     // ⭐ §4Z — `outline` (Version 2) draws this wider, over a heart left white (§4AA: six times as wide).
     g.strokeStyle = accent; g.lineWidth = L.outline; g.lineJoin = "round"; g.stroke(path);
+    // ⭐ v1.10.0 — the top lobe's coded modules, each bit twice, dots as the decoration's own.
+    if (o.coded) { g.fillStyle = accent; bqrLobeCells(mat, { style: "outline" }).forEach(([c, r], i) => { if (o.coded![i % BQR_CODED_BITS]) g.fillRect(L.ox + c * L.m + inset, L.oy + r * L.m + inset, d, d); }); }
     // ⭐ v1.9.0 — the bottom lobe, in the code's own ink.
-    if (o.autograph) drawAutograph(g, o.autograph, accent, o.clipAutograph !== false);
-    else if (lobe === "tm") { g.fillStyle = accent; drawTm(g); }
+    if (o.autograph) drawAutograph(g, o.autograph, accent, o.fitAutograph !== false);
+    else if (lobe === "tm") { g.fillStyle = accent; drawTm(g, bqrStyleOf(o.style)); }
     g.restore();
 
     // ⭐ The code, in DEVICE pixels with every edge rounded, one rect per run — scaled sub-pixel rects leave hairline seams

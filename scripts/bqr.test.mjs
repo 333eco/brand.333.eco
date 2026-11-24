@@ -260,6 +260,11 @@
  *   L3 the code's modules and its 4-module ring read back unchanged with `coded`, with and without an autograph.
  *   L4 decode — within 2 of 90 of none, card and preview, jsQR AND ZXing.
  *   L5 read back — 20 random words read back whole from a 1,200 px drawing through `bqrLobeCells`; CONTROL: one flipped bit is seen.
+ *   ✅ RESULT (2026-11-24). C1 at once, as predicted. C3: 4.47 wide stands 0.02 units inside the Full version's body (S1), 4.27 passes everything
+ *     and is taken; the prediction (4.0 or under) was WRONG, centered it lost no reading at 90. L1–L5 pass. Wide sample (1,080 a family, jsQR ·
+ *     ZXing · Apple of 180, reported, not a gate): the ™ 3,931 · 4,090 · 688 against an empty lobe's 3,930 · 4,090 · 688; the centered
+ *     autograph 3,932 · 4,089 · 688; ⚠️ autograph AND coded 3,913 · 4,084 · 688 — the coded lobe costs jsQR 15 of 1,080 on the Open card and 3 on
+ *     the preview (codes of every length; a mark's is always the shortest), so it is for a mark in a picture, never a printed card.
  *   ⛔ What the bits SAY is not the recipe's: a mark's caller writes a short fingerprint of the picture the heart is drawn for, and ⛔ never a
  *   person, a serial, a claim or a key. Our own codes keep their dots.
  */
@@ -606,10 +611,10 @@ const AUTO = { strokes: [[[8, 46], [16, 14], [24, 10], [22, 30], [14, 48], [26, 
     const er = raster(200, 2 * B.BQR_GEOMETRY.outline.outline / 2), inside = (x, y) => { const i = (Math.round(y * er.K) * er.N + Math.round(x * er.K)) * 4; return er.px[i + 3] === 255 && er.px[i] === 0; };
     const bodies = [B.BQR_GEOMETRY.pixels.body, B.BQR_GEOMETRY.outline.body], right = Math.max(...bodies.map((b) => b.x + b.s));
     const breaches = (b) => { let out = 0, body = 0; for (let i = 0; i <= 60; i++) for (let j = 0; j <= 60; j++) { const x = b.x + b.w * i / 60, y = b.y + b.h * j / 60; if (!inside(x, y)) out++; if (x < right && y > 8) body++; } return { out, body }; };
-    for (const [n, b] of [["the ™", B.bqrTmBox()], ["the autograph's box", B.BQR_AUTOGRAPH]]) { const v = breaches(b); ok(v.out === 0 && v.body === 0, `S1 ${n}: ${b.w.toFixed(2)} × ${b.h.toFixed(2)} at (${b.x.toFixed(2)}, ${b.y.toFixed(2)}) — ${v.out} points outside the silhouette less the thicker outline's half, ${v.body} in the code's body`); }
-    ok(breaches({ ...B.bqrTmBox(), x: B.bqrTmBox().x - 1.5 }).body === 0 ? breaches({ ...B.BQR_AUTOGRAPH, x: B.BQR_AUTOGRAPH.x - 1.5 }).body > 0 : true, "S1 control: the autograph's box 1.5 units to the left is caught inside the body");
+    for (const [n, b] of [["the ™ (Full)", B.bqrTmBox("pixels")], ["the ™ (Open)", B.bqrTmBox("outline")], ["the autograph's box", B.BQR_AUTOGRAPH]]) { const v = breaches(b); ok(v.out === 0 && v.body === 0, `S1 ${n}: ${b.w.toFixed(2)} × ${b.h.toFixed(2)} at (${b.x.toFixed(2)}, ${b.y.toFixed(2)}) — ${v.out} points outside the silhouette less the thicker outline's half, ${v.body} in the code's body`); }
+    ok(breaches({ ...B.BQR_AUTOGRAPH, x: B.BQR_AUTOGRAPH.x - 1.5 }).body > 0, "S1 control: the autograph's box 1.5 units to the left is caught inside the body");
     const t = B.bqrTmBox(), rx = t.w / 2 + B.BQR_TM.pad, ry = t.h / 2 + B.BQR_TM.pad;
-    const near = (L) => L.deco.filter(([c, r]) => { const x = L.ox + c * L.m, y = L.oy + r * L.m, nx = Math.max(x, Math.min(B.BQR_TM.cx, x + L.m)) - B.BQR_TM.cx, ny = Math.max(y, Math.min(B.BQR_TM.cy, y + L.m)) - B.BQR_TM.cy; return (nx / rx) ** 2 + (ny / ry) ** 2 < 1; }).length;
+    const near = (L) => L.deco.filter(([c, r]) => { const x = L.ox + c * L.m, y = L.oy + r * L.m, nx = Math.max(x, Math.min(B.BQR_LOBE_CENTER.pixels.x, x + L.m)) - B.BQR_LOBE_CENTER.pixels.x, ny = Math.max(y, Math.min(B.BQR_LOBE_CENTER.pixels.y, y + L.m)) - B.BQR_LOBE_CENTER.pixels.y; return (nx / rx) ** 2 + (ny / ry) ** 2 < 1; }).length;
     let touching = 0, without = 1e9, broken = 0;
     for (const ecc of ["L", "M", "Q", "H"]) for (const [, text] of P) { const m = QRCode.create(text, { errorCorrectionLevel: ecc }).modules, L = B.bqrLayout(m, text, { style: "pixels" }), v = layoutBreaches(L); touching += near(L); broken += v.ring + v.runs + v.outside; without = Math.min(without, near(B.bqrLayout(m, text, { style: "pixels", lobe: "none" }))); }
     ok(touching === 0 && broken === 0, `S2: ${touching} dots touch the sign's quiet space, ${broken} breach P2, over 5 payloads × 4 levels`);
@@ -619,7 +624,7 @@ const AUTO = { strokes: [[[8, 46], [16, 14], [24, 10], [22, 30], [14, 48], [26, 
         ok(same === P.length, `S3 ${style} ${ground}: no lobe draws the ™ — ${same}/${P.length}`);
         const S = 1200, { k, tx, ty } = B.bqrPlacement(S); let inSign = 0, elsewhere = 0;
         const a = renderBqr(P[0][1], S, { style, ground }).getContext("2d").getImageData(0, 0, S, S).data, b = renderBqr(P[0][1], S, { style, ground, lobe: "none" }).getContext("2d").getImageData(0, 0, S, S).data;
-        for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) { const i = (y * S + x) * 4; if (a[i] === b[i] && a[i + 1] === b[i + 1] && a[i + 2] === b[i + 2] && a[i + 3] === b[i + 3]) continue; const u = (x - tx) / k, v = (y - ty) / k; if (Math.abs(u - B.BQR_TM.cx) < rx + 0.6 && Math.abs(v - B.BQR_TM.cy) < ry + 0.6) inSign++; else elsewhere++; }
+        for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) { const i = (y * S + x) * 4; if (a[i] === b[i] && a[i + 1] === b[i + 1] && a[i + 2] === b[i + 2] && a[i + 3] === b[i + 3]) continue; const u = (x - tx) / k, v = (y - ty) / k; if (Math.abs(u - B.BQR_LOBE_CENTER[style].x) < rx + 0.6 && Math.abs(v - B.BQR_LOBE_CENTER[style].y) < ry + 0.6) inSign++; else elsewhere++; }
         ok(inSign > 300 && elsewhere === 0, `S3 control ${style} ${ground}: the ™ changes ${inSign} pixels in its own space and ${elsewhere} elsewhere`);
     }
     const throws = (o) => { try { renderBqr(P[0][1], 64, o); return false; } catch { return true; } };
@@ -628,10 +633,59 @@ const AUTO = { strokes: [[[8, 46], [16, 14], [24, 10], [22, 30], [14, 48], [26, 
     const stray = (o) => { const S = 1200, { k, tx, ty } = B.bqrPlacement(S), A = B.BQR_AUTOGRAPH; let n = 0; const a = renderBqr(P[0][1], S, { style: "outline", ...o }).getContext("2d").getImageData(0, 0, S, S).data, b = renderBqr(P[0][1], S, { style: "outline", lobe: "none" }).getContext("2d").getImageData(0, 0, S, S).data; for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) { const i = (y * S + x) * 4; if (a[i] === b[i] && a[i + 1] === b[i + 1]) continue; const u = (x - tx) / k, v = (y - ty) / k; if (u < A.x - 0.02 || u > A.x + A.w + 0.02 || v < A.y - 0.02 || v > A.y + A.h + 0.02) n++; } return n; };
     const big = { strokes: AUTO.strokes.map((s) => s.map(([x, y]) => [x * 3, y * 3])) };
     ok(stray({ autograph: AUTO }) === 0 && stray({ autograph: big }) === 0, `S5: no stroke leaves its box, an autograph three times too large included`);
-    ok(stray({ autograph: big, clipAutograph: false }) > 100, `S5 control: with the clip off the large one leaves it (${stray({ autograph: big, clipAutograph: false })} pixels)`);
+    ok(stray({ autograph: big, fitAutograph: false }) > 100, `S5 control: with the fit off the large one leaves it (${stray({ autograph: big, fitAutograph: false })} pixels)`);
     for (const [name, text] of P) { const S = 1200, c = renderBqr(text, S, { style: "outline", autograph: AUTO }), px = c.getContext("2d").getImageData(0, 0, S, S).data, q = QRCode.create(text, { errorCorrectionLevel: B.BQR_ECC }), L = B.bqrLayout(q.modules, text, { style: "outline" }), { k, tx, ty } = B.bqrPlacement(S), w = drawnAs(q.modules); let wrong = 0, dirty = 0;
         for (let r = -OUTLINE_CLEAR; r < L.n + OUTLINE_CLEAR; r++) for (let cc = -OUTLINE_CLEAR; cc < L.n + OUTLINE_CLEAR; cc++) { const i = (Math.round(ty + (L.oy + (r + .5) * L.m) * k) * S + Math.round(tx + (L.ox + (cc + .5) * L.m) * k)) * 4, y = (px[i] + px[i + 1] + px[i + 2]) / 3; if (r >= 0 && r < L.n && cc >= 0 && cc < L.n) { if ((y < 128) !== w(r, cc)) wrong++; } else if (y < 250) dirty++; }
         ok(wrong === 0 && dirty === 0, `S5 ${name}: with an autograph the code reads back ${wrong} wrong, its ring ${dirty} non-white`); }
+}
+
+// ---- §center C1 · C2 · §coded L1 · L2 · L3 · L5 (pre-registered in the header, 2026-11-24, commit 8e2820e) ------------------------------
+console.log("\n— §center C1 the ™ · C2 the autograph · §coded L1 place · L2 refused · L3 the code · L5 read back");
+/** The lobe's center, solved from the silhouette alone: midway across the room on its row, midway down the room on its column. */
+const lobeCenter = (style) => {
+    const G = B.BQR_GEOMETRY[style], m = G.body.s / (25 + 2 * B.BQR_QUIET), codeR = G.body.x + (25 + B.BQR_QUIET) * m, o = G.outline / 2;
+    const clear = (x, y) => { for (let a = 0; a < 48; a++) if (!B.insideEmblem(x + o * Math.cos(a * Math.PI / 24), y + o * Math.sin(a * Math.PI / 24))) return false; return true; };
+    const right = (y) => { let x = codeR; while (x < 22 && clear(x + .01, y)) x += .01; return x; };
+    const vert = (x, y0) => { let t = y0, b = y0; while (t > 2 && clear(x, t - .01)) t -= .01; while (b < 21 && clear(x, b + .01)) b += .01; return [t, b]; };
+    let x = 17.8, y = 14; for (let i = 0; i < 6; i++) { x = (codeR + right(y)) / 2; const [t, b] = vert(x, y); y = (t + b) / 2; }
+    return { x, y };
+};
+{
+    const S = 2000, { k, tx, ty } = B.bqrPlacement(S), px = (o) => renderBqr(P[0][1], S, o).getContext("2d").getImageData(0, 0, S, S).data;
+    /** The center of what `o` paints over `base`, in viewBox units. */
+    const inkCenter = (o, base) => { const a = px(o), b = px(base); let x0 = 1e9, x1 = -1, y0 = 1e9, y1 = -1; for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) { const i = (y * S + x) * 4; if (Math.abs(a[i] - b[i]) < 40) continue; if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; } return { x: ((x0 + x1 + 1) / 2 - tx) / k, y: ((y0 + y1 + 1) / 2 - ty) / k, w: (x1 - x0 + 1) / k, h: (y1 - y0 + 1) / k }; };
+    const off = (c, t) => Math.max(Math.abs(c.x - t.x), Math.abs(c.y - t.y));
+    for (const style of ["pixels", "outline"]) {
+        const want = lobeCenter(style), tmOnly = inkCenter({ style, lobe: "tm" }, { style, lobe: "none" });
+        ok(off(B.BQR_LOBE_CENTER[style], want) <= 0.03, `C1 ${style}: the recipe's center (${B.BQR_LOBE_CENTER[style].x}, ${B.BQR_LOBE_CENTER[style].y}) is the silhouette's (${want.x.toFixed(2)}, ${want.y.toFixed(2)})`);
+        // ⚠️ in `pixels` the sign's quiet space also DROPS dots, so there the ™'s own box is what is measured, not the drawing's difference
+        const c = style === "outline" ? tmOnly : (() => { const b = B.bqrTmBox(style); return { x: b.x + b.w / 2, y: b.y + b.h / 2 }; })();
+        ok(off(c, want) <= 0.06, `C1 ${style}: the ™ is centered, ${off(c, want).toFixed(3)} off`);
+        ok(off({ x: 18.25, y: 14.12 }, want) > 0.06, `C1 control ${style}: v1.9.0's place is ${off({ x: 18.25, y: 14.12 }, want).toFixed(2)} off`);
+    }
+    const want = lobeCenter("outline"), A = B.BQR_AUTOGRAPH, moved = (f) => ({ strokes: AUTO.strokes.map((s) => s.map(([x, y]) => f(x, y))) });
+    for (const [n, a] of [["filling the pad", AUTO], ["in a corner of it", moved((x, y) => [x * 0.3 + 2, y * 0.3 + 40])], ["tall and thin", moved((x, y) => [x * 0.15 + 60, y])]]) {
+        const c = inkCenter({ style: "outline", autograph: a }, { style: "outline", lobe: "none" });
+        ok(off(c, want) <= 0.06 && c.w <= A.w + 0.03 && c.h <= A.h + 0.03, `C2 an autograph ${n}: ${off(c, want).toFixed(3)} off, ${c.w.toFixed(2)} × ${c.h.toFixed(2)} of ${A.w} × ${A.h.toFixed(2)}`);
+        if (n === "in a corner of it") ok(off(inkCenter({ style: "outline", autograph: a, fitAutograph: false }, { style: "outline", lobe: "none" }), want) > 0.5, "C2 control: with the fit off it stands where it was drawn");
+    }
+    // ── §coded
+    const T = "HTTPS://B.333.ECO/7K2M9QX4B8T3", mk = QRCode.create(T, { errorCorrectionLevel: "M" }).modules, L = B.bqrLayout(mk, T, { style: "outline" }), cells = B.bqrLobeCells(mk), body = B.BQR_GEOMETRY.outline.body;
+    const breach = (cs) => { let out = 0, quiet = 0; for (const [c, r] of cs) { const x = L.ox + c * L.m, y = L.oy + r * L.m; for (const [dx, dy] of [[0.08, 0.08], [0.92, 0.08], [0.08, 0.92], [0.92, 0.92]]) { const X = x + dx * L.m, Y = y + dy * L.m; if (!B.insideEmblem(X, Y)) out++; if (X > body.x - 1e-9 && X < body.x + body.s && Y > body.y + 1e-9) quiet++; } } return { out, quiet }; };
+    const near = cells.filter(([c, r], i) => cells.some(([c2, r2], j) => i !== j && Math.abs(c - c2) + Math.abs(r - r2) === 1)).length, v = breach(cells);
+    ok(cells.length === 192 && v.out === 0 && v.quiet === 0 && near === 0, `L1: ${cells.length} cells, ${v.out} corners outside the heart, ${v.quiet} in the quiet zone, ${near} side by side`);
+    ok(breach(cells.map(([c, r]) => [c, r + 5])).quiet > 0, "L1 control: five rows down they breach the quiet zone");
+    const rnd = (seed) => Array.from({ length: 96 }, (_, i) => (Math.imul(i + 1 + seed * 97, 2654435761) >>> 15) & 1);
+    ok(throws2({ style: "pixels", coded: rnd(1) }) && throws2({ coded: rnd(1) }) && throws2({ style: "outline", coded: rnd(1).slice(1) }) && throws2({ style: "outline", coded: rnd(1).map((x) => x * 2) }) && !throws2({ style: "outline", coded: rnd(1) }), "L2: coded modules throw in `pixels`, with no style, short, or not bits");
+    ok(renderBqr(T, 640, { style: "outline" }).toBuffer("image/png").equals(renderBqr(T, 640, { style: "outline", coded: undefined }).toBuffer("image/png")) && !renderBqr(T, 640, { style: "outline" }).toBuffer("image/png").equals(renderBqr(T, 640, { style: "outline", coded: rnd(1) }).toBuffer("image/png")), "L2: none draws what it drew; some draw something");
+    for (const [n, extra] of [["", {}], [" and an autograph", { autograph: AUTO }]]) { const SZ = 1200, data = renderBqr(T, SZ, { style: "outline", coded: rnd(2), ...extra }).getContext("2d").getImageData(0, 0, SZ, SZ).data, pl = B.bqrPlacement(SZ), w = drawnAs(mk); let wrong = 0, dirty = 0;
+        for (let r = -OUTLINE_CLEAR; r < L.n + OUTLINE_CLEAR; r++) for (let cc = -OUTLINE_CLEAR; cc < L.n + OUTLINE_CLEAR; cc++) { const i = (Math.round(pl.ty + (L.oy + (r + .5) * L.m) * pl.k) * SZ + Math.round(pl.tx + (L.ox + (cc + .5) * L.m) * pl.k)) * 4, y = (data[i] + data[i + 1] + data[i + 2]) / 3; if (r >= 0 && r < L.n && cc >= 0 && cc < L.n) { if ((y < 128) !== w(r, cc)) wrong++; } else if (y < 250) dirty++; }
+        ok(wrong === 0 && dirty === 0, `L3 coded${n}: the code reads back ${wrong} wrong, its ring ${dirty} non-white`); }
+    const readCoded = (coded) => { const SZ = 1200, data = renderBqr(T, SZ, { style: "outline", coded }).getContext("2d").getImageData(0, 0, SZ, SZ).data, pl = B.bqrPlacement(SZ); return cells.map(([c, r]) => { const i = (Math.round(pl.ty + (L.oy + (r + .5) * L.m) * pl.k) * SZ + Math.round(pl.tx + (L.ox + (c + .5) * L.m) * pl.k)) * 4; return data[i] < 160 ? 1 : 0; }); };
+    let bad = 0; for (let s = 0; s < 20; s++) { const b = rnd(s + 5), r = readCoded(b); for (let i = 0; i < 192; i++) if (r[i] !== b[i % 96]) bad++; }
+    ok(bad === 0, `L5: 20 words of 96 bits read back, each twice, ${bad} wrong`);
+    { const b = rnd(5), r = readCoded(b.map((x, i) => (i === 40 ? 1 - x : x))); ok(r[40] !== b[40] && r[136] !== b[40], "L5 control: one flipped bit is seen, in both its places"); }
+    function throws2(o) { try { renderBqr(T, 64, o); return false; } catch { return true; } }
 }
 
 // ---- the images ------------------------------------------------------------------------------------------------------------------
@@ -830,7 +884,7 @@ for (const [name, text] of P) {
         quarter.push({ style, deg, name, jsqr: jsQR(id.data, id.width, id.height, { inversionAttempts: "dontInvert" })?.data === text, zxing: (await zx.readBarcodes(id, { formats: ["QRCode"], tryHarder: true, maxNumberOfSymbols: 1 }))[0]?.text === text });
     }
     // ⭐ §tm S4 · S5 — the sign and the autograph against an empty lobe.
-    for (const [style, vname] of Object.entries(VERSIONS)) for (const [ln, o] of [["tm", {}], ["none", { lobe: "none" }], ...(style === "outline" ? [["autograph", { autograph: AUTO }]] : [])]) {
+    for (const [style, vname] of Object.entries(VERSIONS)) for (const [ln, o] of [["tm", {}], ["none", { lobe: "none" }], ...(style === "outline" ? [["autograph", { autograph: AUTO }], ["coded", { coded: Array.from({ length: 96 }, (_, i) => (Math.imul(i + 1, 2654435761) >>> 15) & 1) }]] : [])]) {
         const lc = bareCard(text, { style, ...o }); for (const s of [300, 200, 150]) await decodeAll(`LOBE ${ln} card (${vname})`, s, name, text, B.BQR_INK, lc);
         const lp = renderBqr(text, 640, { style, ...o }); for (const s of [300, 200, 150]) await decodeAll(`LOBE ${ln} preview (${vname})`, s, name, text, B.BQR_INK, lp);
     }
@@ -960,9 +1014,9 @@ console.log("\n— §body-palette B5 (rule in the header: each owner within 2 of
 console.log("\n— §tm S4 · S5 (within 2 of 90 of an empty lobe, jsQR and ZXing)");
 {
     const n = (fam, k) => cases.filter((c) => c.family === fam && c[k]).length, all = (fam) => cases.filter((c) => c.family === fam).length;
-    for (const [style, vname] of Object.entries(VERSIONS)) for (const kind of ["card", "preview"]) for (const ln of ["tm", ...(style === "outline" ? ["autograph"] : [])]) {
+    for (const [style, vname] of Object.entries(VERSIONS)) for (const kind of ["card", "preview"]) for (const ln of ["tm", ...(style === "outline" ? ["autograph", "coded"] : [])]) {
         const t = `LOBE ${ln} ${kind} (${vname})`, u = `LOBE none ${kind} (${vname})`;
-        ok(all(t) === 90 && all(u) === 90 && n(u, "jsqr") - n(t, "jsqr") <= 2 && n(u, "zxing") - n(t, "zxing") <= 2, `${ln === "tm" ? "S4" : "S5"} ${vname} ${kind}, ${ln}: jsQR ${n(t, "jsqr")} · ZXing ${n(t, "zxing")} of ${all(t)} vs empty ${n(u, "jsqr")} · ${n(u, "zxing")}`);
+        ok(all(t) === 90 && all(u) === 90 && n(u, "jsqr") - n(t, "jsqr") <= 2 && n(u, "zxing") - n(t, "zxing") <= 2, `${ln === "tm" ? "S4" : ln === "coded" ? "L4" : "S5"} ${vname} ${kind}, ${ln}: jsQR ${n(t, "jsqr")} · ZXing ${n(t, "zxing")} of ${all(t)} vs empty ${n(u, "jsqr")} · ${n(u, "zxing")}`);
     }
 }
 
