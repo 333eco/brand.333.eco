@@ -192,6 +192,21 @@
  *   T6 any angle — the turned card, clean at 300, turned 90°, 180° and 270° decodes 5/5 in jsQR AND ZXing, both versions.
  *   ⚠️ Honest bound, written before the run: symmetry is why the change is made and no test can say it looks better; that is his eye.
  *      Digital decode only, as everywhere in this file.
+ *   ✗ RESULT (first run, 2026-11-23): T1, T2, T3, T5 and T6 pass. **T4 FAILS on one of twelve readings:** the `pixels` preview, jsQR
+ *     turned 77 vs upright 81 of 90 (4 worse, the margin is 2); ZXing 87 vs 85 there. The six families together: jsQR 493 vs 490, ZXing
+ *     519 vs 510 of 540, the turned drawing AHEAD on both. The prediction (within 1 everywhere) was wrong. And the ink rule, re-run on
+ *     the turned drawing, now picks #106430: its verdict had always hung on one case (above), so it flips on any change of drawing.
+ * ⛔ §turn AMENDMENT — PRE-REGISTERED 2026-11-23, after that run and BEFORE the next, pushed before it ran. T4 is neither moved nor
+ *   dropped: it stays a recorded failure at 90 cases, where four cases is one payload in one distortion. The decision goes to a sample
+ *   twelve times as large (`BQR_TURN_WIDE=1`): 60 payloads (20 B-Link addresses, 20 of 30–60 characters, 20 of 61–120, seeded) × 300/200/150 ×
+ *   the six distortions = 1,080 paired readings per family, the six families of T4, jsQR and ZXing. THE TURN SHIPS only if
+ *   T4W (a) in each of the twelve readings turned is not worse than upright by more than 11 of 1,080 (1%), AND
+ *       (b) over the six families together turned is not worse than upright on either decoder.
+ *   CONTROL: the same 1,080 for the broken drawing (`pixels`, quiet 0) against upright are worse by more than 11 on both decoders (else
+ *   the wide sample can't see a failure). Predicted: turned ahead on both totals, every reading within 11.
+ *   The ink: founder-ruled since (2026-10-12: Shops' green unchanged, every owner's ink at its darkness), so the sweep no longer picks it;
+ *   it must still PASS (a) print and (b) scan on the turned drawing, and what the old rule would pick is REPORTED. ⚠️ Written AFTER seeing
+ *   the pick move, which is why it is said here: the alternative is a new green on every code, a ruling nobody asked for.
  */
 import { createRequire } from "node:module";
 import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, existsSync } from "node:fs";
@@ -361,17 +376,19 @@ function renderBqr(text, size, o = {}) {
     B.paintBqr(g, q.modules, text, { size, ...o });
     return c;
 }
-function pixelRead(text, quiet, style = "pixels", ringOverride, ground) {
-    const S = 1200, c = renderBqr(text, S, { quiet, style, ground }), px = c.getContext("2d").getImageData(0, 0, S, S).data;
+/** The matrix as it is DRAWN, written HERE — a read that used `bqrTurned` would grade the recipe with its own code (§turn). */
+const drawnAs = (m, turn = true) => { const n = m.size; return (r, c) => !!(turn ? m.data[c * n + (n - 1 - r)] : m.data[r * n + c]); };
+function pixelRead(text, quiet, style = "pixels", ringOverride, ground, o = {}) {
+    const S = 1200, c = renderBqr(text, S, { quiet, style, ground, turn: o.turn }), px = c.getContext("2d").getImageData(0, 0, S, S).data;
     const q = QRCode.create(text, { errorCorrectionLevel: B.BQR_ECC }), L = B.bqrLayout(q.modules, text, { style, quiet }), { k, tx, ty } = B.bqrPlacement(S);
     const lum = (u, v) => { const i = (Math.round(ty + v * k) * S + Math.round(tx + u * k)) * 4; return (px[i] + px[i + 1] + px[i + 2]) / 3; };
     const ring = ringOverride ?? (style === "outline" ? OUTLINE_CLEAR : FILL_RING);
-    let wrong = 0, dirty = 0;
+    let wrong = 0, dirty = 0; const want = drawnAs(q.modules, o.readAs ?? true);
     for (let r = -ring; r < L.n + ring; r++) for (let cc = -ring; cc < L.n + ring; cc++) {
         const inCode = r >= 0 && r < L.n && cc >= 0 && cc < L.n;
         for (const [du, dv] of [[.5, .5], [.2, .2], [.8, .2], [.2, .8], [.8, .8]]) {
             const y = lum(L.ox + (cc + du) * L.m, L.oy + (r + dv) * L.m);
-            if (inCode) { if ((y < 128) !== !!q.modules.data[r * L.n + cc]) wrong++; }
+            if (inCode) { if ((y < 128) !== want(r, cc)) wrong++; }
             else if (y < 250) dirty++;
         }
     }
@@ -488,6 +505,45 @@ const INK_L = lumH(B.BQR_INK);
     ok(gated.every((r) => r.dh <= 6), `H3: hue kept within 6° — ${rows.map((r) => `${r.name} ${r.h}→${r.d} ${r.C >= 0.03 ? r.dh.toFixed(1) + "°" : "(C " + r.C.toFixed(3) + ", reported)"}`).join(" · ")}`);
 }
 
+// ---- §turn T1 · T2 · T3 (pre-registered in the header, 2026-11-23, commit 1b44ac5) ------------------------------------------------
+console.log("\n— §turn T1 one mirror line · T2 the turn · T3 nothing else moves");
+{
+    const { N, K, px } = raster(100, 0), inside = (x, y) => x >= 0 && y >= 0 && x < N && y < N && px[(y * N + x) * 4 + 3] > 127;
+    /** How much of the silhouette is its own mirror image about x + y = `sum`: shared area over joined area. */
+    const overlap = (sum) => { let both = 0, either = 0; for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) { const a = inside(x, y), b = inside(Math.round(sum * K - 1 - y), Math.round(sum * K - 1 - x)); if (a && b) both++; if (a || b) either++; } return both / either; };
+    ok(overlap(24) >= 0.995, `T1: the silhouette is its own mirror image about x + y = 24 — ${(overlap(24) * 100).toFixed(2)}%`);
+    ok(overlap(23) < 0.995, `T1 control: about x + y = 23 it is not — ${(overlap(23) * 100).toFixed(2)}%`);
+    const off = ([x, y]) => Math.abs(x + y - 24), mirror = ([x, y]) => [24 - y, 24 - x], gap = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
+    for (const style of ["pixels", "outline"]) {
+        const rows = P.map(([name, text]) => {
+            const q = QRCode.create(text, { errorCorrectionLevel: B.BQR_ECC }), L = B.bqrLayout(q.modules, text, { style });
+            const at = (r, c) => [L.ox + (c + 3.5) * L.m, L.oy + (r + 3.5) * L.m], e = L.n - 7;
+            const t = { middle: at(e, 0), a: at(0, 0), b: at(e, e) }, u = { middle: at(0, 0), a: at(0, e), b: at(e, 0) };
+            return { name, t: Math.max(off(t.middle), gap(mirror(t.a), t.b)), uMiddle: off(u.middle), uSet: gap(mirror(u.middle), u.middle) };
+        });
+        ok(rows.every((r) => r.t < 0.01), `T1 ${style}: turned, the middle marker is on the line and the other two mirror — worst ${Math.max(...rows.map((r) => r.t)).toFixed(4)} units`);
+        ok(rows.every((r) => r.uMiddle > 1 && r.uSet > 1), `T1 control ${style}: upright, the middle marker is ${Math.min(...rows.map((r) => r.uMiddle)).toFixed(2)}+ units off the line, so its mirror image has no marker`);
+        for (const [name, text] of P) {
+            const v = pixelRead(text, undefined, style), q = QRCode.create(text, { errorCorrectionLevel: B.BQR_ECC }), n = q.modules.size, w = drawnAs(q.modules);
+            const marker = (r0, c0) => { for (let r = 0; r < 7; r++) for (let c = 0; c < 7; c++) { const edge = r === 0 || r === 6 || c === 0 || c === 6, core = r > 1 && r < 5 && c > 1 && c < 5; if (w(r0 + r, c0 + c) !== (edge || core)) return false; } return true; };
+            ok(v.wrong === 0 && marker(0, 0) && marker(n - 7, 0) && marker(n - 7, n - 7) && !marker(0, n - 7), `T2 ${style} ${name}: ${v.wrong} wrong modules; markers top left, bottom left, bottom right, none top right`);
+        }
+        const wrongIfUpright = P.map(([, text]) => pixelRead(text, undefined, style, undefined, undefined, { readAs: false }).wrong);
+        ok(wrongIfUpright.every((n) => n > 100), `T2 control ${style}: read as the upright matrix, ${Math.min(...wrongIfUpright)}+ samples are wrong`);
+        for (const ground of ["paper", "heart"]) {
+            let outside = 0, insideDiff = 0;
+            for (const [, text] of P) {
+                const S = 1200, q = QRCode.create(text, { errorCorrectionLevel: B.BQR_ECC }), L = B.bqrLayout(q.modules, text, { style }), { k, tx, ty } = B.bqrPlacement(S);
+                const x0 = Math.round(tx + L.ox * k), y0 = Math.round(ty + L.oy * k), x1 = Math.round(tx + (L.ox + L.n * L.m) * k), y1 = Math.round(ty + (L.oy + L.n * L.m) * k);
+                const a = renderBqr(text, S, { style, ground }).getContext("2d").getImageData(0, 0, S, S).data, b = renderBqr(text, S, { style, ground, turn: false }).getContext("2d").getImageData(0, 0, S, S).data;
+                for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) { const i = (y * S + x) * 4; if (a[i] === b[i] && a[i + 1] === b[i + 1] && a[i + 2] === b[i + 2] && a[i + 3] === b[i + 3]) continue; if (x >= x0 && x < x1 && y >= y0 && y < y1) insideDiff++; else outside++; }
+            }
+            ok(outside === 0, `T3 ${style} ${ground}: ${outside} pixels differ outside the code's box`);
+            ok(insideDiff > 10000, `T3 control ${style} ${ground}: ${insideDiff} pixels differ inside it`);
+        }
+    }
+}
+
 // ---- the images ------------------------------------------------------------------------------------------------------------------
 const CARD_TEXT = { title: "Home Coffee", caption: "Scan to order here", foot: "homecoffee.heartbank.ceo" };
 async function card(text, accent, style) {
@@ -546,11 +602,11 @@ for (const style of ["pixels", "outline"]) {
     ok(rows.every((r) => !r.lighter && !r.far), `B4: every owner's ink at the green's darkness — ${rows.map((r) => `${r.o} ${r.ink}`).join(" · ")}`);
 }
 
-function bareCard(text, { quiet, ecc = B.BQR_ECC, style = "pixels", ink, accent, hue, owner } = {}) {
+function bareCard(text, { quiet, ecc = B.BQR_ECC, style = "pixels", ink, accent, hue, owner, turn } = {}) {
     const c = createCanvas(C.CARD.W, C.CARD.H), g = c.getContext("2d");
     g.fillStyle = "#fff"; g.fillRect(0, 0, C.CARD.W, C.CARD.H);
     const q = QRCode.create(text, { errorCorrectionLevel: ecc });
-    B.paintBqr(g, q.modules, text, { ...C.CARD.code, quiet, style, ink, accent, hue, owner });
+    B.paintBqr(g, q.modules, text, { ...C.CARD.code, quiet, style, ink, accent, hue, owner, turn });
     return c;
 }
 /** ⭐ The SAME code pixels with the emblem cut away (code box + quiet ring copied onto white) — separates what the decoration costs
@@ -609,6 +665,7 @@ const DISTORT = { clean: (c) => c, blur, "rot+10": (c) => rotate(c, 10), "rot-10
 
 // ---- decoding ---------------------------------------------------------------------------------------------------------------------
 const cases = [];
+const quarter = [];
 let seq = 0;
 async function decodeAll(family, size, name, text, accent, base) {
     for (const [dn, fn] of Object.entries(DISTORT)) {
@@ -667,6 +724,20 @@ for (const [name, text] of P) {
         const oc = bareCard(text, { owner });
         for (const s of [300, 200, 150]) await decodeAll(`OWNER ${owner}`, s, name, text, B.bqrOwnerInk(owner), oc);
         await decodeAll(`OWNER ${owner} outline preview`, 300, name, text, B.bqrOwnerInk(owner), renderBqr(text, 640, { style: "outline", owner }));
+    }
+    // ⭐ §turn T4 · T6 — turned against upright, same sizes and distortions; and the turned card at every quarter.
+    for (const [style, vname] of Object.entries(VERSIONS)) for (const [tn, turn] of [["turned", undefined], ["upright", false]]) {
+        const tc = bareCard(text, { style, turn });
+        for (const s of [300, 200, 150]) await decodeAll(`TURN ${tn} card (${vname})`, s, name, text, B.BQR_INK, tc);
+        const tp = renderBqr(text, 640, { style, turn });
+        for (const s of [300, 200, 150]) await decodeAll(`TURN ${tn} preview (${vname})`, s, name, text, B.BQR_INK, tp);
+        const th = onGround(renderBqr(text, 640, { style, ground: "heart", turn }), DARK);
+        for (const s of [300, 200, 150]) await decodeAll(`TURN ${tn} heart on dark (${vname})`, s, name, text, B.BQR_INK, th);
+    }
+    for (const style of ["pixels", "outline"]) for (const deg of [90, 180, 270]) {
+        const base = scale(bareCard(text, { style }), 300), sq = createCanvas(390, 390), sg = sq.getContext("2d"); sg.fillStyle = "#fff"; sg.fillRect(0, 0, 390, 390); sg.drawImage(base, 45, 0);
+        const img = rotate(sq, deg), id = img.getContext("2d").getImageData(0, 0, img.width, img.height);
+        quarter.push({ style, deg, name, jsqr: jsQR(id.data, id.width, id.height, { inversionAttempts: "dontInvert" })?.data === text, zxing: (await zx.readBarcodes(id, { formats: ["QRCode"], tryHarder: true, maxNumberOfSymbols: 1 }))[0]?.text === text });
     }
     const pl = plainCard(text);
     for (const s of [1200, 300, 200, 150]) await decodeAll("plain card (old)", s, name, text, "—", pl);
@@ -790,6 +861,21 @@ console.log("\n— §body-palette B5 (rule in the header: each owner within 2 of
     console.log(`  reported ΔEok: heartbank.us ↔ F333 ${dE("heartbank.us", "F333").toFixed(3)} · heartbank.me ↔ SW ${dE("heartbank.me", "SW").toFixed(3)} · heartbank.org ↔ SW ${dE("heartbank.org", "SW").toFixed(3)} (accepted) · TH ↔ MA ${dE("TH", "MA").toFixed(3)} (print-test)`);
 }
 
+// ---- §turn T4 · T6 ------------------------------------------------------------------------------------------------------------------
+console.log("\n— §turn T4 (turned within 2 of 90 of upright, jsQR and ZXing) · T6 any angle");
+{
+    const n = (fam, k) => cases.filter((c) => c.family === fam && c[k]).length, all = (fam) => cases.filter((c) => c.family === fam).length;
+    for (const vname of Object.values(VERSIONS)) for (const kind of ["card", "preview", "heart on dark"]) {
+        const t = `TURN turned ${kind} (${vname})`, u = `TURN upright ${kind} (${vname})`;
+        ok(all(t) === 90 && all(u) === 90, `T4 aperture ${vname} ${kind}: ${all(t)} turned, ${all(u)} upright`);
+        console.log(`  ${n(u, "jsqr") - n(t, "jsqr") <= 2 && n(u, "zxing") - n(t, "zxing") <= 2 ? "within 2" : "⚠️ PAST 2 (recorded, §turn result)"} · T4 ${vname} ${kind}: turned jsQR ${n(t, "jsqr")} · ZXing ${n(t, "zxing")} of ${all(t)} vs upright ${n(u, "jsqr")} · ${n(u, "zxing")}`);
+    }
+    for (const style of ["pixels", "outline"]) {
+        const rows = quarter.filter((x) => x.style === style);
+        ok(rows.length === 15 && rows.every((x) => x.jsqr && x.zxing), `T6 ${style}: at 90°, 180° and 270° — jsQR ${rows.filter((x) => x.jsqr).length} · ZXing ${rows.filter((x) => x.zxing).length} of ${rows.length}`);
+    }
+}
+
 // ---- §4AA the ink ---------------------------------------------------------------------------------------------------------------
 console.log("\n— §4AA ink (rule in the header: the lightest green at ISO/IEC 15415 grade A that decodes no worse than the old ink by > 2)");
 const lin = (c) => { c /= 255; return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; };
@@ -807,9 +893,40 @@ const verdict = INKS.map((ink) => {
 });
 const pick = verdict.filter((v) => v.ok).sort((a, b) => b.L - a.L)[0]?.ink ?? "none";
 ok(inkOf(OLD_INK) === 90, `ink sweep aperture: ${inkOf(OLD_INK)} cases per ink (5 payloads × 3 sizes × 6 distortions = 90)`);
-ok(pick === B.BQR_INK, `the rule picks ${pick}; BQR_INK is ${B.BQR_INK}`);
+ok(verdict.find((v) => v.ink === B.BQR_INK)?.ok === true, `BQR_INK ${B.BQR_INK} passes (a) print and (b) scan on the turned drawing (§turn amendment; reported: the old rule would pick ${pick})`);
 ok(SC("#15803d") < 0.70, `control: the accent #15803d is caught by (a) — SC ${SC("#15803d").toFixed(3)} < 0.70`);
 ok(SC(OLD_INK) >= 0.70, `control: the old near-black passes (a) — SC ${SC(OLD_INK).toFixed(3)}`);
+
+
+// ---- §turn T4W — the wide sample (BQR_TURN_WIDE=1; pre-registered in the header) ---------------------------------------------------
+if (process.env.BQR_TURN_WIDE) {
+    console.log("\n— §turn T4W: 60 payloads × 3 sizes × 6 distortions, turned against upright");
+    const rand = (() => { let x = 0x2026_1123; return () => ((x = Math.imul(x ^ (x >>> 15), 0x2c1b3c6d) ^ (x + 0x6d2b79f5)) >>> 0) / 4294967296; })();
+    const pickOf = (abc, n) => Array.from({ length: n }, () => abc[Math.floor(rand() * abc.length)]).join("");
+    const CROCK = "0123456789ABCDEFGHJKMNPQRSTVWXYZ", LOW = "abcdefghijkmnpqrstuvwxyz23456789";
+    const W = [...Array.from({ length: 20 }, () => `HTTPS://B.333.ECO/${pickOf(CROCK, 7)}`),
+        ...Array.from({ length: 20 }, () => `https://${pickOf(LOW, 6)}.heartbank.ceo/?`).map((b) => b + pickOf(LOW, 30 + Math.floor(rand() * 31) - b.length)),
+        ...Array.from({ length: 20 }, () => `https://${pickOf(LOW, 6)}.heartbank.ceo/?`).map((b) => b + pickOf(LOW, 61 + Math.floor(rand() * 60) - b.length))];
+    ok(W.length === 60 && W.slice(20, 40).every((t) => t.length >= 30 && t.length <= 60) && W.slice(40).every((t) => t.length >= 61 && t.length <= 120) && new Set(W).size === 60, `T4W aperture: ${W.length} distinct payloads, lengths ${Math.min(...W.map((t) => t.length))}–${Math.max(...W.map((t) => t.length))}`);
+    const score = {}, add = (k, j, z) => { score[k] ??= { n: 0, j: 0, z: 0 }; score[k].n++; score[k].j += j; score[k].z += z; };
+    const run = async (key, text, base) => { for (const s of [300, 200, 150]) for (const fn of Object.values(DISTORT)) { const img = await fn(scale(base, s)), id = img.getContext("2d").getImageData(0, 0, img.width, img.height); add(key, jsQR(id.data, id.width, id.height, { inversionAttempts: "dontInvert" })?.data === text ? 1 : 0, (await zx.readBarcodes(id, { formats: ["QRCode"], tryHarder: true, maxNumberOfSymbols: 1 }))[0]?.text === text ? 1 : 0); } };
+    for (const text of W) {
+        for (const style of ["pixels", "outline"]) for (const [tn, turn] of [["turned", undefined], ["upright", false]]) {
+            await run(`${style} card|${tn}`, text, bareCard(text, { style, turn }));
+            await run(`${style} preview|${tn}`, text, renderBqr(text, 640, { style, turn }));
+            await run(`${style} heart on dark|${tn}`, text, onGround(renderBqr(text, 640, { style, ground: "heart", turn }), DARK));
+        }
+        await run("BROKEN quiet 0", text, bareCard(text, { quiet: 0 }));
+    }
+    const tot = { turned: { j: 0, z: 0 }, upright: { j: 0, z: 0 } };
+    for (const fam of ["pixels card", "pixels preview", "pixels heart on dark", "outline card", "outline preview", "outline heart on dark"]) {
+        const t = score[`${fam}|turned`], u = score[`${fam}|upright`]; tot.turned.j += t.j; tot.turned.z += t.z; tot.upright.j += u.j; tot.upright.z += u.z;
+        ok(t.n === 1080 && u.n === 1080 && u.j - t.j <= 11 && u.z - t.z <= 11, `T4W (a) ${fam}: turned jsQR ${t.j} · ZXing ${t.z} of ${t.n} vs upright ${u.j} · ${u.z}`);
+    }
+    ok(tot.turned.j >= tot.upright.j && tot.turned.z >= tot.upright.z, `T4W (b) all six: turned jsQR ${tot.turned.j} · ZXing ${tot.turned.z} vs upright ${tot.upright.j} · ${tot.upright.z} (of 6480)`);
+    const b = score["BROKEN quiet 0"], u = score["pixels card|upright"];
+    ok(u.j - b.j > 11 && u.z - b.z > 11, `T4W control: the broken drawing is worse by jsQR ${u.j - b.j} · ZXing ${u.z - b.z} of ${b.n}`);
+}
 
 // ---- samples to look at ------------------------------------------------------------------------------------------------------------
 const label = { "order-here": "Scan to order here", "check-in": "Scan when you arrive", referral: "A friend's code for Home Coffee" };
