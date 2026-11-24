@@ -35,6 +35,9 @@
  *   chosen by a rule written into the test BEFORE its sweep ran: the LIGHTEST candidate that prints at ISO/IEC 15415
  *   symbol-contrast grade A (Rpaper 0.85 − Rink ≥ 0.70) and decodes no worse than the old near-black by more than 2 of 90 cases on two
  *   independent decoders. The prediction (#106430) was wrong and the rule's pick was kept — ⛔ never move the rule to a preferred shade.
+ * ⭐ ONE MIRROR LINE (v1.9.0, founder 2026-11-23): the code is drawn turned a quarter counterclockwise (`bqrTurned`), so its middle
+ *   position marker stands at the heart's point and its three markers mirror about the heart's own line. Measured in §turn; nothing
+ *   printed before is reprinted (a code reads at any angle).
  * ⭐ DETERMINISTIC: the decoration is seeded from a hash of the text, so the same address always draws the same picture and the preview
  *   a person sees is the card they download.
  *
@@ -211,6 +214,8 @@ export interface BqrOptions {
     quiet?: number;
     /** ⛔ TEST ONLY — the code's colour, for the ink sweep that chose `BQR_INK`. ⛔ Never a theme's colour. */
     ink?: string;
+    /** ⛔ TEST ONLY — `false` draws the code upright, the drawing before v1.9.0 (`scripts/bqr.test.mjs` §turn, the baseline). */
+    turn?: boolean;
     /** ⭐ v1.6.0 — the drawing's color family, drawn at `BQR_INK`'s darkness (`bqrInkFor`). Default: `BQR_INK` itself.
      *  ⛔ Products pass `owner`, never `hue`; `hue` is for the brand page following a visitor's `--emblem`. */
     hue?: string;
@@ -299,6 +304,17 @@ function stream(seed: string): () => number {
 }
 
 /**
+ * ⭐ v1.9.0 (founder 2026-11-23) — the code turned a quarter COUNTERCLOCKWISE, so its middle position marker stands at the heart's point.
+ *   The emblem mirrors about one line, point to notch; a code's three markers mirror about one line too, through the middle one. Upright
+ *   the two lines cross; turned, they are the same line. Decoders read a code at any angle, so nothing printed before stops working.
+ */
+export function bqrTurned(mat: BqrMatrix): BqrMatrix {
+    const n = mat.size, data = new Uint8Array(n * n);
+    for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) data[r * n + c] = mat.data[c * n + (n - 1 - r)] ? 1 : 0;
+    return { size: n, data };
+}
+
+/**
  * Where everything goes, in viewBox units. The module grid is the code's own, extended over the whole emblem; a decorative cell
  * is a candidate when it lies outside the code's quiet box AND its dot clears the outline; it is dark by the seeded stream unless
  * that would make a third dark cell in a row or a column.
@@ -340,7 +356,9 @@ export function bqrPlacement(size: number, x = 0, y = 0): { k: number; tx: numbe
 }
 
 /** Paint a B-QR from a module matrix into a 2D context. Synchronous; `drawBqr` makes the matrix. */
-export function paintBqr(g: CanvasRenderingContext2D, mat: BqrMatrix, seed: string, o: BqrOptions): void {
+export function paintBqr(g: CanvasRenderingContext2D, upright: BqrMatrix, seed: string, o: BqrOptions): void {
+    // ⭐ v1.9.0 — always turned: one drawing, whoever asks. The layout is the grid's, so the decoration and the outline do not move.
+    const mat = o.turn === false ? upright : bqrTurned(upright);
     // ⭐ §4AA — one green for the whole drawing: the decoration and the outline default to the code's own ink.
     // ⭐ v1.6.0 — `hue` sets the code, the decoration and the outline at once, darkened by `bqrInkFor`; none = `BQR_INK`, verbatim.
     // ⭐ v1.7.0 — `owner` sets it from the body palette instead; ⛔ both at once throws (a product cannot pick its own color).
