@@ -167,6 +167,31 @@
  *     prediction (within 2) held. Reported ΔEok: us ↔ F333 0.011 · me ↔ SW 0.036 · org ↔ SW 0.038 (accepted) · TH ↔ MA 0.073.
  *     ⭐ Seen to FAIL: heartbank.us's source one digit off (#c8102f) → B3 "mismatched: heartbank.us"; restored. OpenCV NOT RUN.
  *     ⚠️ Digital decode only — PRINT contrast is guaranteed by the darkness rule (B4), and the TH ↔ MA print test is still owed.
+ *
+ * ⛔ §turn — PRE-REGISTERED 2026-11-23, written and pushed before the §turn arm or the change it tests existed (founder: *"I want to
+ *   rotate the QR such that the center position marker is on the bottom left corner (90 degrees counterclockwise); if you agree that
+ *   this symmetry makes the B-QR look better overall, update and ratify B-QR"*). The substrate agrees, for a reason a test can hold: the
+ *   emblem is a heart mirrored about ONE line, from its point (bottom left) to its notch (top right). A code has three position markers,
+ *   mirrored about one line too, through the middle marker. Upright, the middle marker is top left and the two lines CROSS; turned a
+ *   quarter counterclockwise it is bottom left and the two lines are THE SAME LINE. v1.9.0: `paintBqr` draws the turned matrix, always
+ *   (⛔ no option a product can pass: one drawing, Sig-9; `turn: false` is TEST ONLY, the baseline below). Decoders read a code at any
+ *   angle, so every code already printed or saved still works and none is reprinted. The run FAILS on any of:
+ *   T1 one mirror line — the silhouette, rasterised at 100 px/unit, is its own mirror image about x + y = 24 (overlap ≥ 99.5%); in the
+ *      turned drawing the middle marker's centre is on that line within 0.01 and the other two are mirror images within 0.01, in both
+ *      versions, for every payload. CONTROL: the upright drawing's middle marker is off the line and its three markers are NOT their own
+ *      mirror image; the silhouette mirrored about x + y = 23 overlaps less than 99.5%.
+ *   T2 the turn — read back from the pixels at 1200 in both versions, every module equals the matrix turned a quarter counterclockwise
+ *      (module (r, c) of the drawing is (c, n − 1 − r) of the matrix), a 7×7 position marker stands top left, bottom left and bottom
+ *      right and none top right. CONTROL: the same read against the upright matrix counts wrong modules.
+ *   T3 nothing else moves — outside the code's own box the turned and the upright drawing are the same pixels, both versions, both
+ *      grounds, all payloads (decoration, outline, quiet ring). CONTROL: inside the box they differ.
+ *   T4 decode — for each version, the bare card and the preview, and the `heart` preview on the dark ground, at 300/200/150 × the six
+ *      distortions × the five payloads (90 each): turned decodes no worse than upright by more than 2 of 90, in jsQR AND in ZXing — the
+ *      margin every arm here has used. Predicted: within 1 everywhere.
+ *   T5 P5 is unchanged and still 60/60, now on the turned drawing; P6's broken control still fails at least once.
+ *   T6 any angle — the turned card, clean at 300, turned 90°, 180° and 270° decodes 5/5 in jsQR AND ZXing, both versions.
+ *   ⚠️ Honest bound, written before the run: symmetry is why the change is made and no test can say it looks better; that is his eye.
+ *      Digital decode only, as everywhere in this file.
  */
 import { createRequire } from "node:module";
 import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, existsSync } from "node:fs";
