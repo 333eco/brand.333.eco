@@ -240,6 +240,28 @@
  *     autograph on the card: ZXing 83 vs 86, the margin 2). On the wide sample (1,080 a family, as T4W) that box lost 10 in ZXing on the card and
  *     none elsewhere; the same autograph 14% further from the code lost NONE (994 · 1,007 vs 994 · 1,007 card, 1,019 · 1,046 vs 1,019 · 1,045
  *     preview; Apple's reader 171 of 180 and 175 of 180, unmoved). The box was moved there, the gate was not. Second run: every check passes.
+ *
+ * ⛔ §center — PRE-REGISTERED 2026-11-24, written and pushed before the recipe moves (founder: *"horizontally and vertically center the ™ and the
+ *   B-Signature within the bottom lobe"*; the second is B-Autograph℠, its approved name). The lobe's CENTER, for each version, is the point midway
+ *   between the code's last dark column and the outline's inner edge on its own row, and midway between the outline's inner edges on its own column
+ *   (solved together, `lobeCenter` below, from the silhouette alone). The run FAILS on any of:
+ *   C1 the ™ — its painted pixels' box is centered there within 0.06 units, both versions. CONTROL: v1.9.0's place fails (0.39 and 0.63 off).
+ *   C2 the autograph — its painted pixels' box is centered there within 0.06 units, for a drawing that fills the pad, one in a corner of it and one
+ *      tall and thin; every one lies inside the box. The drawing is FITTED (its own shape kept, at most twice the pad's scale), so where on the
+ *      pad a person drew does not matter. CONTROL: with the fit off (TEST ONLY) the corner one fails.
+ *   C3 S1–S5 hold at the new place; the autograph's box is the largest 5 : 3 one that stands centered, clear of the body, and loses nothing: S5's
+ *      gate (within 2 of 90), tried from 4.47 wide down in steps of 0.2; the first that passes is taken, and the tries are recorded here.
+ *   Predicted: the ™ passes at once; the autograph lands at or under 4.0 wide, because centered it stands nearer the code than S5's first box did.
+ * ⛔ §coded — PRE-REGISTERED the same time (founder: *"embed our own coded modules in the top lobe"* → *"build it"*). `coded`, 96 bits, twice each, in
+ *   the TOP lobe of the `outline` version, for a mark in a person's picture only. The run FAILS on any of:
+ *   L1 place — 192 cells, each whole dot inside the silhouette less the outline's half, above the code's quiet zone, no two side by side (a
+ *      checkerboard, so no run ever looks like a finder's). CONTROL: the cells moved down 5 rows breach the quiet zone.
+ *   L2 throws in `pixels` and for anything but 96 zeros and ones; with none, the drawing is byte for byte what it was.
+ *   L3 the code's modules and its 4-module ring read back unchanged with `coded`, with and without an autograph.
+ *   L4 decode — within 2 of 90 of none, card and preview, jsQR AND ZXing.
+ *   L5 read back — 20 random words read back whole from a 1,200 px drawing through `bqrLobeCells`; CONTROL: one flipped bit is seen.
+ *   ⛔ What the bits SAY is not the recipe's: a mark's caller writes a short fingerprint of the picture the heart is drawn for, and ⛔ never a
+ *   person, a serial, a claim or a key. Our own codes keep their dots.
  */
 import { createRequire } from "node:module";
 import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, existsSync } from "node:fs";
