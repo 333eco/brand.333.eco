@@ -60,7 +60,7 @@ function readBack(c: HTMLCanvasElement): string {
 }
 const A = field(), B = lake(), aPrint = printOf(A);
 function paintAll() {
-    byId("wm-hero").replaceChildren(label(marked(A, aPrint), "A drawn field of sunflowers with a heart in the corner: a code, an autograph and dots"));
+    byId("wm-whole").replaceChildren(label(marked(A, aPrint), "A drawn field of sunflowers with a heart in the corner: a code, an autograph and dots"));
     const big = heart(720, { coded: codedOf("corner", aPrint), ground: "paper" });
     byId("wm-heart").replaceChildren(label(big, "The same heart, large"));
     const own = marked(A, aPrint), pasted = copyOf(B); ctx(pasted).drawImage(heart(AT.s, { coded: codedOf("corner", aPrint), white: 0.7 }), AT.x, AT.y);
