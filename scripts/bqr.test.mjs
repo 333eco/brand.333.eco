@@ -304,6 +304,8 @@
  *   ✅ RESULT (2026-11-25): LK1, LK3, LK4 pass on the first run (LK4: 0 bytes differ). ⚠️ LK2 failed on the TEST'S OWN SAMPLE, not the
  *     recipe: its clear-of-the-box condition was written backwards and its outside point (1, 1) lay off the canvas (read as nothing). Fixed in
  *     the test only, the recipe unchanged: inside 102,102,102, outside 0,0,0, control 255. The prediction about the edge didn't arise.
+ *     LK4 run again against the code BEFORE the move (`git show 4da1e3d:qr/bqr.ts`, the pre-registration's own words), once, by hand: 24
+ *     drawings (three addresses · two hands · fit on and off · 300 and 1,200 px), 0 bytes differ; CONTROL: the pen at 3.1 instead of 3, 68,814.
  */
 import { createRequire } from "node:module";
 import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, existsSync } from "node:fs";
