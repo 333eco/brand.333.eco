@@ -306,6 +306,23 @@
  *     the test only, the recipe unchanged: inside 102,102,102, outside 0,0,0, control 255. The prediction about the edge didn't arise.
  *     LK4 run again against the code BEFORE the move (`git show 4da1e3d:qr/bqr.ts`, the pre-registration's own words), once, by hand: 24
  *     drawings (three addresses · two hands · fit on and off · 300 and 1,200 px), 0 bytes differ; CONTROL: the pen at 3.1 instead of 3, 68,814.
+ *
+ * ⛔ §looks2 — PRE-REGISTERED 2026-11-25, written and pushed before the test code (founder: *"let the user choose the color? let the user choose
+ *   B-Symbol as subscript or superscript? vertically and horizontally center the B-Autograph within the B-Emblem"* · *"user can choose @name
+ *   typed in a script font (fast and easy)"*). The run FAILS on any of:
+ *   LK5 the center — `SILHOUETTE_CENTER` is the silhouette's own: the midpoint of the horizontal chord through it, and of the vertical chord,
+ *      each within 0.05 units; `SILHOUETTE_AUTOGRAPH` is centered on it and stands 0.6 inside the edge (LK1's sampler). CONTROL: v1.12's
+ *      center (11.6, 14.15) misses by more than 0.5.
+ *   LK6 the hand is centered in the heart as painted — a fitted drawing's ink, painted by `paintSilhouette`, has its box's center within 0.06
+ *      units of the center (C2's tolerance). CONTROL: drawn with the fit off it stands where it was drawn.
+ *   LK7 raised or lowered — `symbolLayout(…, "sub")` puts the emblem's BOTTOM at the ink's bottom, `"super"` (and none) its TOP at the ink's
+ *      top, the same size, right of the ink; painted `sub`, no pixel leaves the layout's whole.
+ *   LK8 the typed hand — `typedAutograph("thon")` is an autograph on the pad (every point inside 100 × 60, within the point limit), the same
+ *      strokes every time, its letters left to right; `"ab"` is not blown up past the face's x-height rule; text this face lacks (Khmer) is
+ *      null; more than 24 characters are cut to 24. CONTROL: a 25th character changes nothing.
+ *   LK9 the ink — `paintSymbol` and `paintSilhouette` draw the hand in the ink they are given (any color the person picks): every painted pixel
+ *      of the hand is that color, give or take the edge's blending.
+ *   Predicted: LK5 and LK6 pass at the solved numbers; LK8's x-height rule is the one most likely to need a second look.
  */
 import { createRequire } from "node:module";
 import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, existsSync } from "node:fs";
