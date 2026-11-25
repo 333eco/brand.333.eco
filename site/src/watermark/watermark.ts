@@ -32,9 +32,11 @@ function lake(): HTMLCanvasElement {
     g.fillStyle = "#24323a"; g.beginPath(); g.moveTo(180, 560); g.quadraticCurveTo(300, 610, 430, 560); g.quadraticCurveTo(300, 640, 180, 560); g.fill();
     return c;
 }
-// ── a made-up autograph, until the visitor draws one ──
-const MADE_UP: BqrAutograph = { strokes: [[[6, 50], [12, 30], [20, 10], [26, 8], [24, 24], [16, 44], [12, 52], [22, 52], [34, 44]], [[38, 36], [36, 48], [42, 52], [48, 46]], [[40, 24], [41, 25]], [[52, 50], [54, 38], [60, 34], [62, 42], [62, 50], [68, 38], [74, 36], [74, 46], [76, 52], [82, 46], [88, 38], [84, 48], [94, 44]]] };
-let hand: BqrAutograph = MADE_UP;
+// ── the sample autograph, until the visitor draws one: "thon" (founder 2026-11-25: "can we use “thon” instead as the sample B-Autograph?").
+//    Made-up strokes in a plain cursive, placed by hand on the 100 × 60 pad: ⛔ never anyone's real hand, the founder's included (this page tells
+//    every visitor never to draw a legal signature, and a public sample of one would contradict it). ──
+const SAMPLE: BqrAutograph = { strokes: [[[3, 50], [4, 49], [5.5, 47], [6.5, 45], [8, 42], [9, 38.5], [10, 34.5], [11, 30], [12, 26], [12.5, 21.5], [13.5, 16.5], [14, 12], [14, 10], [14, 11], [13.5, 14], [13.5, 18], [13, 22], [12.5, 26], [12.5, 30], [12, 34.5], [12, 38], [12, 41.5], [12, 44.5], [12.5, 47], [13, 49], [14, 50.5], [15, 51], [16, 51], [17, 51], [18, 50.5], [19.5, 50], [20.5, 48.5], [22, 46], [23.5, 42], [25, 36.5], [26.5, 31], [28, 26], [29, 22], [30, 18], [30.5, 14.5], [31, 12], [31, 10], [30.5, 8.5], [29.5, 7.5], [29, 7], [28.5, 7], [27.5, 7.5], [26.5, 9], [26, 11], [25.5, 14], [25.5, 18.5], [25, 23], [25, 28], [24.5, 34], [24.5, 41], [24, 47.5], [24, 51], [24, 51], [24, 49], [24.5, 45.5], [25, 43], [26, 41], [27, 39], [28, 37.5], [29, 36], [30, 35], [31, 35], [32, 34.5], [33, 35], [33.5, 36], [34.5, 37], [34.5, 38.5], [35, 40], [35, 42], [35, 44], [35, 46.5], [35, 48], [35.5, 49.5], [36.5, 50.5], [37, 51], [38, 51], [39, 50.5], [39.5, 49.5], [40.5, 48.5], [41, 47], [41.5, 45.5], [42.5, 43.5], [43, 41.5], [44, 40], [45, 38.5], [46.5, 37], [47.5, 36], [48, 35], [47.5, 34.5], [46.5, 35], [45, 35.5], [44, 36], [43.5, 37], [43, 38], [42.5, 39.5], [42, 41], [42, 42.5], [41.5, 44], [41.5, 45.5], [42, 47], [42.5, 48], [43.5, 49.5], [44, 50.5], [45, 51], [46, 51.5], [47, 51.5], [48, 51.5], [49, 51], [50, 50], [51, 49], [51.5, 47.5], [52, 46], [52.5, 44.5], [52.5, 42.5], [52.5, 40.5], [52, 39], [51.5, 37.5], [50.5, 36.5], [49.5, 35.5], [49, 35], [49.5, 35], [50.5, 36], [52, 36.5], [53, 37], [54, 37], [55, 36.5], [56, 36.5], [57, 36], [57.5, 35.5], [58.5, 35], [58.5, 35], [59, 36], [59, 39], [59, 43.5], [59, 47.5], [59, 50], [59, 49.5], [59.5, 47.5], [59.5, 44.5], [60, 42], [61, 40], [62, 38.5], [63, 37], [64, 36], [65, 35.5], [66, 35], [67, 35], [68, 35], [69, 35.5], [70, 36.5], [70.5, 37.5], [71, 39], [71, 41], [71, 43.5], [71, 46], [71, 48], [71.5, 49.5], [72, 51], [73, 51.5], [74, 52], [75.5, 52], [77, 51], [78.5, 50], [80, 49], [81.5, 48], [83.5, 46.5], [85, 45], [86, 44]], [[5, 25], [6.5, 24.5], [9.5, 24], [12, 23.5], [15, 23], [18.5, 22.5], [21, 22]]] };
+let hand: BqrAutograph = SAMPLE;
 const modules = QRCode.create(LINK, { errorCorrectionLevel: "M" }).modules;
 function heart(size: number, o: Partial<BqrOptions> & { white?: number } = {}): HTMLCanvasElement {
     const big = canvas(size * 2, size * 2), c = canvas(size, size), g = ctx(c), { white, ...rest } = o;
@@ -86,8 +88,8 @@ function pad() {
     const add = (e: PointerEvent) => { if (!now || strokes.flat().length + now.length >= BQR_AUTOGRAPH_POINTS) return; const r = svg.getBoundingClientRect(), x = Math.max(0, Math.min(BQR_PAD_W, ((e.clientX - r.left) * BQR_PAD_W) / r.width)), y = Math.max(0, Math.min(BQR_PAD_H, ((e.clientY - r.top) * BQR_PAD_H) / r.height)), l = now[now.length - 1]; if (!l || Math.hypot(x - l[0], y - l[1]) >= 0.8) now.push([Math.round(x * 10) / 10, Math.round(y * 10) / 10]); paint(); };
     box.addEventListener("pointerdown", (e) => { e.preventDefault(); try { box.setPointerCapture(e.pointerId); } catch { /* a pointer this browser can't capture */ } now = []; add(e); });
     box.addEventListener("pointermove", (e) => { if (now) { e.preventDefault(); add(e); } });
-    const end = () => { if (now?.length && strokes.length < 200) strokes.push(now); now = null; paint(); const a = { strokes }; hand = isAutograph(a) ? { strokes: strokes.map((s) => s.map(([x, y]) => [x, y] as [number, number])) } : MADE_UP; paintAll(); };
+    const end = () => { if (now?.length && strokes.length < 200) strokes.push(now); now = null; paint(); const a = { strokes }; hand = isAutograph(a) ? { strokes: strokes.map((s) => s.map(([x, y]) => [x, y] as [number, number])) } : SAMPLE; paintAll(); };
     box.addEventListener("pointerup", end); box.addEventListener("pointercancel", end);
-    byId("wm-clear").addEventListener("click", () => { strokes = []; now = null; hand = MADE_UP; paint(); paintAll(); });
+    byId("wm-clear").addEventListener("click", () => { strokes = []; now = null; hand = SAMPLE; paint(); paintAll(); });
 }
 paintAll(); pad(); void positions();
