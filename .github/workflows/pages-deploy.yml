@@ -112,6 +112,12 @@ jobs:
               with:
                   path: site/dist
 
+            # ⭐ 2026-11-25 (founder: "yes"): deploy-pages asked for the artifact half a second after the upload finished and was told there was
+            # none ("No artifacts named github-pages were found"), five times in one day, each time a fresh run went through. A short pause lets
+            # GitHub's artifact listing catch up before it is asked.
+            - name: Let the artifact listing catch up
+              run: sleep 15
+
             - name: Deploy
               id: deployment
               uses: actions/deploy-pages@v5
