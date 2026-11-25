@@ -152,6 +152,10 @@ an H3QR names whom you thank, and a B-QR is how that code is drawn.
   frames an address someone chose. ⛔ A position is a declaration, never a proof: nothing public may say one shows who drew it.
 - **B-Watermark℠ (v1.11.0)** = the invisible mark, the B-QR, its position, B-Autograph℠ and B-Fingerprint℠, in a person's own picture: `/watermark/`. The
   fingerprint is `qr/fingerprint.ts`, open and self-contained (`npm run fingerprint:test`).
+- **Two looks with no code (v1.12.0, founder 2026-11-25: *"yes to faint"* · *"how about B-Symbol ?"*):** `qr/looks.ts` draws the SILHOUETTE (the
+  B-Emblem faint, 0.4 white, a person's autograph on it) and the B-SYMBOL℠ (a tiny emblem beside a person's B-Autograph℠, as a ™). ⛔ Never without
+  the invisible mark in the same file (the caller forces it on and reads it back) · ⛔ no B-Autograph on a picture declared AI-made, so no B-Symbol
+  on one · `paintAutograph` is the lobe's own drawing, moved so both can use it (§looks LK1–LK4).
 - **The card's words are PLACED, never aligned (v1.6.1).** `paintQrCard` measures each line, shrinks its size until it fits,
   and draws it from the left at the center minus half its width. Safari on iOS 26 ignores `textAlign = "center"` and the
   `maxWidth` argument for a complex script: a Khmer caption printed starting at the center line. Measured on the Simulator

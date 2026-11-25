@@ -301,6 +301,9 @@
  *   LK4 nothing else moved — every B-QR drawn with an autograph is the same pixels as before the move (S5, C2 and L3 still pass, and a
  *      drawing compared byte for byte with `paintAutograph` called directly into the lobe's box).
  *   Predicted: all pass first time; LK2 is the one the edge's soft outline could spoil, if the sample is too near it.
+ *   ✅ RESULT (2026-11-25): LK1, LK3, LK4 pass on the first run (LK4: 0 bytes differ). ⚠️ LK2 failed on the TEST'S OWN SAMPLE, not the
+ *     recipe: its clear-of-the-box condition was written backwards and its outside point (1, 1) lay off the canvas (read as nothing). Fixed in
+ *     the test only, the recipe unchanged: inside 102,102,102, outside 0,0,0, control 255. The prediction about the edge didn't arise.
  */
 import { createRequire } from "node:module";
 import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, existsSync } from "node:fs";
@@ -350,6 +353,8 @@ transpile("bqr.ts", [['import("qrcode")', `import(${JSON.stringify(pathToFileURL
 transpile("bqr-card.ts", [['from "./bqr"', 'from "./bqr.mjs"']]);
 const B = await import(pathToFileURL(join(WORK, "bqr.mjs")).href);
 const C = await import(pathToFileURL(join(WORK, "bqr-card.mjs")).href);
+transpile("looks.ts", [['from "./bqr"', 'from "./bqr.mjs"']]);
+const LK = await import(pathToFileURL(join(WORK, "looks.mjs")).href);
 
 let failed = 0;
 const ok = (cond, msg) => { console.log(`${cond ? "✓" : "✗"} ${msg}`); if (!cond) failed++; };
@@ -1153,6 +1158,41 @@ if (process.env.BQR_TURN_WIDE) {
     console.log(`  T4W (b) all six: turned jsQR ${tot.turned.j} · ZXing ${tot.turned.z} vs upright ${tot.upright.j} · ${tot.upright.z} (of 6480)`);
     const b = score["BROKEN quiet 0"], u = score["pixels card|upright"];
     ok(u.j - b.j > 11 && u.z - b.z > 11, `T4W control: the broken drawing is worse by jsQR ${u.j - b.j} · ZXing ${u.z - b.z} of ${b.n}`);
+}
+
+// ---- §looks LK1–LK4 (pre-registered 2026-11-25, 16eb78a) ------------------------------------------------------------------------------
+console.log("\n— §looks LK1 the box · LK2 faint · LK3 the symbol · LK4 nothing else moved");
+{
+    const M = 0.6, inside = (x, y) => B.insideEmblem(x, y) && [[M, 0], [-M, 0], [0, M], [0, -M], [M * 0.7, M * 0.7], [-M * 0.7, M * 0.7], [M * 0.7, -M * 0.7], [-M * 0.7, -M * 0.7]].every(([dx, dy]) => B.insideEmblem(x + dx, y + dy));
+    const edges = (b) => { let out = 0; for (let i = 0; i <= 24; i++) { const t = i / 24; for (const [x, y] of [[b.x + t * b.w, b.y], [b.x + t * b.w, b.y + b.h], [b.x, b.y + t * b.h], [b.x + b.w, b.y + t * b.h]]) if (!inside(x, y)) out++; } return out; };
+    const A = LK.SILHOUETTE_AUTOGRAPH, wide = { x: A.x + A.w / 2 - (A.w * 1.25) / 2, y: A.y + A.h / 2 - (A.h * 1.25) / 2, w: A.w * 1.25, h: A.h * 1.25 };
+    ok(edges(A) === 0, `LK1 the silhouette's autograph box ${A.w} × ${A.h} at (${A.x.toFixed(2)}, ${A.y.toFixed(2)}): ${edges(A)} edge samples closer than ${M} to the silhouette's edge`);
+    ok(edges(wide) > 0, `LK1 control: 1.25 times as wide breaks it (${edges(wide)} samples)`);
+
+    const S = 600, at = (white) => { const c = createCanvas(S, S), g = c.getContext("2d"); g.fillStyle = "#000"; g.fillRect(0, 0, S, S); LK.paintSilhouette(g, { size: S, autograph: AUTO, ...(white === undefined ? {} : { white }) }); return g.getImageData(0, 0, S, S).data; };
+    const k = S / Math.max(B.EMBLEM_BOX.w, B.EMBLEM_BOX.h), tx = (S - B.EMBLEM_BOX.w * k) / 2 - B.EMBLEM_BOX.x * k, ty = (S - B.EMBLEM_BOX.h * k) / 2 - B.EMBLEM_BOX.y * k;
+    const px = (d, u, v) => { const i = (Math.round(ty + v * k) * S + Math.round(tx + u * k)) * 4; return [d[i], d[i + 1], d[i + 2]]; };
+    ok(inside(8.5, 7) && 7 < A.y && !B.insideEmblem(20.5, 3.5), "LK2 the sample (8.5, 7) is inside the heart, clear of the edge and above the autograph's box; (20.5, 3.5) is outside it");
+    const d = at(), inn = px(d, 8.5, 7), out = px(d, 20.5, 3.5), full = px(at(1), 8.5, 7);
+    ok(inn.every((v) => Math.abs(v - 102) <= 3) && out.every((v) => v === 0), `LK2 faint: inside ${inn.join(",")} (0.4 white is 102), outside ${out.join(",")}`);
+    ok(full.every((v) => v === 255), `LK2 control: white 1 paints ${full.join(",")}`);
+
+    const throws = (f) => { try { f(); return false; } catch { return true; } };
+    const box = { x: 40, y: 40, w: 300, h: 180 };
+    ok(throws(() => LK.symbolLayout(undefined, box)) && throws(() => LK.paintSymbol(createCanvas(10, 10).getContext("2d"), { box })) && throws(() => LK.symbolLayout({ strokes: [] }, box)), "LK3 the B-Symbol throws with no autograph (never the emblem alone)");
+    const L = LK.symbolLayout(AUTO, box), e = L.emblem, ink = L.ink;
+    ok(Math.abs(e.y - ink.y) < 1e-9 && e.x > ink.x + ink.w && Math.abs(e.h - 0.3 * ink.h) < 1e-9 && Math.abs(e.w - e.h) < 1e-9, `LK3 the emblem stands at the ink's top (${e.y.toFixed(1)} · ${ink.y.toFixed(1)}), right of it (${e.x.toFixed(1)} > ${(ink.x + ink.w).toFixed(1)}), ${(e.h / ink.h).toFixed(2)} of its height`);
+    const W = 420, c = createCanvas(W, W), g = c.getContext("2d"); LK.paintSymbol(g, { autograph: AUTO, box, ink: "#000" });
+    const dd = g.getImageData(0, 0, W, W).data; let stray = 0, painted = 0;
+    for (let y = 0; y < W; y++) for (let x = 0; x < W; x++) { if (!dd[(y * W + x) * 4 + 3]) continue; painted++; if (x < L.all.x - 1 || x > L.all.x + L.all.w + 1 || y < L.all.y - 1 || y > L.all.y + L.all.h + 1) stray++; }
+    ok(painted > 500 && stray === 0, `LK3 ${painted} painted pixels, ${stray} outside the layout's whole`);
+
+    const SZ = 1200, text = P[0][1], q = QRCode.create(text, { errorCorrectionLevel: B.BQR_ECC });
+    const withHand = renderBqr(text, SZ, { style: "outline", autograph: AUTO }).getContext("2d").getImageData(0, 0, SZ, SZ).data;
+    const c2 = createCanvas(SZ, SZ), g2 = c2.getContext("2d"); paint(g2, q.modules, text, { size: SZ, style: "outline", lobe: "none" });
+    const pl = B.bqrPlacement(SZ); g2.save(); g2.translate(pl.tx, pl.ty); g2.scale(pl.k, pl.k); B.paintAutograph(g2, AUTO, B.BQR_AUTOGRAPH, B.BQR_INK); g2.restore();
+    const direct = g2.getImageData(0, 0, SZ, SZ).data; let diff = 0; for (let i = 0; i < direct.length; i++) if (direct[i] !== withHand[i]) diff++;
+    ok(diff === 0, `LK4 a B-QR with an autograph is the lobe's box painted by paintAutograph, byte for byte (${diff} bytes differ)`);
 }
 
 // ---- samples to look at ------------------------------------------------------------------------------------------------------------

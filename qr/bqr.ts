@@ -365,7 +365,15 @@ function drawTm(g: CanvasRenderingContext2D, style: BqrStyle): void {
 /** ⭐ v1.10.0 — FITTED: the drawing keeps its own shape, grows to fill its box (at most twice the pad's own scale) and stands at the lobe's center,
  *   wherever on the pad it was drawn. It cannot leave its box, so it can never reach the code. */
 function drawAutograph(g: CanvasRenderingContext2D, a: BqrAutograph, ink: string, fit: boolean): void {
-    const B = BQR_AUTOGRAPH, pad = B.w / BQR_PAD_W, pen = BQR_AUTOGRAPH_PEN * pad;
+    paintAutograph(g, a, BQR_AUTOGRAPH, ink, fit);
+}
+/**
+ * ⭐ v1.12.0 — the same drawing into ANY box (the B-QR's lobe above; the silhouette and the B-Symbol℠ in `looks.ts`), in the context's current
+ *   units. The pen is 3% of the box's width, as in the lobe. Returns where the ink landed, pen included, so a caller can stand something
+ *   beside it (the B-Symbol's emblem).
+ */
+export function paintAutograph(g: CanvasRenderingContext2D, a: BqrAutograph, B: { x: number; y: number; w: number; h: number }, ink: string, fit = true): { x: number; y: number; w: number; h: number } {
+    const pad = B.w / BQR_PAD_W, pen = BQR_AUTOGRAPH_PEN * pad;
     let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
     for (const s of a.strokes) for (const [x, y] of s) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
     const k = fit ? Math.min(2 * pad, (B.w - pen) / Math.max(x1 - x0, 1e-6), (B.h - pen) / Math.max(y1 - y0, 1e-6)) : pad;
@@ -380,6 +388,9 @@ function drawAutograph(g: CanvasRenderingContext2D, a: BqrAutograph, ink: string
         g.lineTo(s[s.length - 1][0], s[s.length - 1][1]); g.stroke();
     }
     g.restore();
+    const w = (x1 - x0) * k, h = (y1 - y0) * k;
+    return fit ? { x: B.x + B.w / 2 - w / 2 - pen / 2, y: B.y + B.h / 2 - h / 2 - pen / 2, w: w + pen, h: h + pen }
+        : { x: B.x + x0 * k - pen / 2, y: B.y + y0 * k - pen / 2, w: w + pen, h: h + pen };
 }
 
 /**
