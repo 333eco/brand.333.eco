@@ -26,18 +26,26 @@ export const SYMBOL = { size: 0.3, gap: 0.2 } as const;
 /** The ink a person's own hand is drawn in when the caller names none: Space's, as every mark of 333.eco (the body palette, `MA`). */
 export const LOOK_INK = bqrOwnerInk("MA");
 
+/** Where the silhouette stands in the square `size` at (x, y): its scale and offset, from the emblem's painted box (as `bqrPlacement`, unpadded). */
+export function silhouettePlacement(size: number, x = 0, y = 0): { k: number; tx: number; ty: number } {
+    const k = size / Math.max(EMBLEM_BOX.w, EMBLEM_BOX.h);
+    return { k, tx: x + (size - EMBLEM_BOX.w * k) / 2 - EMBLEM_BOX.x * k, ty: y + (size - EMBLEM_BOX.h * k) / 2 - EMBLEM_BOX.y * k };
+}
+/** ⭐ v1.12.1 — the autograph's box on a silhouette in the square `size` at (x, y), in the context's own units, so a caller can read the
+ *  picture under it and choose the ink before painting (origin does). */
+export function silhouetteAutographBox(size: number, x = 0, y = 0) {
+    const { k, tx, ty } = silhouettePlacement(size, x, y), A = SILHOUETTE_AUTOGRAPH;
+    return { x: tx + A.x * k, y: ty + A.y * k, w: A.w * k, h: A.h * k };
+}
 /** Paint the SILHOUETTE into the square `size` at (x, y), its autograph on it when one is given. Clears nothing: it is drawn ON a picture. */
 export function paintSilhouette(g: CanvasRenderingContext2D, o: { size: number; x?: number; y?: number; white?: number; edgeInk?: string; autograph?: BqrAutograph; ink?: string }): void {
     if (o.autograph !== undefined && !isAutograph(o.autograph)) throw new Error("silhouette: an autograph is a person's own strokes.");
-    const X = o.x ?? 0, Y = o.y ?? 0, k = o.size / Math.max(EMBLEM_BOX.w, EMBLEM_BOX.h);
-    const tx = X + (o.size - EMBLEM_BOX.w * k) / 2 - EMBLEM_BOX.x * k, ty = Y + (o.size - EMBLEM_BOX.h * k) / 2 - EMBLEM_BOX.y * k;
-    const path = new Path2D(EMBLEM_D);
+    const { k, tx, ty } = silhouettePlacement(o.size, o.x, o.y), path = new Path2D(EMBLEM_D);
     g.save(); g.translate(tx, ty); g.scale(k, k);
     g.fillStyle = `rgba(255,255,255,${o.white ?? SILHOUETTE.white})`; g.fill(path);
     g.globalAlpha = SILHOUETTE.edge; g.strokeStyle = o.edgeInk ?? LOOK_INK; g.lineWidth = SILHOUETTE.line; g.lineJoin = "round"; g.stroke(path);
-    g.globalAlpha = 1;
-    if (o.autograph) paintAutograph(g, o.autograph, SILHOUETTE_AUTOGRAPH, o.ink ?? LOOK_INK);
     g.restore();
+    if (o.autograph) paintAutograph(g, o.autograph, silhouetteAutographBox(o.size, o.x, o.y), o.ink ?? LOOK_INK);
 }
 
 /** Where a B-Symbol lands for an autograph fitted to `box`: the ink, the emblem beside it, and the whole. Pure: nothing is drawn. */
