@@ -1,5 +1,5 @@
 {
-    "version": "1.13.0",
+    "version": "1.14.0",
     "files": {
         "css/metta.css": "9bfe986c46c303bf9a48be85322d68e3d626571a424ef3a8aa81faaf5c866692",
         "css/motion.css": "9bfbe39c0de6a9dfaf9fdc2c61e327b3c8e70221c34dff9befd85da448b9e0c2",
@@ -13,7 +13,7 @@
         "qr/bqr-card.ts": "55b4cf3d742bb758f789fd18f91737e8da1169610b6b953ad71e95d8bb713168",
         "qr/bqr.ts": "a5561877ddebefa170d7962b37485ac5b822c1c7454e153e11526fa199f0a99d",
         "qr/fingerprint.ts": "4a587cdb3b5ff6026262f995889c329466a2513044a68c0b5d2fa31c2bdd45a3",
-        "qr/looks.ts": "3ae7615f27094df59aa873cf24f6cb83fd21449473db5dca4fd9df952d49aebb",
+        "qr/looks.ts": "2b2c3469ea0f2f2d1cf679c7d0151ad332740c6a1db6232ccaf11de709798b57",
         "qr/script.ts": "3e414d0d1668d114bd6e5706f33ba8b6f24e84c67d05a17c8e70f047a9d461b0"
     }
 }

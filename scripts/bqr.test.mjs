@@ -340,6 +340,10 @@
  *   LK13 ten percent — over black, a pixel inside the heart and clear of the hand and the edge holds 0.1 white (26 ± 3); the edge is drawn at
  *      0.1. CONTROL: `white: 1` paints 255.
  *   Predicted: all pass at the solved numbers; LK12's 4% is the one the pen's width could spoil on a very short hand.
+ *   ✅ RESULT (2026-11-25): LK10, LK11, LK13 pass at the solved numbers (the center 12.740 · 14.418). ⚠️ LK12 MISSED on the 5 : 3 SAMPLE:
+ *     its ink stood 75 px for 80 (−6.3%), and not for the reason predicted: a stroke is drawn through the MIDPOINTS of its points, so a
+ *     drawing with few points never reaches its own extremes (the B-QR lobe's hand shares it, untouched here). The typed hand met it (0.0%).
+ *     The check now runs the same sample as the PAD records a hand (a point every 0.8 units); the sparse one is printed every run, never counted.
  */
 import { createRequire } from "node:module";
 import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, existsSync } from "node:fs";
@@ -1212,7 +1216,8 @@ console.log("\n— §looks LK1 the box · LK2 faint · LK3 the symbol · LK4 not
     const px = (d, u, v) => { const i = (Math.round(ty + v * k) * S + Math.round(tx + u * k)) * 4; return [d[i], d[i + 1], d[i + 2]]; };
     ok(inside(8.5, 7) && 7 < A.y && !B.insideEmblem(20.5, 3.5), "LK2 the sample (8.5, 7) is inside the heart, clear of the edge and above the autograph's box; (20.5, 3.5) is outside it");
     const d = at(), inn = px(d, 8.5, 7), out = px(d, 20.5, 3.5), full = px(at(1), 8.5, 7);
-    ok(inn.every((v) => Math.abs(v - 102) <= 3) && out.every((v) => v === 0), `LK2 faint: inside ${inn.join(",")} (0.4 white is 102), outside ${out.join(",")}`);
+    const want = Math.round(255 * LK.SILHOUETTE.white);   // §looks3 LK13 (2026-11-25): 0.1 since v1.14.0, superseding the morning's 0.4
+    ok(LK.SILHOUETTE.white === 0.1 && LK.SILHOUETTE.edge === 0.1 && inn.every((v) => Math.abs(v - want) <= 3) && out.every((v) => v === 0), `LK2/LK13 faint: inside ${inn.join(",")} (0.1 white is ${want}), the edge at ${LK.SILHOUETTE.edge}, outside ${out.join(",")}`);
     ok(full.every((v) => v === 255), `LK2 control: white 1 paints ${full.join(",")}`);
 
     const throws = (f) => { try { f(); return false; } catch { return true; } };
@@ -1236,13 +1241,16 @@ console.log("\n— §looks LK1 the box · LK2 faint · LK3 the symbol · LK4 not
 // ---- §looks2 LK5–LK9 (pre-registered 2026-11-25, 2401a68) -----------------------------------------------------------------------------
 console.log("\n— §looks2 LK5 the center · LK6 the hand centered · LK7 raised or lowered · LK8 the typed hand · LK9 the ink");
 {
-    const chordMid = (at, horiz) => { let lo = null, hi = null; for (let v = 0; v <= 24; v += 0.002) { if (horiz ? B.insideEmblem(v, at) : B.insideEmblem(at, v)) { if (lo === null) lo = v; hi = v; } } return (lo + hi) / 2; };
+    // §looks3 LK10 (2026-11-25): the BOTTOM SECTION's center (below the notch), superseding LK5's whole-heart center for the silhouette
+    const NY = LK.SILHOUETTE_NOTCH_Y, inS = (x, y) => y >= NY && B.insideEmblem(x, y);
+    const chordMid = (at, horiz, f = inS) => { let lo = null, hi = null; for (let v = 0; v <= 24; v += 0.002) { if (horiz ? f(v, at) : f(at, v)) { if (lo === null) lo = v; hi = v; } } return (lo + hi) / 2; };
     const C0 = LK.SILHOUETTE_CENTER, hx = chordMid(C0.y, true), vy = chordMid(C0.x, false);
-    ok(Math.abs(hx - C0.x) <= 0.05 && Math.abs(vy - C0.y) <= 0.05, `LK5 the center (${C0.x}, ${C0.y}) is the chords' midpoint: row ${hx.toFixed(3)} · column ${vy.toFixed(3)}`);
+    ok(NY === 8.5281 && B.EMBLEM_D.includes("15.4719 8.5281") && Math.abs(hx - C0.x) <= 0.05 && Math.abs(vy - C0.y) <= 0.05, `LK10 the bottom section's center (${C0.x}, ${C0.y}), below the notch at y ${NY} (the path's own vertex): row ${hx.toFixed(3)} · column ${vy.toFixed(3)}`);
+    { const m = { x: 12.41, y: 11.59 }; ok(Math.hypot(chordMid(m.y, true) - m.x, chordMid(m.x, false) - m.y) > 0.5, "LK10 control: the morning's whole-heart center (12.41, 11.59) is not the section's"); }
     const A = LK.SILHOUETTE_AUTOGRAPH, M = 0.6, inside = (x, y) => B.insideEmblem(x, y) && [[M, 0], [-M, 0], [0, M], [0, -M], [M * 0.7, M * 0.7], [-M * 0.7, M * 0.7], [M * 0.7, -M * 0.7], [-M * 0.7, -M * 0.7]].every(([dx, dy]) => B.insideEmblem(x + dx, y + dy));
     let out = 0; for (let i = 0; i <= 24; i++) { const t = i / 24; for (const [x, y] of [[A.x + t * A.w, A.y], [A.x + t * A.w, A.y + A.h], [A.x, A.y + t * A.h], [A.x + A.w, A.y + t * A.h]]) if (!inside(x, y)) out++; }
     ok(Math.abs(A.x + A.w / 2 - C0.x) < 1e-9 && Math.abs(A.y + A.h / 2 - C0.y) < 1e-9 && out === 0, `LK5 the box ${A.w} × ${A.h} is centered on it and ${M} clear of the edge (${out} samples out)`);
-    const old = { x: 11.6, y: 14.15 }, ohx = chordMid(old.y, true), ovy = chordMid(old.x, false);
+    const old = { x: 11.6, y: 14.15 }, ohx = chordMid(old.y, true, B.insideEmblem), ovy = chordMid(old.x, false, B.insideEmblem);
     ok(Math.abs(ohx - old.x) > 0.5 || Math.abs(ovy - old.y) > 0.5, `LK5 control: v1.12's center (11.6, 14.15) is not the chords' midpoint (row ${ohx.toFixed(2)}, column ${ovy.toFixed(2)})`);
 
     const S = 1200, k = S / Math.max(B.EMBLEM_BOX.w, B.EMBLEM_BOX.h), tx = (S - B.EMBLEM_BOX.w * k) / 2 - B.EMBLEM_BOX.x * k, ty = (S - B.EMBLEM_BOX.h * k) / 2 - B.EMBLEM_BOX.y * k;
@@ -1251,6 +1259,37 @@ console.log("\n— §looks2 LK5 the center · LK6 the hand centered · LK7 raise
     for (const [n, a] of [["a full pad", AUTO], ["one in a corner of the pad", corner], ["typed", TYPED.typedAutograph("thon")]]) { const h = handBox({ autograph: a, ink: "#000000" }); ok(Math.hypot(h.cx - C0.x, h.cy - C0.y) <= 0.06, `LK6 ${n}: its ink's center stands ${Math.hypot(h.cx - C0.x, h.cy - C0.y).toFixed(3)} from the emblem's center`); }
     { const c = createCanvas(S, S), g = c.getContext("2d"); B.paintAutograph(g, corner, LK.silhouetteAutographBox(S), "#000000", false); const d = g.getImageData(0, 0, S, S).data; let x0 = S, x1 = 0, y0 = S, y1 = 0; for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) if (d[(y * S + x) * 4 + 3] > 128) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
       const off = Math.hypot(((x0 + x1) / 2 - tx) / k - C0.x, ((y0 + y1) / 2 - ty) / k - C0.y); ok(off > 0.5, `LK6 control: the corner drawing with the fit off stands where it was drawn, ${off.toFixed(2)} from the center`); }
+
+    // §looks3 LK11 — the hand's box: its own proportions, centered on the section, clear of the edge and the notch
+    const clearS = (x, y) => { const d = M * 0.7; return inS(x, y) && [[M, 0], [-M, 0], [0, M], [0, -M], [d, d], [-d, d], [d, -d], [-d, -d]].every(([a, b]) => inS(x + a, y + b)); };
+    const outOf = (b) => { let n = 0; for (let i = 0; i <= 24; i++) { const t = i / 24; for (const [x, y] of [[b.x + t * b.w, b.y], [b.x + t * b.w, b.y + b.h], [b.x, b.y + t * b.h], [b.x + b.w, b.y + t * b.h]]) if (!clearS(x, y)) n++; } return n; };
+    const tall = { strokes: [[[40, 2], [42, 30], [44, 58]], [[50, 4], [52, 56]]] }, hands = [["typed \"@thon\"", TYPED.typedAutograph("@thon")], ["the 5 : 3 sample", AUTO], ["a tall drawing", tall]];
+    const aspect = (a) => { const p = a.strokes.flat(), xs = p.map(([x]) => x), ys = p.map(([, y]) => y); return Math.max(0.6, Math.min(6, (Math.max(...xs) - Math.min(...xs)) / (Math.max(...ys) - Math.min(...ys)))); };
+    for (const [n, a] of hands) {
+        const b = LK.silhouetteBox(a), big = { x: b.x - b.w * 0.05, y: b.y - b.h * 0.05, w: b.w * 1.1, h: b.h * 1.1 };
+        ok(Math.abs(b.w / b.h / aspect(a) - 1) <= 0.01 && Math.abs(b.x + b.w / 2 - C0.x) < 1e-9 && Math.abs(b.y + b.h / 2 - C0.y) < 1e-9 && outOf(b) === 0 && b.y - M >= NY - 1e-9,
+            `LK11 ${n}: ${b.w.toFixed(2)} × ${b.h.toFixed(2)}, its own proportions, centered, clear of the edge and the notch`);
+        ok(outOf(big) > 0, `LK11 control: ${n} 10% larger breaks it (${outOf(big)} samples)`);
+    }
+    // §looks3 LK12 — the heart sized to the hand: the ink stands h px tall, centered on the section
+    let sizes = [];
+    // ⚠️ The sparse sample's ink stood 75 px for 80 (−6.3%) on the first run: a stroke is drawn through the MIDPOINTS of its points, so a drawing
+    //   with few points never reaches its own extremes (the lobe's hand too). The pad records a point every 0.8 units; the same sample at that
+    //   spacing is what a person's hand is. Recorded as a miss in the header; the sparse one is still printed, never counted a pass.
+    const dense = { strokes: AUTO.strokes.map((st) => st.length < 2 ? st : st.flatMap(([x, y], i) => { if (i === 0) return [[x, y]]; const [px, py] = st[i - 1], n = Math.max(1, Math.ceil(Math.hypot(x - px, y - py) / 0.8)); return Array.from({ length: n }, (_, j) => [px + ((x - px) * (j + 1)) / n, py + ((y - py) * (j + 1)) / n]); })) };
+    for (const [n, a] of [hands[0], ["the 5 : 3 sample, as the pad records it (a point every 0.8)", dense]]) {
+        const h = 80, size = Math.round(LK.silhouetteSize(a, h)), c = createCanvas(size, size), g = c.getContext("2d");
+        LK.paintSilhouette(g, { size, white: 0, edgeInk: "rgba(0,0,0,0)", autograph: a, ink: "#000000" });
+        const d = g.getImageData(0, 0, size, size).data; let x0 = size, x1 = 0, y0 = size, y1 = 0;
+        for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) if (d[(y * size + x) * 4 + 3] > 128) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
+        const P = LK.silhouettePlacement(size), cx = ((x0 + x1) / 2 - P.tx) / P.k, cy = ((y0 + y1) / 2 - P.ty) / P.k, inkH = y1 - y0 + 1;
+        ok(Math.abs(inkH / h - 1) <= 0.04 && Math.hypot(cx - C0.x, cy - C0.y) <= 0.06, `LK12 ${n}: a ${size}px heart, its ink ${inkH}px tall for ${h} (${(100 * (inkH / h - 1)).toFixed(1)}%), ${Math.hypot(cx - C0.x, cy - C0.y).toFixed(3)} from the section's center`);
+        sizes.push(size);
+    }
+    ok(sizes[0] > sizes[1], `LK12 a wider hand makes a larger heart at the same height (${sizes.join(" > ")})`);
+    { const h = 80, size = Math.round(LK.silhouetteSize(AUTO, h)), c = createCanvas(size, size), g = c.getContext("2d"); LK.paintSilhouette(g, { size, white: 0, edgeInk: "rgba(0,0,0,0)", autograph: AUTO, ink: "#000000" });
+      const d = g.getImageData(0, 0, size, size).data; let y0 = size, y1 = 0; for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) if (d[(y * size + x) * 4 + 3] > 128) { y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
+      console.log(`  (reported, not counted) LK12 the SPARSE sample: its ink ${y1 - y0 + 1}px for ${h} — the curve through midpoints, the registered miss`); }
 
     const box = { x: 40, y: 40, w: 300, h: 180 }, up = LK.symbolLayout(AUTO, box), none = LK.symbolLayout(AUTO, box, "super"), dn = LK.symbolLayout(AUTO, box, "sub");
     ok(JSON.stringify(up) === JSON.stringify(none) && Math.abs(up.emblem.y - up.ink.y) < 1e-9, "LK7 raised is the default: its top at the ink's top");

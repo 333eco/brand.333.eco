@@ -3,7 +3,7 @@
 // ⛔ Every code opens a page of ours: a visitor can check any of them with a phone.
 import QRCode from "qrcode";
 import { bqrOwnerInk, bqrPlacement, drawBqr, paintBqr, BQR_AUTOGRAPH_PEN, BQR_AUTOGRAPH_POINTS, BQR_PAD_H, BQR_PAD_W, isAutograph, type BqrAutograph, type BqrOptions } from "../../../qr/bqr";
-import { paintSilhouette, paintSymbol, symbolLayout, type SymbolPosition } from "../../../qr/looks";
+import { paintSilhouette, paintSymbol, silhouetteSize, symbolLayout, type SymbolPosition } from "../../../qr/looks";
 import { typedAutograph } from "../../../qr/script";
 import { codedOf, drawnFor, fingerprint, GRID, gray, heartBox, readCoded, register, sampleCoded, type Box, type Print } from "../../../qr/fingerprint";
 
@@ -74,12 +74,13 @@ function paintAll() {
     const seen = copyOf(A), g = ctx(seen), w = W / GRID, h = H / GRID; aPrint.bits.forEach((b, i) => { const x = (i % GRID) * w, y = Math.floor(i / GRID) * h; g.fillStyle = !aPrint.seen[i] ? "rgba(255,255,255,.75)" : b ? "rgba(255,255,255,.34)" : "rgba(10,10,15,.52)"; g.fillRect(x + 1, y + 1, w - 2, h - 2); });
     // ⭐ 2026-11-25 — the two looks with no code (brand v1.13.0, qr/looks.ts), drawn with the visitor's hand
     const fig2 = (c: HTMLCanvasElement, words: string) => { const f = el("figure", "wm-fig"); f.append(label(c, words), el("figcaption", "note", words)); return f; };
-    const faint = copyOf(A), s = Math.round(Math.min(W, H) * 0.24); paintSilhouette(ctx(faint), { size: s, x: W - s - 18, y: 18, autograph: hand });
+    // the heart SIZED TO THE HAND (v1.14.0): the hand ~8% of the picture's short side tall, centered in the heart's bottom section
+    const faint = copyOf(A), s = Math.round(silhouetteSize(hand, Math.min(W, H) * 0.08)); paintSilhouette(ctx(faint), { size: s, x: W - s - 18, y: 18, autograph: hand });
     const sym = (pic: HTMLCanvasElement, position: SymbolPosition, ink?: string) => {
         const c = copyOf(pic), bw = Math.round(Math.min(W, H) * 0.3), L = symbolLayout(hand, { x: 0, y: 0, w: bw, h: bw * 0.6 }, position).all, m = 22;
         paintSymbol(ctx(c), { autograph: hand, box: { x: W - m - (L.x + L.w), y: H - m - (L.y + L.h), w: bw, h: bw * 0.6 }, position, ...(ink ? { ink } : {}) }); return c;
     };
-    byId("wm-looks").replaceChildren(fig2(faint, "A faint heart, the hand centered in it"), fig2(sym(B, "super"), "The B-Symbol, raised, like a ™"), fig2(sym(A, "sub", "#c2185b"), "Lowered, in an ink the person picks"));
+    byId("wm-looks").replaceChildren(fig2(faint, "A faint heart at 10%, sized to the hand, which stands centered in its bottom section"), fig2(sym(B, "super"), "The B-Symbol, raised, like a ™"), fig2(sym(A, "sub", "#c2185b"), "Lowered, in an ink the person picks"));
     byId("wm-cells").replaceChildren(label(seen, "The picture in 36 cells, each lighter or darker than the picture's middle; the cells the heart stands on are left out"));
 }
 // ── the four positions ──
@@ -101,7 +102,14 @@ function pad() {
     const end = () => { if (now?.length && strokes.length < 200) strokes.push(now); now = null; paint(); const a = { strokes }; hand = isAutograph(a) ? { strokes: strokes.map((s) => s.map(([x, y]) => [x, y] as [number, number])) } : SAMPLE; paintAll(); };
     box.addEventListener("pointerup", end); box.addEventListener("pointercancel", end);
     byId("wm-clear").addEventListener("click", () => { strokes = []; now = null; hand = SAMPLE; paint(); paintAll(); });
-    // ⭐ 2026-11-25: a typed name, set in the one-stroke script (qr/script.ts); empty, the sample comes back
-    byId("wm-type").addEventListener("input", (e) => { const v = (e.target as HTMLInputElement).value, a = typedAutograph(v); hand = a ?? (v.trim() ? hand : SAMPLE); paintAll(); });
+    // ⭐ 2026-11-25 (founder: "as the user types into 'Or type a name', draw it into the drawing pad as '@name'"): the typed name, one @ before
+    //   it however it was typed, set in the one-stroke script (qr/script.ts) and drawn INTO the pad as its strokes, so it can be drawn over or
+    //   cleared like a hand; emptied, the pad empties and the sample comes back.
+    byId("wm-type").addEventListener("input", (e) => {
+        const v = (e.target as HTMLInputElement).value.trim().replace(/^@+/, ""), a = v ? typedAutograph("@" + v) : null;
+        if (a) { strokes = a.strokes.map((s) => s.map(([x, y]) => [x, y] as [number, number])); hand = a; }
+        else if (!v) { strokes = []; hand = SAMPLE; }
+        now = null; paint(); paintAll();
+    });
 }
 paintAll(); pad(); void positions();

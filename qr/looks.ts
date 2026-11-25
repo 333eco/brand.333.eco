@@ -12,23 +12,50 @@
  * ⛔ No word in the pixels, ever: no *signed*, *verified* or *real*. A static emblem asserts no humanness (the two proof-states, 7/01).
  * ⛔ VENDORED, NEVER EDITED IN A CONSUMER: `brand.lock` hashes this file.
  */
-import { EMBLEM_BOX, EMBLEM_D, BQR_OUTLINE, bqrOwnerInk, isAutograph, paintAutograph, type BqrAutograph } from "./bqr";
+import { EMBLEM_BOX, EMBLEM_D, BQR_OUTLINE, bqrOwnerInk, insideEmblem, isAutograph, paintAutograph, type BqrAutograph } from "./bqr";
 
-/** How faint: the white let through inside the heart, and the edge's ink. ⭐ "yes to faint" (founder 2026-11-25). */
-export const SILHOUETTE = { white: 0.4, edge: 0.35, line: BQR_OUTLINE * 2 } as const;
+/** How faint: the white let through inside the heart, and the edge's ink. ⭐ "yes to faint", then ⭐ v1.14.0 "decrease opacity to 10%" (founder
+ *  2026-11-25): both at 0.1, so the heart is a hint and the hand carries the look. */
+export const SILHOUETTE = { white: 0.1, edge: 0.1, line: BQR_OUTLINE * 2 } as const;
 /**
- * ⭐ v1.13.0 (founder 2026-11-25: *"vertically and horizontally center the B-Autograph within the B-Emblem"*) — the emblem's CENTER, solved from
- *   the silhouette as the lobe's was (v1.10.0): the point midway between the edges on its own row AND midway between the edges on its own
- *   column, found by iterating from the painted box's center (12.72, 11.28) until it stands still: (12.41, 11.59). `scripts/bqr.test.mjs`
- *   §looks2 solves it again and holds these.
+ * ⭐ v1.14.0 (founder 2026-11-25: *"center the B-Signature within the bottom section (from the notch to the bottom edge); resize the B-Emblem
+ *   to fit the B-Signature"*). The BOTTOM SECTION is the heart below its notch, the path's own vertex where the lobes meet (y = 8.5281), down
+ *   to its bottom edge. Its CENTER is solved as the lobe's and the morning's were: the point midway between the section's edges on its own row
+ *   AND on its own column, iterated until it stands still: (12.74, 14.42). `scripts/bqr.test.mjs` §looks3 solves it again and holds these.
+ *   ⚠️ SUPERSEDES the morning's v1.13.0 center of the whole heart (12.41, 11.59), for the silhouette only.
  */
-export const SILHOUETTE_CENTER = { x: 12.41, y: 11.59 } as const;
+export const SILHOUETTE_NOTCH_Y = 8.5281;
+export const SILHOUETTE_CENTER = { x: 12.74, y: 14.42 } as const;
+/** How far inside the edge (and below the notch) the hand's box stands, in viewBox units. */
+const SECTION_MARGIN = 0.6;
+const inSection = (x: number, y: number) => y >= SILHOUETTE_NOTCH_Y && insideEmblem(x, y);
+const clear = (x: number, y: number) => { const M = SECTION_MARGIN, d = M * 0.7; return inSection(x, y) && [[M, 0], [-M, 0], [0, M], [0, -M], [d, d], [-d, d], [d, -d], [-d, -d]].every(([a, b]) => inSection(x + a, y + b)); };
+/** The hand's own proportions (width over height of its strokes), kept between 0.6 and 6; a hand with no size is 5 : 3. */
+function aspectOf(a?: BqrAutograph): number {
+    if (!a || !isAutograph(a)) return 5 / 3;
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    for (const st of a.strokes) for (const [x, y] of st) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
+    const w = x1 - x0, h = y1 - y0;
+    return !(w > 0) || !(h > 0) ? 5 / 3 : Math.max(0.6, Math.min(6, w / h));
+}
+const boxes = new Map<number, { x: number; y: number; w: number; h: number }>();
 /**
- * The autograph's box on the silhouette, 5 : 3, in viewBox units, CENTERED on the emblem (the fitted hand stands at the box's center). The
- * largest 5 : 3 box there at least 0.6 units inside the edge is 8.17 wide; this one is 8. ⚠️ Smaller than v1.12's 12 (which stood low and to
- * the left, where the body is widest): centered is the ruling, and the size is what the center allows.
+ * The hand's box on the silhouette, in viewBox units: the LARGEST box of the hand's own proportions CENTERED on the bottom section's center,
+ * `SECTION_MARGIN` inside its edge and below the notch (the fitted hand fills it and stands at its center). Solved here, per proportion.
  */
-export const SILHOUETTE_AUTOGRAPH = { x: SILHOUETTE_CENTER.x - 4, y: SILHOUETTE_CENTER.y - 2.4, w: 8, h: 4.8 } as const;
+export function silhouetteBox(a?: BqrAutograph): { x: number; y: number; w: number; h: number } {
+    const r = Math.round(aspectOf(a) * 100) / 100, hit = boxes.get(r);
+    if (hit) return hit;
+    const C = SILHOUETTE_CENTER, fits = (h: number) => { const w = h * r; for (let i = 0; i <= 24; i++) { const t = i / 24; for (const [x, y] of [[C.x - w / 2 + t * w, C.y - h / 2], [C.x - w / 2 + t * w, C.y + h / 2], [C.x - w / 2, C.y - h / 2 + t * h], [C.x + w / 2, C.y - h / 2 + t * h]]) if (!clear(x, y)) return false; } return true; };
+    let lo = 0, hi = 18; while (hi - lo > 0.005) { const m = (lo + hi) / 2; if (fits(m)) lo = m; else hi = m; }
+    const b = { x: C.x - (lo * r) / 2, y: C.y - lo / 2, w: lo * r, h: lo };
+    boxes.set(r, b);
+    return b;
+}
+/** The 5 : 3 box, for a caller that has no hand yet (the default proportions). */
+export const SILHOUETTE_AUTOGRAPH = silhouetteBox();
+/** ⭐ v1.14.0 — the HEART SIZED TO THE HAND: the emblem's side, in px, at which this hand's box is `inkHeight` px tall. */
+export function silhouetteSize(a: BqrAutograph, inkHeight: number): number { return (inkHeight / silhouetteBox(a).h) * Math.max(EMBLEM_BOX.w, EMBLEM_BOX.h); }
 /** The B-Symbol's emblem beside the ink: its height as a part of the ink's height, and the gap before it, as a part of that height. */
 export const SYMBOL = { size: 0.3, gap: 0.2 } as const;
 /** ⭐ v1.13.0 (founder 2026-11-25: *"let the user choose B-Symbol as subscript or superscript?"*): raised, at the ink's top (as a ™), or lowered,
@@ -44,8 +71,8 @@ export function silhouettePlacement(size: number, x = 0, y = 0): { k: number; tx
 }
 /** ⭐ v1.12.1 — the autograph's box on a silhouette in the square `size` at (x, y), in the context's own units, so a caller can read the
  *  picture under it and choose the ink before painting (origin does). */
-export function silhouetteAutographBox(size: number, x = 0, y = 0) {
-    const { k, tx, ty } = silhouettePlacement(size, x, y), A = SILHOUETTE_AUTOGRAPH;
+export function silhouetteAutographBox(size: number, x = 0, y = 0, a?: BqrAutograph) {
+    const { k, tx, ty } = silhouettePlacement(size, x, y), A = silhouetteBox(a);
     return { x: tx + A.x * k, y: ty + A.y * k, w: A.w * k, h: A.h * k };
 }
 /** Paint the SILHOUETTE into the square `size` at (x, y), its autograph on it when one is given. Clears nothing: it is drawn ON a picture. */
@@ -56,7 +83,7 @@ export function paintSilhouette(g: CanvasRenderingContext2D, o: { size: number; 
     g.fillStyle = `rgba(255,255,255,${o.white ?? SILHOUETTE.white})`; g.fill(path);
     g.globalAlpha = SILHOUETTE.edge; g.strokeStyle = o.edgeInk ?? LOOK_INK; g.lineWidth = SILHOUETTE.line; g.lineJoin = "round"; g.stroke(path);
     g.restore();
-    if (o.autograph) paintAutograph(g, o.autograph, silhouetteAutographBox(o.size, o.x, o.y), o.ink ?? LOOK_INK);
+    if (o.autograph) paintAutograph(g, o.autograph, silhouetteAutographBox(o.size, o.x, o.y, o.autograph), o.ink ?? LOOK_INK);
 }
 
 /** Where a B-Symbol lands for an autograph fitted to `box`: the ink, the emblem beside it, and the whole. Pure: nothing is drawn. */
