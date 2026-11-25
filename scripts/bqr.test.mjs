@@ -287,6 +287,20 @@
  *   §turn's failed gate compared against. ⛔ A position is a declaration, never a proof: anyone can draw any position, and nothing public may say
  *   that one shows who drew it. Predicted: all pass first time but K5's dots, if the stream depends on the matrix (it must not).
  *   ✅ RESULT (2026-11-24): K1–K5 pass on the first run, K5's dots included (the stream is the text's). §turn's own checks run on `turn: true`.
+ *
+ * ⛔ §looks — PRE-REGISTERED 2026-11-25, written and pushed before the test code (founder: *"2: change it; AI-made pictures cannot have a
+ *   B-Autograph; yes to faint"* · *"3: how about B-Symbol ?"*). `looks.ts` draws the two looks with no code: the SILHOUETTE (the B-Emblem
+ *   faint, a person's autograph on it) and the B-SYMBOL℠ (a tiny emblem beside a person's autograph, as a ™). `paintAutograph` is the lobe's
+ *   own drawing, moved so both can use it. The run FAILS on any of:
+ *   LK1 the box — `SILHOUETTE_AUTOGRAPH` stands at least 0.6 units inside the silhouette on every edge (25 samples a side). CONTROL: the same
+ *      box 1.25 times as wide breaks it.
+ *   LK2 faint — painted over black at 600 px, a pixel inside the heart and clear of the autograph and the edge holds 0.4 white (102 ± 3 on
+ *      each channel), a pixel outside the heart stays 0. CONTROL: `white: 1` paints 255 there.
+ *   LK3 the symbol — `paintSymbol` and `symbolLayout` throw with no autograph (⛔ never the emblem alone); the emblem's top is the ink's top,
+ *      its left is right of the ink, its height 0.3 of the ink's; no painted pixel falls outside `all` grown by 1 px.
+ *   LK4 nothing else moved — every B-QR drawn with an autograph is the same pixels as before the move (S5, C2 and L3 still pass, and a
+ *      drawing compared byte for byte with `paintAutograph` called directly into the lobe's box).
+ *   Predicted: all pass first time; LK2 is the one the edge's soft outline could spoil, if the sample is too near it.
  */
 import { createRequire } from "node:module";
 import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, existsSync } from "node:fs";
