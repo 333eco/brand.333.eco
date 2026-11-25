@@ -326,6 +326,20 @@
  *   ✅ RESULT (2026-11-25): all pass on the first run at the solved numbers (LK5 row 12.413 · column 11.588; LK6 within 0.022). ⚠️ Two of MY checks
  *     were weaker than registered and were tightened before the result was read as final: LK6's fit-off control was missing (added: the corner
  *     drawing stands > 0.5 off), and LK8's x-height check could not fail as first written (now: "acme" stands lower than "abl").
+ *
+ * ⛔ §looks3 — PRE-REGISTERED 2026-11-25, written and pushed before the code (founder: *"A faint heart: center the B-Signature within the bottom
+ *   section (from the notch to the bottom edge); resize the B-Emblem to fit the B-Signature; decrease opacity to 10%"*). It SUPERSEDES, for the
+ *   silhouette only, LK1's box, LK2's 0.4 and LK5–LK6's center (those were the rulings of the morning; the lobe's center and the B-QR are
+ *   untouched). The run FAILS on any of:
+ *   LK10 the section's center — `SILHOUETTE_CENTER` is the fixed point of chord midpoints taken only below the notch (y ≥ 8.5281, the path's own
+ *      vertex where the lobes meet), within 0.05 units: predicted (12.74, 14.42). CONTROL: the morning's (12.41, 11.59) misses by more than 0.5.
+ *   LK11 the hand's box — `silhouetteBox(a)` for a wide typed "@thon", the 5 : 3 sample and a tall drawing: the hand's own proportions within
+ *      1%, centered on the section's center, at least 0.6 inside the edge and below the notch (25 samples a side). CONTROL: each 10% larger breaks.
+ *   LK12 the heart sized to the hand — `silhouetteSize(a, h)`: painted, the hand's ink stands h px tall within 4% (pen included), its center
+ *      within 0.06 units of the section's center; a wider hand makes a larger heart at the same h.
+ *   LK13 ten percent — over black, a pixel inside the heart and clear of the hand and the edge holds 0.1 white (26 ± 3); the edge is drawn at
+ *      0.1. CONTROL: `white: 1` paints 255.
+ *   Predicted: all pass at the solved numbers; LK12's 4% is the one the pen's width could spoil on a very short hand.
  */
 import { createRequire } from "node:module";
 import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, existsSync } from "node:fs";
