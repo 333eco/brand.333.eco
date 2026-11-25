@@ -156,6 +156,9 @@ an H3QR names whom you thank, and a B-QR is how that code is drawn.
   B-Emblem faint, 0.4 white, a person's autograph on it) and the B-SYMBOL℠ (a tiny emblem beside a person's B-Autograph℠, as a ™). ⛔ Never without
   the invisible mark in the same file (the caller forces it on and reads it back) · ⛔ no B-Autograph on a picture declared AI-made, so no B-Symbol
   on one · `paintAutograph` is the lobe's own drawing, moved so both can use it (§looks LK1–LK4).
+- **v1.13.0 (founder 2026-11-25):** the hand CENTERED in the B-Emblem on the silhouette (`SILHOUETTE_CENTER`, solved from the silhouette as the
+  lobe's was) · the B-Symbol℠ raised or lowered (`position: "super" | "sub"`) · the hand in any ink a person picks · ⭐ `qr/script.ts`: a
+  B-Autograph℠ TYPED in a one-stroke script (Hershey Script, acknowledged in NOTICE; Latin only, so a Khmer name is drawn) (§looks2 LK5–LK9).
 - **The card's words are PLACED, never aligned (v1.6.1).** `paintQrCard` measures each line, shrinks its size until it fits,
   and draws it from the left at the center minus half its width. Safari on iOS 26 ignores `textAlign = "center"` and the
   `maxWidth` argument for a complex script: a Khmer caption printed starting at the center line. Measured on the Simulator

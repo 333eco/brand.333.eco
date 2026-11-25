@@ -43,3 +43,11 @@ If you want to render the B-Emblem as the institution's mark — a partner
 integration, a vendor tag, a co-branded surface — that is a separate
 permission and a separate conversation, not something a licence file can
 grant you.
+
+qr/script.ts carries font data from the Hershey Script 1-stroke face, as distributed in the npm package
+`hersheytext` 2.0.0 (MIT License, Copyright (c) 2014 James T), from the EMSL Hershey Text SVG fonts. Its
+distribution terms require these acknowledgements:
+  - The Hershey Fonts were originally created by Dr. A. V. Hershey while working at the U. S. National
+    Bureau of Standards.
+  - The format of the Font data in this distribution was originally created by James Hurt, Cognition, Inc.,
+    900 Technology Park Drive, Billerica, MA 01821.

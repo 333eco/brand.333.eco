@@ -323,6 +323,9 @@
  *   LK9 the ink — `paintSymbol` and `paintSilhouette` draw the hand in the ink they are given (any color the person picks): every painted pixel
  *      of the hand is that color, give or take the edge's blending.
  *   Predicted: LK5 and LK6 pass at the solved numbers; LK8's x-height rule is the one most likely to need a second look.
+ *   ✅ RESULT (2026-11-25): all pass on the first run at the solved numbers (LK5 row 12.413 · column 11.588; LK6 within 0.022). ⚠️ Two of MY checks
+ *     were weaker than registered and were tightened before the result was read as final: LK6's fit-off control was missing (added: the corner
+ *     drawing stands > 0.5 off), and LK8's x-height check could not fail as first written (now: "acme" stands lower than "abl").
  */
 import { createRequire } from "node:module";
 import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, existsSync } from "node:fs";
@@ -374,6 +377,8 @@ const B = await import(pathToFileURL(join(WORK, "bqr.mjs")).href);
 const C = await import(pathToFileURL(join(WORK, "bqr-card.mjs")).href);
 transpile("looks.ts", [['from "./bqr"', 'from "./bqr.mjs"']]);
 const LK = await import(pathToFileURL(join(WORK, "looks.mjs")).href);
+transpile("script.ts", [['from "./bqr"', 'from "./bqr.mjs"']]);
+const TYPED = await import(pathToFileURL(join(WORK, "script.mjs")).href);
 
 let failed = 0;
 const ok = (cond, msg) => { console.log(`${cond ? "✓" : "✗"} ${msg}`); if (!cond) failed++; };
@@ -1212,6 +1217,47 @@ console.log("\n— §looks LK1 the box · LK2 faint · LK3 the symbol · LK4 not
     const pl = B.bqrPlacement(SZ); g2.save(); g2.translate(pl.tx, pl.ty); g2.scale(pl.k, pl.k); B.paintAutograph(g2, AUTO, B.BQR_AUTOGRAPH, B.BQR_INK); g2.restore();
     const direct = g2.getImageData(0, 0, SZ, SZ).data; let diff = 0; for (let i = 0; i < direct.length; i++) if (direct[i] !== withHand[i]) diff++;
     ok(diff === 0, `LK4 a B-QR with an autograph is the lobe's box painted by paintAutograph, byte for byte (${diff} bytes differ)`);
+}
+
+// ---- §looks2 LK5–LK9 (pre-registered 2026-11-25, 2401a68) -----------------------------------------------------------------------------
+console.log("\n— §looks2 LK5 the center · LK6 the hand centered · LK7 raised or lowered · LK8 the typed hand · LK9 the ink");
+{
+    const chordMid = (at, horiz) => { let lo = null, hi = null; for (let v = 0; v <= 24; v += 0.002) { if (horiz ? B.insideEmblem(v, at) : B.insideEmblem(at, v)) { if (lo === null) lo = v; hi = v; } } return (lo + hi) / 2; };
+    const C0 = LK.SILHOUETTE_CENTER, hx = chordMid(C0.y, true), vy = chordMid(C0.x, false);
+    ok(Math.abs(hx - C0.x) <= 0.05 && Math.abs(vy - C0.y) <= 0.05, `LK5 the center (${C0.x}, ${C0.y}) is the chords' midpoint: row ${hx.toFixed(3)} · column ${vy.toFixed(3)}`);
+    const A = LK.SILHOUETTE_AUTOGRAPH, M = 0.6, inside = (x, y) => B.insideEmblem(x, y) && [[M, 0], [-M, 0], [0, M], [0, -M], [M * 0.7, M * 0.7], [-M * 0.7, M * 0.7], [M * 0.7, -M * 0.7], [-M * 0.7, -M * 0.7]].every(([dx, dy]) => B.insideEmblem(x + dx, y + dy));
+    let out = 0; for (let i = 0; i <= 24; i++) { const t = i / 24; for (const [x, y] of [[A.x + t * A.w, A.y], [A.x + t * A.w, A.y + A.h], [A.x, A.y + t * A.h], [A.x + A.w, A.y + t * A.h]]) if (!inside(x, y)) out++; }
+    ok(Math.abs(A.x + A.w / 2 - C0.x) < 1e-9 && Math.abs(A.y + A.h / 2 - C0.y) < 1e-9 && out === 0, `LK5 the box ${A.w} × ${A.h} is centered on it and ${M} clear of the edge (${out} samples out)`);
+    const old = { x: 11.6, y: 14.15 }, ohx = chordMid(old.y, true), ovy = chordMid(old.x, false);
+    ok(Math.abs(ohx - old.x) > 0.5 || Math.abs(ovy - old.y) > 0.5, `LK5 control: v1.12's center (11.6, 14.15) is not the chords' midpoint (row ${ohx.toFixed(2)}, column ${ovy.toFixed(2)})`);
+
+    const S = 1200, k = S / Math.max(B.EMBLEM_BOX.w, B.EMBLEM_BOX.h), tx = (S - B.EMBLEM_BOX.w * k) / 2 - B.EMBLEM_BOX.x * k, ty = (S - B.EMBLEM_BOX.h * k) / 2 - B.EMBLEM_BOX.y * k;
+    const handBox = (o) => { const c = createCanvas(S, S), g = c.getContext("2d"); LK.paintSilhouette(g, { size: S, white: 0, edgeInk: "rgba(0,0,0,0)", ...o }); const d = g.getImageData(0, 0, S, S).data; let x0 = S, x1 = 0, y0 = S, y1 = 0; for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) { const i = (y * S + x) * 4; if (d[i + 3] > 128 && d[i] < 60) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); } } return { cx: ((x0 + x1) / 2 - tx) / k, cy: ((y0 + y1) / 2 - ty) / k }; };
+    const corner = { strokes: AUTO.strokes.map((st) => st.map(([x, y]) => [x * 0.4, y * 0.4])) };
+    for (const [n, a] of [["a full pad", AUTO], ["one in a corner of the pad", corner], ["typed", TYPED.typedAutograph("thon")]]) { const h = handBox({ autograph: a, ink: "#000000" }); ok(Math.hypot(h.cx - C0.x, h.cy - C0.y) <= 0.06, `LK6 ${n}: its ink's center stands ${Math.hypot(h.cx - C0.x, h.cy - C0.y).toFixed(3)} from the emblem's center`); }
+    { const c = createCanvas(S, S), g = c.getContext("2d"); B.paintAutograph(g, corner, LK.silhouetteAutographBox(S), "#000000", false); const d = g.getImageData(0, 0, S, S).data; let x0 = S, x1 = 0, y0 = S, y1 = 0; for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) if (d[(y * S + x) * 4 + 3] > 128) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
+      const off = Math.hypot(((x0 + x1) / 2 - tx) / k - C0.x, ((y0 + y1) / 2 - ty) / k - C0.y); ok(off > 0.5, `LK6 control: the corner drawing with the fit off stands where it was drawn, ${off.toFixed(2)} from the center`); }
+
+    const box = { x: 40, y: 40, w: 300, h: 180 }, up = LK.symbolLayout(AUTO, box), none = LK.symbolLayout(AUTO, box, "super"), dn = LK.symbolLayout(AUTO, box, "sub");
+    ok(JSON.stringify(up) === JSON.stringify(none) && Math.abs(up.emblem.y - up.ink.y) < 1e-9, "LK7 raised is the default: its top at the ink's top");
+    ok(Math.abs(dn.emblem.y + dn.emblem.h - (dn.ink.y + dn.ink.h)) < 1e-9 && dn.emblem.h === up.emblem.h && dn.emblem.x === up.emblem.x, "LK7 lowered: its bottom at the ink's bottom, the same size and place across");
+    { const W = 420, c = createCanvas(W, W), g = c.getContext("2d"); LK.paintSymbol(g, { autograph: AUTO, box, ink: "#000", position: "sub" }); const d = g.getImageData(0, 0, W, W).data, L = dn.all; let stray = 0; for (let y = 0; y < W; y++) for (let x = 0; x < W; x++) if (d[(y * W + x) * 4 + 3] && (x < L.x - 1 || x > L.x + L.w + 1 || y < L.y - 1 || y > L.y + L.h + 1)) stray++; ok(stray === 0, `LK7 lowered, painted: ${stray} pixels outside the layout`); }
+
+    const t1 = TYPED.typedAutograph("thon"), t2 = TYPED.typedAutograph("thon"), pts = t1.strokes.flat();
+    ok(B.isAutograph(t1) && pts.every(([x, y]) => x >= 0 && x <= 100 && y >= 0 && y <= 60) && JSON.stringify(t1) === JSON.stringify(t2), `LK8 "thon" typed: an autograph on the pad, ${pts.length} points, the same every time`);
+    { const hOf = (t) => { const ys = TYPED.typedAutograph(t).strokes.flat().map(([, y]) => y); return Math.max(...ys) - Math.min(...ys); }, short = hOf("acme"), tall = hOf("abl");
+      ok(short < tall * 0.8 && tall <= 52.1, `LK8 the x-height rule: "acme" (no tall letters) stands ${short.toFixed(1)} high, never blown up to "abl"'s ${tall.toFixed(1)}`); }
+    ok(TYPED.typedAutograph("ថុន") === null && TYPED.typedAutograph("") === null, "LK8 text this face lacks (Khmer), and nothing, are null");
+    const long = "abcdefghijklmnopqrstuvwx", long25 = long + "y";
+    ok(TYPED.typedChars(long25).length === 24 && JSON.stringify(TYPED.typedAutograph(long25)) === JSON.stringify(TYPED.typedAutograph(long)), "LK8 cut to 24 characters; CONTROL: a 25th changes nothing");
+    { const ab = TYPED.typedAutograph("ab").strokes, a = TYPED.typedAutograph("a").strokes.length, xsA = ab.slice(0, a).flat().map(([x]) => x), xsB = ab.slice(a).flat().map(([x]) => x); ok(Math.max(...xsA) <= Math.min(...xsB) + 12, "LK8 its letters left to right: a's strokes stand left of b's"); }
+
+    const pick = "#c2185b", rgb = [0xc2, 0x18, 0x5b];
+    for (const [n, paint] of [["the B-Symbol", (g) => LK.paintSymbol(g, { autograph: AUTO, box, ink: pick })], ["the silhouette's hand", (g) => LK.paintSilhouette(g, { size: 420, white: 0, edgeInk: "rgba(0,0,0,0)", autograph: AUTO, ink: pick })]]) {
+        const W = 420, c = createCanvas(W, W), g = c.getContext("2d"); paint(g); const d = g.getImageData(0, 0, W, W).data; let solid = 0, wrong = 0;
+        for (let i = 0; i < d.length; i += 4) if (d[i + 3] === 255) { solid++; if (Math.abs(d[i] - rgb[0]) > 2 || Math.abs(d[i + 1] - rgb[1]) > 2 || Math.abs(d[i + 2] - rgb[2]) > 2) wrong++; }
+        ok(solid > 200 && wrong === 0, `LK9 ${n} in the ink a person picks: ${solid} solid pixels, ${wrong} another color`);
+    }
 }
 
 // ---- samples to look at ------------------------------------------------------------------------------------------------------------

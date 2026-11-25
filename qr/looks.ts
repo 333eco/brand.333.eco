@@ -17,12 +17,23 @@ import { EMBLEM_BOX, EMBLEM_D, BQR_OUTLINE, bqrOwnerInk, isAutograph, paintAutog
 /** How faint: the white let through inside the heart, and the edge's ink. ⭐ "yes to faint" (founder 2026-11-25). */
 export const SILHOUETTE = { white: 0.4, edge: 0.35, line: BQR_OUTLINE * 2 } as const;
 /**
- * The autograph's box on the silhouette, 5 : 3, in viewBox units. Solved from the silhouette: the largest 5 : 3 box at least 0.6 units inside
- * its edge is 14.19 wide, centered at (11.6, 14.15); this one is 12 wide at the same center, for air. `scripts/bqr.test.mjs` §looks holds it.
+ * ⭐ v1.13.0 (founder 2026-11-25: *"vertically and horizontally center the B-Autograph within the B-Emblem"*) — the emblem's CENTER, solved from
+ *   the silhouette as the lobe's was (v1.10.0): the point midway between the edges on its own row AND midway between the edges on its own
+ *   column, found by iterating from the painted box's center (12.72, 11.28) until it stands still: (12.41, 11.59). `scripts/bqr.test.mjs`
+ *   §looks2 solves it again and holds these.
  */
-export const SILHOUETTE_AUTOGRAPH = { x: 11.6 - 6, y: 14.15 - 3.6, w: 12, h: 7.2 } as const;
+export const SILHOUETTE_CENTER = { x: 12.41, y: 11.59 } as const;
+/**
+ * The autograph's box on the silhouette, 5 : 3, in viewBox units, CENTERED on the emblem (the fitted hand stands at the box's center). The
+ * largest 5 : 3 box there at least 0.6 units inside the edge is 8.17 wide; this one is 8. ⚠️ Smaller than v1.12's 12 (which stood low and to
+ * the left, where the body is widest): centered is the ruling, and the size is what the center allows.
+ */
+export const SILHOUETTE_AUTOGRAPH = { x: SILHOUETTE_CENTER.x - 4, y: SILHOUETTE_CENTER.y - 2.4, w: 8, h: 4.8 } as const;
 /** The B-Symbol's emblem beside the ink: its height as a part of the ink's height, and the gap before it, as a part of that height. */
 export const SYMBOL = { size: 0.3, gap: 0.2 } as const;
+/** ⭐ v1.13.0 (founder 2026-11-25: *"let the user choose B-Symbol as subscript or superscript?"*): raised, at the ink's top (as a ™), or lowered,
+ *  at its bottom. Raised is the default. */
+export type SymbolPosition = "super" | "sub";
 /** The ink a person's own hand is drawn in when the caller names none: Space's, as every mark of 333.eco (the body palette, `MA`). */
 export const LOOK_INK = bqrOwnerInk("MA");
 
@@ -49,16 +60,16 @@ export function paintSilhouette(g: CanvasRenderingContext2D, o: { size: number; 
 }
 
 /** Where a B-Symbol lands for an autograph fitted to `box`: the ink, the emblem beside it, and the whole. Pure: nothing is drawn. */
-export function symbolLayout(a: BqrAutograph, box: { x: number; y: number; w: number; h: number }) {
+export function symbolLayout(a: BqrAutograph, box: { x: number; y: number; w: number; h: number }, position: SymbolPosition = "super") {
     if (!isAutograph(a)) throw new Error("B-Symbol: it stands beside a person's own B-Autograph, never alone.");
     const ink = paintAutograph(nullContext(), a, box, "#000");
-    const s = ink.h * SYMBOL.size, em = { x: ink.x + ink.w + s * SYMBOL.gap, y: ink.y, w: s, h: s };
+    const s = ink.h * SYMBOL.size, em = { x: ink.x + ink.w + s * SYMBOL.gap, y: position === "sub" ? ink.y + ink.h - s : ink.y, w: s, h: s };
     const x1 = Math.max(ink.x + ink.w, em.x + em.w), y1 = Math.max(ink.y + ink.h, em.y + em.h);
     return { ink, emblem: em, all: { x: ink.x, y: ink.y, w: x1 - ink.x, h: y1 - ink.y } };
 }
 /** Paint the B-SYMBOL: the person's autograph fitted to `box`, and the B-Emblem at its upper right, in the same ink, as a ™. */
-export function paintSymbol(g: CanvasRenderingContext2D, o: { autograph: BqrAutograph; box: { x: number; y: number; w: number; h: number }; ink?: string }) {
-    const L = symbolLayout(o.autograph, o.box), ink = o.ink ?? LOOK_INK;
+export function paintSymbol(g: CanvasRenderingContext2D, o: { autograph: BqrAutograph; box: { x: number; y: number; w: number; h: number }; ink?: string; position?: SymbolPosition }) {
+    const L = symbolLayout(o.autograph, o.box, o.position), ink = o.ink ?? LOOK_INK;
     paintAutograph(g, o.autograph, o.box, ink);
     const k = L.emblem.w / Math.max(EMBLEM_BOX.w, EMBLEM_BOX.h);
     g.save(); g.translate(L.emblem.x - EMBLEM_BOX.x * k, L.emblem.y - EMBLEM_BOX.y * k); g.scale(k, k);
