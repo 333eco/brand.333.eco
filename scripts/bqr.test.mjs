@@ -344,6 +344,65 @@
  *     its ink stood 75 px for 80 (−6.3%), and not for the reason predicted: a stroke is drawn through the MIDPOINTS of its points, so a
  *     drawing with few points never reaches its own extremes (the B-QR lobe's hand shares it, untouched here). The typed hand met it (0.0%).
  *     The check now runs the same sample as the PAD records a hand (a point every 0.8 units); the sparse one is printed every run, never counted.
+ *
+ * ⛔ §refusal — PRE-REGISTERED 2026-11-26, written before the recipe moved, its sha256 and time kept before the first edit to `qr/` (founder 2026-11-26, *"1–6 approve"*, item 6: the
+ *   refusal of an outside address true of EVERY drawing the package makes, not only of `drawBqr`). Until now `paintBqr` took the matrix and the
+ *   text apart, so a matrix of ANY address under an estate text drew our heart around a foreign code; and `position` was a public option. The
+ *   run FAILS on any of:
+ *   RF1 a foreign matrix — the matrix of `https://example.com/x` painted with the text `https://b.333.eco/ABCD1234WXYZ` throws in `paintBqr`, in
+ *      both versions and both `by`. CONTROL: the text's own matrix paints; and the same check run on v1.14.0 (f2194e9) is seen to FAIL (no throw),
+ *      by a separate driver, once, recorded with the result.
+ *   RF2 any other matrix of the text — the text's own at another ECC level than the drawing's (`ecc`, default `BQR_ECC`), its own with one module
+ *      flipped, and its own one size smaller, each throw. CONTROL: the text at level H painted with `ecc: "H"` draws.
+ *   RF3 never unchecked — before the encoder has loaded, `paintBqr` throws (it never draws a matrix it could not check); `bqrReady()` loads it.
+ *   RF4 no public position — `position` passed to `paintBqr` changes not one byte of the drawing (four positions × both versions, on a B-Link and on
+ *      another estate address); and a TypeScript check of `paintBqr(g, m, t, { size: 1, position: "notch" })` against `qr/bqr.ts` reports an error.
+ *      CONTROL: the internal path (unexported; this file exports it in its own transpiled copy) still draws all four, K2 and K5 through it; and the
+ *      runtime check run on v1.14.0 is seen to FAIL (the option turned the code).
+ *   RF5 nothing else moves — every other check passes, and every count this run prints is the same as v1.14.0's run, line by line (the paths of
+ *      the sample folders aside); the only change to an existing check is that the ECC sweep's bare card now says the ECC it was made at.
+ *   Predicted: all pass first time; RF5's diff shows only the new §refusal lines.
+ *   ✅ RESULT (2026-11-26): all pass on the first run, as predicted. On v1.14.0 (f2194e9), by a separate driver run once: RF1 drew the foreign
+ *     code under the B-Link in all 4 cases, and the public `position` turned the code in all 4 drawings (8 failures, the controls drawing);
+ *     the type check reported 0 errors for `position`. Here: 305 checks pass, 293 before; the diff of the two runs, line by line (the sample
+ *     folders aside), is the 12 new §refusal lines and nothing else, every scanning count the same. ⚠️ The order is on a stamp, not a commit:
+ *     the fixer that wrote this could not commit, so the text's sha256 and time were recorded before the first edit to `qr/` and its diff kept.
+ *
+ * ⛔ §refusal2 — PRE-REGISTERED 2026-11-26, written before the recipe moves, its sha256 and time kept before the first edit to `qr/` (founder
+ *   2026-11-26: *"1: deploy; 2: agree; 3: reconcile"* — the release is MAJOR, 2.0.0, and the two gaps §refusal left open are closed, in the spirit
+ *   of item 6: the refusal true of every drawing the package makes). The run FAILS on any of:
+ *   RF6 schemeless addresses — a text a phone would open as a web link without a scheme is an ADDRESS to `bqrKind`, read as `https://` + the
+ *      text, so it is refused unless its host is the estate's, and an estate one is classed as that host's https address. "Address-like" is
+ *      NARROW, and said here: the WHOLE text (no whitespace), after an optional `//`, is a host of two or more dot-separated labels (letters,
+ *      digits, hyphens) whose LAST label is letters only, two or more, then optionally `:port`, a path, a query, a fragment; an optional
+ *      `user@` before the host counts as part of it. Narrow because a code the estate already prints must never become an address by accident:
+ *      every consumer's text is a full https address, a developer's http host, or a bare code with no dot; and a phone's link detector wants
+ *      exactly this shape (a host it can resolve, ending in a top-level name). A numeric last label (`3.14`, `v1.2`, an IP) is not one.
+ *      Refused: `example.com/x` · `www.example.com/x` · `//example.com/x` · `EXAMPLE.COM` · `example.com:8080/x` · `b.333.eco.evil.example/X`.
+ *      Drawn as the estate: `b.333.eco/7K2M9QX` and `B.333.ECO/7K2M9QX` (a B-Link: the point) · `//b.333.eco/7K2M9QX` (the point) ·
+ *      `heartbank.ceo/x` and `homecoffee.heartbank.ceo/?here=k7m2` (standard).
+ *      ⭐ A BARE EMAIL (`name@example.com`, and `a@333.eco` too) is REFUSED, whatever its domain: it parses as an address with a user part,
+ *      which K3 already refuses on an estate host (`https://me@b.333.eco/x`), and `mailto:a@333.eco` is refused today; an email is not a page
+ *      of ours, and a scanner offers to write to it. Same for `me@b.333.eco/x`.
+ *      CONTROLS that must still draw, every text the consumers encode (surveyed 2026-11-26, file:line in the report): the H3QR labels `H3QR` ·
+ *      `H3QR @thon` · `H3QR #family` · `H3QR @thon #family` · `@thon` · `#family`; a Treasury gift code as its sheet encodes it (`K7M2Q9XR4B`,
+ *      upper case, letters and digits only); B-Link printed codes `7K2M-9QX4-B8T3` and `7K2M9QX4B8T3`; K1's `ABCD-EFGH-JKMN` and `ABCD EFGH`;
+ *      and every full address the consumers draw (Shops' storefront, check-in and referral addresses, Treasury's `/b/transfer/@name` and
+ *      `/b/contribute/<tag>`, a B-Link in capitals, the brand pages', `http://localhost:5173/?surface=storefront&tag=x&here=k`, a Firebase
+ *      preview host). CONTROL that the refusal SEES: run on 6aaa619 (v1.15.0), by a separate driver, the four named texts DRAW.
+ *   RF7 the other TEST-ONLY options — `quiet`, `ink` and `fitAutograph` leave the public `BqrOptions` as `position` did (no consumer passes any,
+ *      surveyed): passed to `paintBqr` anyway, each changes not one byte (`quiet: 0` · `ink: "#ff0000"` · `fitAutograph: false` with an
+ *      autograph), and a TypeScript check of each against `qr/bqr.ts` reports an error. CONTROL: the internal path (`paintBqrAt`, its test-only
+ *      argument) still draws each one differently from the default, so P6's broken control, the ink sweep and S5 keep running through it; and
+ *      on 6aaa619 the runtime check is seen to FAIL (each option changed the drawing) and the type check to accept all three.
+ *   RF8 nothing else moves — every other check passes, and every count this run prints is the one 6aaa619's run printed, line by line (the
+ *      sample folders aside), but the new §refusal2 lines.
+ *   Predicted: all pass first time; the one most likely to need a second look is RF6's controls, if a consumer's text turns out dotted.
+ *   ✅ RESULT (2026-11-26): all pass on the first run, as predicted; no consumer's text was dotted. On 6aaa619 (v1.15.0), by a separate driver
+ *     run once: the four named texts and both emails DREW (`bqrKind` said "text"), each of the three levers changed the drawing through the
+ *     public `paintBqr`, and the type check accepted all three (12 failures; its 9 consumer texts drew and its public-only call was clean).
+ *     Here: 313 checks pass, 305 before; the diff of the two runs, line by line (the sample folders aside), is the 8 new §refusal2 lines and
+ *     nothing else. The pre-registration was committed before the code (d1f4aec).
  */
 import { createRequire } from "node:module";
 import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, existsSync } from "node:fs";
@@ -389,7 +448,8 @@ function transpile(file, fixes) {
     }
     writeFileSync(join(WORK, file.replace(/\.ts$/, ".mjs")), js);
 }
-transpile("bqr.ts", [['import("qrcode")', `import(${JSON.stringify(pathToFileURL(req.resolve("qrcode")).href)})`]]);
+// ⭐ §refusal — the forced position is `paintBqrAt`, which the recipe does NOT export; only this transpiled copy does (RF4).
+transpile("bqr.ts", [['import("qrcode")', `import(${JSON.stringify(pathToFileURL(req.resolve("qrcode")).href)})`], ["function paintBqrAt(", "export function paintBqrAt("]]);
 transpile("bqr-card.ts", [['from "./bqr"', 'from "./bqr.mjs"']]);
 const B = await import(pathToFileURL(join(WORK, "bqr.mjs")).href);
 const C = await import(pathToFileURL(join(WORK, "bqr-card.mjs")).href);
@@ -400,6 +460,17 @@ const TYPED = await import(pathToFileURL(join(WORK, "script.mjs")).href);
 
 let failed = 0;
 const ok = (cond, msg) => { console.log(`${cond ? "✓" : "✗"} ${msg}`); if (!cond) failed++; };
+
+// ---- §refusal RF3 (pre-registered in the header, 2026-11-26) — before anything paints, so the encoder has not loaded yet -----------------
+console.log("\n— §refusal RF3 never unchecked");
+{
+    const t = "https://b.333.eco/ABCD1234WXYZ", m = QRCode.create(t, { errorCorrectionLevel: "M" }).modules, call = () => { try { B.paintBqr(createCanvas(64, 64).getContext("2d"), m, t, { size: 64 }); return null; } catch (e) { return e.message; } };
+    const before = call();
+    ok(before !== null && before.includes("bqrReady"), `RF3: before the encoder loads, paintBqr throws (“${before}”)`);
+    await B.bqrReady();
+    const after = call();
+    ok(after === null, `RF3 control: after bqrReady() the same call draws${after ? ` — it threw “${after}”` : ""}`);
+}
 
 // ---- P0 the path is the brand's (added 2026-10-04, on the move) ------------------------------------------------------------------
 console.log("\n— P0 the emblem path");
@@ -511,8 +582,13 @@ for (const ecc of ["L", "M", "Q", "H"]) for (const [name, text] of P) {
 
 // ---- P3 pixels + P4 determinism ---------------------------------------------------------------------------------------------------
 console.log("\n— P3 pixels · P4 determinism");
-/** §turn's `turn` and §position's positions, said in the recipe's TEST ONLY word. */
-function paint(g, m, text, { turn, ...o }) { B.paintBqr(g, m, text, turn === undefined ? o : { ...o, position: turn ? "point" : "standard" }); }
+/** §turn's `turn`, §position's positions and the test's other levers (`quiet`, `ink`, `fitAutograph`), drawn through the recipe's UNEXPORTED
+ *  `paintBqrAt` (§refusal RF4, §refusal2 RF7: no public option sets one). With none of them, the public `paintBqr`. */
+function paint(g, m, text, { turn, position, quiet, ink, fitAutograph, ...o }) {
+    const at = position ?? (turn === undefined ? undefined : turn ? "point" : "standard");
+    const t = Object.fromEntries(Object.entries({ at, quiet, ink, fitAutograph }).filter(([, v]) => v !== undefined));
+    if (!Object.keys(t).length) B.paintBqr(g, m, text, o); else B.paintBqrAt(g, m, text, o, t);
+}
 function renderBqr(text, size, o = {}) {
     const c = createCanvas(size, size), g = c.getContext("2d");
     const q = QRCode.create(text, { errorCorrectionLevel: o.ecc ?? B.BQR_ECC });
@@ -803,6 +879,77 @@ console.log("\n— §position K1 the table · K2 the pixels · K3 refused · K4 
     }
 }
 
+// ---- §refusal RF1 · RF2 · RF4 (pre-registered in the header, 2026-11-26) -------------------------------------------------------------
+console.log("\n— §refusal RF1 a foreign matrix · RF2 any other matrix of the text · RF4 no public position");
+{
+    const SEED = "https://b.333.eco/ABCD1234WXYZ", FOREIGN = "https://example.com/x", ESTATE = "https://heartbank.ceo/x", mat = (t, ecc = "M") => QRCode.create(t, { errorCorrectionLevel: ecc }).modules;
+    const threw = (f) => { try { f(); return null; } catch (e) { return e.message; } };
+    const draw = (m, t, o = {}, at) => { const c = createCanvas(300, 300), g = c.getContext("2d"); at ? B.paintBqrAt(g, m, t, { size: 300, ...o }, { at }) : B.paintBqr(g, m, t, { size: 300, ...o }); return Buffer.from(g.getImageData(0, 0, 300, 300).data); };
+    for (const style of ["pixels", "outline"]) for (const by of ["us", "outside"]) {
+        const e = threw(() => draw(mat(FOREIGN), SEED, { style, by }));
+        ok(e !== null && threw(() => draw(mat(SEED), SEED, { style, by })) === null, `RF1 ${style} by ${by}: a matrix of ${FOREIGN} under ${SEED} ${e ? `throws (“${e}”)` : "DRAWS"}; CONTROL: the text's own draws`);
+    }
+    const own = mat(SEED), n = own.size, flipped = { size: n, data: Uint8Array.from(own.data, (v, i) => (i === n * n - 1 ? (v ? 0 : 1) : v ? 1 : 0)) }, smaller = { size: n - 1, data: own.data.slice(0, (n - 1) * (n - 1)) };
+    const other = [["its own at H, drawn at the default M", () => draw(mat(SEED, "H"), SEED)], ["its own with one module flipped", () => draw(flipped, SEED)], ["its own one size smaller", () => draw(smaller, SEED)], ["its own at M, drawn with ecc H", () => draw(own, SEED, { ecc: "H" })]];
+    const through = other.filter(([, f]) => threw(f) === null).map(([w]) => w);
+    ok(through.length === 0 && threw(() => draw(mat(SEED, "H"), SEED, { ecc: "H" })) === null, `RF2: ${other.length - through.length} of ${other.length} other matrices of the text throw${through.length ? ` (DRAWN: ${through.join("; ")})` : ""}; CONTROL: its own at H, drawn with ecc H, draws`);
+    for (const t of [SEED, ESTATE]) for (const style of ["pixels", "outline"]) {
+        const plain = draw(mat(t), t, { style }), all = ["standard", "point", "non-standard", "notch"], moved = all.filter((position) => !draw(mat(t), t, { style, position }).equals(plain));
+        const inner = all.map((at) => draw(mat(t), t, { style }, at)), distinct = new Set(inner.map((b) => b.toString("base64"))).size;
+        ok(moved.length === 0 && distinct === 4, `RF4 ${style} ${t}: a public \`position\` ${moved.length ? `TURNS the code (${moved.join(", ")})` : "changes not one byte"}; CONTROL: the internal path draws ${distinct} different positions of 4`);
+    }
+    // RF4, the type: a TypeScript check of a caller that passes `position`, against the recipe's own file. CONTROL: the same call without it is clean.
+    const typeErrors = (call) => {
+        const f = join(WORK, `rf4-${typeErrors.n = (typeErrors.n ?? 0) + 1}.ts`);
+        writeFileSync(f, `import { paintBqr, type BqrMatrix } from ${JSON.stringify(join(ROOT, "qr", "bqr"))};\ndeclare const g: CanvasRenderingContext2D; declare const m: BqrMatrix;\n${call}\n`);
+        const p = ts.createProgram([f], { noEmit: true, strict: true, skipLibCheck: true, target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext, moduleResolution: ts.ModuleResolutionKind.Bundler, lib: ["lib.es2022.d.ts", "lib.dom.d.ts"], types: [] });
+        return ts.getPreEmitDiagnostics(p, p.getSourceFile(f)).map((d) => `TS${d.code} ${ts.flattenDiagnosticMessageText(d.messageText, " ")}`);
+    };
+    const withIt = typeErrors(`paintBqr(g, m, "x", { size: 1, position: "notch" });`), without = typeErrors(`paintBqr(g, m, "x", { size: 1, by: "outside" });`);
+    ok(withIt.some((e) => e.includes("position")) && without.length === 0, `RF4 the type: \`position\` is ${withIt.length ? `refused (${withIt.join("; ")})` : "ACCEPTED"}; CONTROL: the same call without it, ${without.length} errors${without.length ? ` (${without.join("; ")})` : ""}`);
+}
+
+// ---- §refusal2 RF6 · RF7 (pre-registered in the header, 2026-11-26) ---------------------------------------------------------------------
+console.log("\n— §refusal2 RF6 schemeless addresses · RF7 the test's levers leave the public options");
+{
+    const threw = (f) => { try { f(); return null; } catch (e) { return e.message; } }, mat = (t) => QRCode.create(t, { errorCorrectionLevel: B.BQR_ECC }).modules;
+    const draw = (t, o = {}, lever) => { const c = createCanvas(300, 300), g = c.getContext("2d"); lever ? B.paintBqrAt(g, mat(t), t, { size: 300, ...o }, lever) : B.paintBqr(g, mat(t), t, { size: 300, ...o }); return Buffer.from(g.getImageData(0, 0, 300, 300).data); };
+    const REFUSED = ["example.com/x", "www.example.com/x", "//example.com/x", "EXAMPLE.COM", "example.com:8080/x", "b.333.eco.evil.example/X", "example.xn--p1ai/x"];
+    const EMAILS = ["name@example.com", "a@333.eco", "me@b.333.eco/x"];
+    const through = REFUSED.concat(EMAILS).filter((t) => threw(() => B.bqrKind(t)) === null || threw(() => draw(t)) === null);
+    ok(through.length === 0, `RF6: ${REFUSED.length} schemeless outside addresses and ${EMAILS.length} emails refused by bqrKind and paintBqr${through.length ? ` (DRAWN: ${through.join(" · ")})` : ""}`);
+    const ESTATE = [["b.333.eco/7K2M9QX", "b-link", "point"], ["B.333.ECO/7K2M9QX", "b-link", "point"], ["//b.333.eco/7K2M9QX", "b-link", "point"], ["heartbank.ceo/x", "estate", "standard"], ["homecoffee.heartbank.ceo/?here=k7m2", "estate", "standard"]];
+    const wrong = ESTATE.filter(([t, k, p]) => threw(() => B.bqrKind(t)) !== null || B.bqrKind(t) !== k || B.bqrPosition(t) !== p || threw(() => draw(t)) !== null);
+    ok(wrong.length === 0, `RF6: ${ESTATE.length - wrong.length} of ${ESTATE.length} schemeless estate addresses draw as their https class${wrong.length ? ` (WRONG: ${wrong.map(([t]) => t).join(" · ")})` : ""}`);
+    // CONTROLS: every text the consumers encode (the survey, 2026-11-26) still draws, and keeps its class.
+    const CONTROLS = [["H3QR", "text"], ["H3QR @thon", "text"], ["H3QR #family", "text"], ["H3QR @thon #family", "text"], ["@thon", "text"], ["#family", "text"],
+        ["K7M2Q9XR4B", "text"], ["7K2M-9QX4-B8T3", "text"], ["7K2M9QX4B8T3", "text"], ["ABCD-EFGH-JKMN", "text"], ["ABCD EFGH", "text"],
+        ["https://homecoffee.heartbank.ceo/", "estate"], ["https://homecoffee.heartbank.ceo/?here=k7m2x9pq4rtw3hjn", "estate"], ["https://homecoffee.heartbank.ceo/?r=K7QX2M9P", "estate"],
+        ["https://thank.heartbank.org/b/transfer/@thon?amount=12000&purpose=payment&currency=KHR", "estate"], ["https://thank.heartbank.org/b/transfer/u7Kq2Xp9?lang=km", "estate"],
+        ["https://thank.heartbank.org/b/contribute/family?lang=en", "estate"], ["HTTPS://B.333.ECO/7K2M9QX4B8T3", "b-link"], ["https://b.333.eco/", "b-link"],
+        ["https://brand.333.eco/qr/", "estate"], ["https://brand.333.eco/color/#bodies", "estate"], ["https://brand.333.eco/watermark/", "estate"],
+        ["http://localhost:5173/?surface=storefront&tag=x&here=k", "estate"], ["http://localhost:5003/b/transfer/u7Kq2Xp9?lang=en", "estate"],
+        ["https://thank3-heartbank-com--p28-ab12cd34.web.app/?surface=storefront&tag=x", "estate"]];
+    const lost = CONTROLS.filter(([t, k]) => threw(() => B.bqrKind(t)) !== null || B.bqrKind(t) !== k || threw(() => draw(t)) !== null);
+    ok(lost.length === 0, `RF6 CONTROL: ${CONTROLS.length - lost.length} of ${CONTROLS.length} texts the consumers encode still draw, each its class${lost.length ? ` (LOST: ${lost.map(([t]) => t).join(" · ")})` : ""}`);
+    ok(["3.14", "v1.2", "192.168.1.20", "localhost"].every((t) => B.bqrKind(t) === "text"), "RF6 CONTROL: a numeric last label and a bare host name are not addresses");
+    // RF7 — each lever, passed to the public paintBqr, changes nothing; through paintBqrAt, it changes the drawing.
+    const T = P[0][1], AG = { strokes: [[[5, 50], [20, 10], [35, 50]], [[60, 5], [62, 7]]] };
+    for (const [name, o, lever] of [["quiet: 0", { style: "pixels" }, { quiet: 0 }], ["ink: #ff0000", {}, { ink: "#ff0000" }], ["fitAutograph: false", { style: "outline", autograph: AG }, { fitAutograph: false }]]) {
+        const plain = draw(T, o), pub = draw(T, { ...o, ...lever }), inner = draw(T, o, lever);
+        ok(pub.equals(plain) && !inner.equals(plain), `RF7 ${name}: through the public paintBqr ${pub.equals(plain) ? "not one byte changes" : "THE DRAWING CHANGES"}; CONTROL: through paintBqrAt it ${inner.equals(plain) ? "DOES NOT change" : "changes"}`);
+    }
+    const typeErrors = (call) => {
+        const f = join(WORK, `rf7-${typeErrors.n = (typeErrors.n ?? 0) + 1}.ts`);
+        writeFileSync(f, `import { paintBqr, type BqrMatrix } from ${JSON.stringify(join(ROOT, "qr", "bqr"))};\ndeclare const g: CanvasRenderingContext2D; declare const m: BqrMatrix;\n${call}\n`);
+        const p = ts.createProgram([f], { noEmit: true, strict: true, skipLibCheck: true, target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext, moduleResolution: ts.ModuleResolutionKind.Bundler, lib: ["lib.es2022.d.ts", "lib.dom.d.ts"], types: [] });
+        return ts.getPreEmitDiagnostics(p, p.getSourceFile(f)).map((d) => `TS${d.code}`);
+    };
+    const levers = { quiet: "quiet: 0", ink: `ink: "#ff0000"`, fitAutograph: "fitAutograph: false" }, accepted = Object.entries(levers).filter(([k, v]) => !typeErrors(`paintBqr(g, m, "x", { size: 1, ${v} });`).length).map(([k]) => k);
+    const clean = typeErrors(`paintBqr(g, m, "x", { size: 1, style: "outline", ground: "heart" });`);
+    ok(accepted.length === 0 && clean.length === 0, `RF7 the type: ${3 - accepted.length} of 3 levers refused${accepted.length ? ` (ACCEPTED: ${accepted.join(", ")})` : ""}; CONTROL: a call with public options only, ${clean.length} errors`);
+}
+
 // ---- the images ------------------------------------------------------------------------------------------------------------------
 const CARD_TEXT = { title: "Home Coffee", caption: "Scan to order here", foot: "homecoffee.heartbank.ceo" };
 async function card(text, accent, style) {
@@ -865,7 +1012,7 @@ function bareCard(text, { quiet, ecc = B.BQR_ECC, style = "pixels", ink, accent,
     const c = createCanvas(C.CARD.W, C.CARD.H), g = c.getContext("2d");
     g.fillStyle = "#fff"; g.fillRect(0, 0, C.CARD.W, C.CARD.H);
     const q = QRCode.create(text, { errorCorrectionLevel: ecc });
-    paint(g, q.modules, text, { ...C.CARD.code, quiet, style, ink, accent, hue, owner, turn, lobe, autograph });
+    paint(g, q.modules, text, { ...C.CARD.code, ecc, quiet, style, ink, accent, hue, owner, turn, lobe, autograph });   // §refusal: says its ECC
     return c;
 }
 /** ⭐ The SAME code pixels with the emblem cut away (code box + quiet ring copied onto white) — separates what the decoration costs

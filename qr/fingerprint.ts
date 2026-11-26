@@ -6,7 +6,8 @@
  *   picture. It catches a COPIED heart; the page the code opens shows the signed picture, and that decides.
  * ⛔ An edited copy of the same picture looks the same to 36 coarse cells: this never says a picture is unchanged.
  * Measured 2026-11-24 on 97 pictures, 194 posted corners at 70% white: the dots read whenever the code did (194 of 194 at 1,080 px q80, 182 of
- * 182 at 720 q70) and never called the right picture different; a heart copied onto another varied photo was told apart 144 times of 152.
+ * 182 at 720 q70) and never called the right picture different; a heart copied onto another varied photo was told apart 144 times of 152,
+ * falling to about 91% when look-alike screenshots of the same scene are in the sample.
  */
 import { BQR_CODED_BITS, BQR_GEOMETRY, BQR_QUIET, BQR_TURNS, bqrLobeCells, bqrPlacement, bqrTurned, type BqrMatrix, type BqrPosition } from "./bqr";
 export const GRID = 6, CELLS = GRID * GRID;

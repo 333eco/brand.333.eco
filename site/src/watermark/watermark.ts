@@ -2,7 +2,7 @@
 // ⛔ Nothing here leaves the device: the pictures are drawn on this page, the autograph is not kept, and the dots are read by this page's own code.
 // ⛔ Every code opens a page of ours: a visitor can check any of them with a phone.
 import QRCode from "qrcode";
-import { bqrOwnerInk, bqrPlacement, drawBqr, paintBqr, BQR_AUTOGRAPH_PEN, BQR_AUTOGRAPH_POINTS, BQR_PAD_H, BQR_PAD_W, isAutograph, type BqrAutograph, type BqrOptions } from "../../../qr/bqr";
+import { bqrOwnerInk, bqrPlacement, bqrReady, drawBqr, paintBqr, BQR_AUTOGRAPH_PEN, BQR_AUTOGRAPH_POINTS, BQR_PAD_H, BQR_PAD_W, isAutograph, type BqrAutograph, type BqrOptions } from "../../../qr/bqr";
 import { paintSilhouette, paintSymbol, silhouetteSize, symbolLayout, type SymbolPosition } from "../../../qr/looks";
 import { typedAutograph } from "../../../qr/script";
 import { codedOf, drawnFor, fingerprint, GRID, gray, heartBox, readCoded, register, sampleCoded, type Box, type Print } from "../../../qr/fingerprint";
@@ -102,14 +102,18 @@ function pad() {
     const end = () => { if (now?.length && strokes.length < 200) strokes.push(now); now = null; paint(); const a = { strokes }; hand = isAutograph(a) ? { strokes: strokes.map((s) => s.map(([x, y]) => [x, y] as [number, number])) } : SAMPLE; paintAll(); };
     box.addEventListener("pointerup", end); box.addEventListener("pointercancel", end);
     byId("wm-clear").addEventListener("click", () => { strokes = []; now = null; hand = SAMPLE; paint(); paintAll(); });
-    // ⭐ 2026-11-25 (founder: "as the user types into 'Or type a name', draw it into the drawing pad as '@name'"): the typed name, one @ before
-    //   it however it was typed, set in the one-stroke script (qr/script.ts) and drawn INTO the pad as its strokes, so it can be drawn over or
-    //   cleared like a hand; emptied, the pad empties and the sample comes back.
+    // ⭐ 2026-11-25 (founder: "as the user types into 'Or type a name', draw it into the drawing pad as '@name'"): the typed name, set in the
+    //   one-stroke script (qr/script.ts) and drawn INTO the pad as its strokes, so it can be drawn over or cleared like a hand; emptied, the pad
+    //   empties and the sample comes back.
+    // ⚠️ AMENDED 2026-11-26 (founder: "1–6 approve, 3: do A now"): drawn AS TYPED, ⛔ never with an @ added, and a typed leading @ is dropped.
+    //   Nobody checks a typed name, so it must not look like a registered @name; an @ in the pixels comes only from the signer's own registered
+    //   handle, through a press (not built). MA memory project_b_origin §b-watermark-reconciled-2026-11-26 (3).
     byId("wm-type").addEventListener("input", (e) => {
-        const v = (e.target as HTMLInputElement).value.trim().replace(/^@+/, ""), a = v ? typedAutograph("@" + v) : null;
+        const v = (e.target as HTMLInputElement).value.trim().replace(/^@+/, ""), a = v ? typedAutograph(v) : null;
         if (a) { strokes = a.strokes.map((s) => s.map(([x, y]) => [x, y] as [number, number])); hand = a; }
         else if (!v) { strokes = []; hand = SAMPLE; }
         now = null; paint(); paintAll();
     });
 }
-paintAll(); pad(); void positions();
+// ⭐ v2.0.0 — paintBqr checks every code against its own encoding, so the encoder loads first (it throws before).
+void bqrReady().then(() => { paintAll(); pad(); void positions(); });
