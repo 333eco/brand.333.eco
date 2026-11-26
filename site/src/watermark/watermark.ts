@@ -115,5 +115,5 @@ function pad() {
         now = null; paint(); paintAll();
     });
 }
-// ⭐ v1.15.0 — paintBqr checks every code against its own encoding, so the encoder loads first (it throws before).
+// ⭐ v2.0.0 — paintBqr checks every code against its own encoding, so the encoder loads first (it throws before).
 void bqrReady().then(() => { paintAll(); pad(); void positions(); });
