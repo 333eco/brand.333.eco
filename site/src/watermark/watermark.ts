@@ -2,7 +2,7 @@
 // ⛔ Nothing here leaves the device: the pictures are drawn on this page, the autograph is not kept, and the dots are read by this page's own code.
 // ⛔ Every code opens a page of ours: a visitor can check any of them with a phone.
 import QRCode from "qrcode";
-import { bqrOwnerInk, bqrPlacement, drawBqr, paintBqr, BQR_AUTOGRAPH_PEN, BQR_AUTOGRAPH_POINTS, BQR_PAD_H, BQR_PAD_W, isAutograph, type BqrAutograph, type BqrOptions } from "../../../qr/bqr";
+import { bqrOwnerInk, bqrPlacement, bqrReady, drawBqr, paintBqr, BQR_AUTOGRAPH_PEN, BQR_AUTOGRAPH_POINTS, BQR_PAD_H, BQR_PAD_W, isAutograph, type BqrAutograph, type BqrOptions } from "../../../qr/bqr";
 import { paintSilhouette, paintSymbol, silhouetteSize, symbolLayout, type SymbolPosition } from "../../../qr/looks";
 import { typedAutograph } from "../../../qr/script";
 import { codedOf, drawnFor, fingerprint, GRID, gray, heartBox, readCoded, register, sampleCoded, type Box, type Print } from "../../../qr/fingerprint";
@@ -112,4 +112,5 @@ function pad() {
         now = null; paint(); paintAll();
     });
 }
-paintAll(); pad(); void positions();
+// ⭐ v1.15.0 — paintBqr checks every code against its own encoding, so the encoder loads first (it throws before).
+void bqrReady().then(() => { paintAll(); pad(); void positions(); });
