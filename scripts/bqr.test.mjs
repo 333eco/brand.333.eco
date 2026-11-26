@@ -344,6 +344,24 @@
  *     its ink stood 75 px for 80 (−6.3%), and not for the reason predicted: a stroke is drawn through the MIDPOINTS of its points, so a
  *     drawing with few points never reaches its own extremes (the B-QR lobe's hand shares it, untouched here). The typed hand met it (0.0%).
  *     The check now runs the same sample as the PAD records a hand (a point every 0.8 units); the sparse one is printed every run, never counted.
+ *
+ * ⛔ §refusal — PRE-REGISTERED 2026-11-26, written before the recipe moved, its sha256 and time kept before the first edit to `qr/` (founder 2026-11-26, *"1–6 approve"*, item 6: the
+ *   refusal of an outside address true of EVERY drawing the package makes, not only of `drawBqr`). Until now `paintBqr` took the matrix and the
+ *   text apart, so a matrix of ANY address under an estate text drew our heart around a foreign code; and `position` was a public option. The
+ *   run FAILS on any of:
+ *   RF1 a foreign matrix — the matrix of `https://example.com/x` painted with the text `https://b.333.eco/ABCD1234WXYZ` throws in `paintBqr`, in
+ *      both versions and both `by`. CONTROL: the text's own matrix paints; and the same check run on v1.14.0 (f2194e9) is seen to FAIL (no throw),
+ *      by a separate driver, once, recorded with the result.
+ *   RF2 any other matrix of the text — the text's own at another ECC level than the drawing's (`ecc`, default `BQR_ECC`), its own with one module
+ *      flipped, and its own one size smaller, each throw. CONTROL: the text at level H painted with `ecc: "H"` draws.
+ *   RF3 never unchecked — before the encoder has loaded, `paintBqr` throws (it never draws a matrix it could not check); `bqrReady()` loads it.
+ *   RF4 no public position — `position` passed to `paintBqr` changes not one byte of the drawing (four positions × both versions, on a B-Link and on
+ *      another estate address); and a TypeScript check of `paintBqr(g, m, t, { size: 1, position: "notch" })` against `qr/bqr.ts` reports an error.
+ *      CONTROL: the internal path (unexported; this file exports it in its own transpiled copy) still draws all four, K2 and K5 through it; and the
+ *      runtime check run on v1.14.0 is seen to FAIL (the option turned the code).
+ *   RF5 nothing else moves — every other check passes, and every count this run prints is the same as v1.14.0's run, line by line (the paths of
+ *      the sample folders aside); the only change to an existing check is that the ECC sweep's bare card now says the ECC it was made at.
+ *   Predicted: all pass first time; RF5's diff shows only the new §refusal lines.
  */
 import { createRequire } from "node:module";
 import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, existsSync } from "node:fs";
