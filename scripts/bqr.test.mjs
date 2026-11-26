@@ -577,10 +577,12 @@ for (const ecc of ["L", "M", "Q", "H"]) for (const [name, text] of P) {
 
 // ---- P3 pixels + P4 determinism ---------------------------------------------------------------------------------------------------
 console.log("\n— P3 pixels · P4 determinism");
-/** §turn's `turn` and §position's positions, drawn through the recipe's UNEXPORTED `paintBqrAt` (§refusal RF4: no public option sets one). */
-function paint(g, m, text, { turn, position, ...o }) {
+/** §turn's `turn`, §position's positions and the test's other levers (`quiet`, `ink`, `fitAutograph`), drawn through the recipe's UNEXPORTED
+ *  `paintBqrAt` (§refusal RF4, §refusal2 RF7: no public option sets one). With none of them, the public `paintBqr`. */
+function paint(g, m, text, { turn, position, quiet, ink, fitAutograph, ...o }) {
     const at = position ?? (turn === undefined ? undefined : turn ? "point" : "standard");
-    if (at === undefined) B.paintBqr(g, m, text, o); else B.paintBqrAt(g, m, text, o, at);
+    const t = Object.fromEntries(Object.entries({ at, quiet, ink, fitAutograph }).filter(([, v]) => v !== undefined));
+    if (!Object.keys(t).length) B.paintBqr(g, m, text, o); else B.paintBqrAt(g, m, text, o, t);
 }
 function renderBqr(text, size, o = {}) {
     const c = createCanvas(size, size), g = c.getContext("2d");
@@ -877,7 +879,7 @@ console.log("\n— §refusal RF1 a foreign matrix · RF2 any other matrix of the
 {
     const SEED = "https://b.333.eco/ABCD1234WXYZ", FOREIGN = "https://example.com/x", ESTATE = "https://heartbank.ceo/x", mat = (t, ecc = "M") => QRCode.create(t, { errorCorrectionLevel: ecc }).modules;
     const threw = (f) => { try { f(); return null; } catch (e) { return e.message; } };
-    const draw = (m, t, o = {}, at) => { const c = createCanvas(300, 300), g = c.getContext("2d"); at ? B.paintBqrAt(g, m, t, { size: 300, ...o }, at) : B.paintBqr(g, m, t, { size: 300, ...o }); return Buffer.from(g.getImageData(0, 0, 300, 300).data); };
+    const draw = (m, t, o = {}, at) => { const c = createCanvas(300, 300), g = c.getContext("2d"); at ? B.paintBqrAt(g, m, t, { size: 300, ...o }, { at }) : B.paintBqr(g, m, t, { size: 300, ...o }); return Buffer.from(g.getImageData(0, 0, 300, 300).data); };
     for (const style of ["pixels", "outline"]) for (const by of ["us", "outside"]) {
         const e = threw(() => draw(mat(FOREIGN), SEED, { style, by }));
         ok(e !== null && threw(() => draw(mat(SEED), SEED, { style, by })) === null, `RF1 ${style} by ${by}: a matrix of ${FOREIGN} under ${SEED} ${e ? `throws (“${e}”)` : "DRAWS"}; CONTROL: the text's own draws`);
@@ -900,6 +902,47 @@ console.log("\n— §refusal RF1 a foreign matrix · RF2 any other matrix of the
     };
     const withIt = typeErrors(`paintBqr(g, m, "x", { size: 1, position: "notch" });`), without = typeErrors(`paintBqr(g, m, "x", { size: 1, by: "outside" });`);
     ok(withIt.some((e) => e.includes("position")) && without.length === 0, `RF4 the type: \`position\` is ${withIt.length ? `refused (${withIt.join("; ")})` : "ACCEPTED"}; CONTROL: the same call without it, ${without.length} errors${without.length ? ` (${without.join("; ")})` : ""}`);
+}
+
+// ---- §refusal2 RF6 · RF7 (pre-registered in the header, 2026-11-26) ---------------------------------------------------------------------
+console.log("\n— §refusal2 RF6 schemeless addresses · RF7 the test's levers leave the public options");
+{
+    const threw = (f) => { try { f(); return null; } catch (e) { return e.message; } }, mat = (t) => QRCode.create(t, { errorCorrectionLevel: B.BQR_ECC }).modules;
+    const draw = (t, o = {}, lever) => { const c = createCanvas(300, 300), g = c.getContext("2d"); lever ? B.paintBqrAt(g, mat(t), t, { size: 300, ...o }, lever) : B.paintBqr(g, mat(t), t, { size: 300, ...o }); return Buffer.from(g.getImageData(0, 0, 300, 300).data); };
+    const REFUSED = ["example.com/x", "www.example.com/x", "//example.com/x", "EXAMPLE.COM", "example.com:8080/x", "b.333.eco.evil.example/X", "example.xn--p1ai/x"];
+    const EMAILS = ["name@example.com", "a@333.eco", "me@b.333.eco/x"];
+    const through = REFUSED.concat(EMAILS).filter((t) => threw(() => B.bqrKind(t)) === null || threw(() => draw(t)) === null);
+    ok(through.length === 0, `RF6: ${REFUSED.length} schemeless outside addresses and ${EMAILS.length} emails refused by bqrKind and paintBqr${through.length ? ` (DRAWN: ${through.join(" · ")})` : ""}`);
+    const ESTATE = [["b.333.eco/7K2M9QX", "b-link", "point"], ["B.333.ECO/7K2M9QX", "b-link", "point"], ["//b.333.eco/7K2M9QX", "b-link", "point"], ["heartbank.ceo/x", "estate", "standard"], ["homecoffee.heartbank.ceo/?here=k7m2", "estate", "standard"]];
+    const wrong = ESTATE.filter(([t, k, p]) => threw(() => B.bqrKind(t)) !== null || B.bqrKind(t) !== k || B.bqrPosition(t) !== p || threw(() => draw(t)) !== null);
+    ok(wrong.length === 0, `RF6: ${ESTATE.length - wrong.length} of ${ESTATE.length} schemeless estate addresses draw as their https class${wrong.length ? ` (WRONG: ${wrong.map(([t]) => t).join(" · ")})` : ""}`);
+    // CONTROLS: every text the consumers encode (the survey, 2026-11-26) still draws, and keeps its class.
+    const CONTROLS = [["H3QR", "text"], ["H3QR @thon", "text"], ["H3QR #family", "text"], ["H3QR @thon #family", "text"], ["@thon", "text"], ["#family", "text"],
+        ["K7M2Q9XR4B", "text"], ["7K2M-9QX4-B8T3", "text"], ["7K2M9QX4B8T3", "text"], ["ABCD-EFGH-JKMN", "text"], ["ABCD EFGH", "text"],
+        ["https://homecoffee.heartbank.ceo/", "estate"], ["https://homecoffee.heartbank.ceo/?here=k7m2x9pq4rtw3hjn", "estate"], ["https://homecoffee.heartbank.ceo/?r=K7QX2M9P", "estate"],
+        ["https://thank.heartbank.org/b/transfer/@thon?amount=12000&purpose=payment&currency=KHR", "estate"], ["https://thank.heartbank.org/b/transfer/u7Kq2Xp9?lang=km", "estate"],
+        ["https://thank.heartbank.org/b/contribute/family?lang=en", "estate"], ["HTTPS://B.333.ECO/7K2M9QX4B8T3", "b-link"], ["https://b.333.eco/", "b-link"],
+        ["https://brand.333.eco/qr/", "estate"], ["https://brand.333.eco/color/#bodies", "estate"], ["https://brand.333.eco/watermark/", "estate"],
+        ["http://localhost:5173/?surface=storefront&tag=x&here=k", "estate"], ["http://localhost:5003/b/transfer/u7Kq2Xp9?lang=en", "estate"],
+        ["https://thank3-heartbank-com--p28-ab12cd34.web.app/?surface=storefront&tag=x", "estate"]];
+    const lost = CONTROLS.filter(([t, k]) => threw(() => B.bqrKind(t)) !== null || B.bqrKind(t) !== k || threw(() => draw(t)) !== null);
+    ok(lost.length === 0, `RF6 CONTROL: ${CONTROLS.length - lost.length} of ${CONTROLS.length} texts the consumers encode still draw, each its class${lost.length ? ` (LOST: ${lost.map(([t]) => t).join(" · ")})` : ""}`);
+    ok(["3.14", "v1.2", "192.168.1.20", "localhost"].every((t) => B.bqrKind(t) === "text"), "RF6 CONTROL: a numeric last label and a bare host name are not addresses");
+    // RF7 — each lever, passed to the public paintBqr, changes nothing; through paintBqrAt, it changes the drawing.
+    const T = P[0][1], AG = { strokes: [[[5, 50], [20, 10], [35, 50]], [[60, 5], [62, 7]]] };
+    for (const [name, o, lever] of [["quiet: 0", { style: "pixels" }, { quiet: 0 }], ["ink: #ff0000", {}, { ink: "#ff0000" }], ["fitAutograph: false", { style: "outline", autograph: AG }, { fitAutograph: false }]]) {
+        const plain = draw(T, o), pub = draw(T, { ...o, ...lever }), inner = draw(T, o, lever);
+        ok(pub.equals(plain) && !inner.equals(plain), `RF7 ${name}: through the public paintBqr ${pub.equals(plain) ? "not one byte changes" : "THE DRAWING CHANGES"}; CONTROL: through paintBqrAt it ${inner.equals(plain) ? "DOES NOT change" : "changes"}`);
+    }
+    const typeErrors = (call) => {
+        const f = join(WORK, `rf7-${typeErrors.n = (typeErrors.n ?? 0) + 1}.ts`);
+        writeFileSync(f, `import { paintBqr, type BqrMatrix } from ${JSON.stringify(join(ROOT, "qr", "bqr"))};\ndeclare const g: CanvasRenderingContext2D; declare const m: BqrMatrix;\n${call}\n`);
+        const p = ts.createProgram([f], { noEmit: true, strict: true, skipLibCheck: true, target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext, moduleResolution: ts.ModuleResolutionKind.Bundler, lib: ["lib.es2022.d.ts", "lib.dom.d.ts"], types: [] });
+        return ts.getPreEmitDiagnostics(p, p.getSourceFile(f)).map((d) => `TS${d.code}`);
+    };
+    const levers = { quiet: "quiet: 0", ink: `ink: "#ff0000"`, fitAutograph: "fitAutograph: false" }, accepted = Object.entries(levers).filter(([k, v]) => !typeErrors(`paintBqr(g, m, "x", { size: 1, ${v} });`).length).map(([k]) => k);
+    const clean = typeErrors(`paintBqr(g, m, "x", { size: 1, style: "outline", ground: "heart" });`);
+    ok(accepted.length === 0 && clean.length === 0, `RF7 the type: ${3 - accepted.length} of 3 levers refused${accepted.length ? ` (ACCEPTED: ${accepted.join(", ")})` : ""}; CONTROL: a call with public options only, ${clean.length} errors`);
 }
 
 // ---- the images ------------------------------------------------------------------------------------------------------------------

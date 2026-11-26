@@ -162,11 +162,17 @@ an H3QR names whom you thank, and a B-QR is how that code is drawn.
 - **v1.14.0 (founder 2026-11-25):** the faint heart's hand CENTERED in the heart's BOTTOM SECTION (from the notch to the bottom edge,
   `SILHOUETTE_CENTER` (12.74, 14.42)), in a box of the hand's own proportions (`silhouetteBox`), the heart SIZED TO THE HAND
   (`silhouetteSize`), fill and edge at 10% (§looks3 LK10–LK13; LK12's miss on a sparse drawing recorded).
-- **v1.15.0 (founder 2026-11-26, *"1–6 approve"*, item 6): the refusal holds for every drawing, not only `drawBqr`'s.** `paintBqr` encodes the address itself with the
-  package's own `qrcode`, at the drawing's ECC, and draws that matrix only when the one it was given is the same, module for module; a matrix
-  of any other address (or another encoding of this one) THROWS, so our heart never frames a code the address did not make. ⚠️ It is synchronous
-  only once the encoder has loaded: call `await bqrReady()` once before the first `paintBqr` (`drawBqr` and `bqrDataUrl` do it); before that it
-  throws rather than draw unchecked. `position` is no longer an option: one passed anyway changes nothing (§refusal RF1–RF5).
+- **v2.0.0, MAJOR (founder 2026-11-26, *"1–6 approve"*, item 6, then *"2: agree; 3: reconcile"*): the refusal holds for every drawing, not only
+  `drawBqr`'s.** MAJOR because a caller written for 1.x can break in three ways:
+  · `paintBqr` THROWS until `await bqrReady()` has loaded the encoder (`drawBqr` and `bqrDataUrl` do it). It encodes the address itself with the
+    package's own `qrcode`, at the drawing's ECC, and draws that matrix only when the one it was given is the same, module for module; a matrix
+    of any other address (or another encoding of this one) throws, so our heart never frames a code the address did not make (§refusal RF1–RF3).
+  · `position`, `quiet`, `ink` and `fitAutograph` LEFT the public options: they were the tests' levers, and one passed anyway changes nothing
+    (§refusal RF4, §refusal2 RF7). No consumer used any of them (surveyed 2026-11-26).
+  · An outside address with NO SCHEME (`example.com/x`, `//example.com/x`, `EXAMPLE.COM`) is refused like its https form, and an estate one
+    (`b.333.eco/7K2M9QX`) is drawn as its https class; a bare email (`name@example.com`) is refused whatever its domain, as a user part is. The
+    shape is narrow (the whole text a host ending in a letters-only name), so the bare codes we print (`H3QR @name`, `7K2M-9QX4-B8T3`, a gift
+    code) stay text (§refusal2 RF6).
 - **The card's words are PLACED, never aligned (v1.6.1).** `paintQrCard` measures each line, shrinks its size until it fits,
   and draws it from the left at the center minus half its width. Safari on iOS 26 ignores `textAlign = "center"` and the
   `maxWidth` argument for a complex script: a Khmer caption printed starting at the center line. Measured on the Simulator
@@ -175,7 +181,7 @@ an H3QR names whom you thank, and a B-QR is how that code is drawn.
   via `BQR_PYTHON`). It must also be seen to FAIL — break the path or the ring on purpose once and watch it catch it.
 
 `drawBqr`, `bqrDataUrl` and `bqrReady` load the `qrcode` package on demand, so a consumer that vendors `qr/` brings `qrcode` itself. A
-caller of `paintBqr` awaits `bqrReady()` once first (v1.15.0).
+caller of `paintBqr` awaits `bqrReady()` once first (v2.0.0).
 
 ## Consuming it
 
