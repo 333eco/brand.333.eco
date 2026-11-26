@@ -367,6 +367,37 @@
  *     the type check reported 0 errors for `position`. Here: 305 checks pass, 293 before; the diff of the two runs, line by line (the sample
  *     folders aside), is the 12 new §refusal lines and nothing else, every scanning count the same. ⚠️ The order is on a stamp, not a commit:
  *     the fixer that wrote this could not commit, so the text's sha256 and time were recorded before the first edit to `qr/` and its diff kept.
+ *
+ * ⛔ §refusal2 — PRE-REGISTERED 2026-11-26, written before the recipe moves, its sha256 and time kept before the first edit to `qr/` (founder
+ *   2026-11-26: *"1: deploy; 2: agree; 3: reconcile"* — the release is MAJOR, 2.0.0, and the two gaps §refusal left open are closed, in the spirit
+ *   of item 6: the refusal true of every drawing the package makes). The run FAILS on any of:
+ *   RF6 schemeless addresses — a text a phone would open as a web link without a scheme is an ADDRESS to `bqrKind`, read as `https://` + the
+ *      text, so it is refused unless its host is the estate's, and an estate one is classed as that host's https address. "Address-like" is
+ *      NARROW, and said here: the WHOLE text (no whitespace), after an optional `//`, is a host of two or more dot-separated labels (letters,
+ *      digits, hyphens) whose LAST label is letters only, two or more, then optionally `:port`, a path, a query, a fragment; an optional
+ *      `user@` before the host counts as part of it. Narrow because a code the estate already prints must never become an address by accident:
+ *      every consumer's text is a full https address, a developer's http host, or a bare code with no dot; and a phone's link detector wants
+ *      exactly this shape (a host it can resolve, ending in a top-level name). A numeric last label (`3.14`, `v1.2`, an IP) is not one.
+ *      Refused: `example.com/x` · `www.example.com/x` · `//example.com/x` · `EXAMPLE.COM` · `example.com:8080/x` · `b.333.eco.evil.example/X`.
+ *      Drawn as the estate: `b.333.eco/7K2M9QX` and `B.333.ECO/7K2M9QX` (a B-Link: the point) · `//b.333.eco/7K2M9QX` (the point) ·
+ *      `heartbank.ceo/x` and `homecoffee.heartbank.ceo/?here=k7m2` (standard).
+ *      ⭐ A BARE EMAIL (`name@example.com`, and `a@333.eco` too) is REFUSED, whatever its domain: it parses as an address with a user part,
+ *      which K3 already refuses on an estate host (`https://me@b.333.eco/x`), and `mailto:a@333.eco` is refused today; an email is not a page
+ *      of ours, and a scanner offers to write to it. Same for `me@b.333.eco/x`.
+ *      CONTROLS that must still draw, every text the consumers encode (surveyed 2026-11-26, file:line in the report): the H3QR labels `H3QR` ·
+ *      `H3QR @thon` · `H3QR #family` · `H3QR @thon #family` · `@thon` · `#family`; a Treasury gift code as its sheet encodes it (`K7M2Q9XR4B`,
+ *      upper case, letters and digits only); B-Link printed codes `7K2M-9QX4-B8T3` and `7K2M9QX4B8T3`; K1's `ABCD-EFGH-JKMN` and `ABCD EFGH`;
+ *      and every full address the consumers draw (Shops' storefront, check-in and referral addresses, Treasury's `/b/transfer/@name` and
+ *      `/b/contribute/<tag>`, a B-Link in capitals, the brand pages', `http://localhost:5173/?surface=storefront&tag=x&here=k`, a Firebase
+ *      preview host). CONTROL that the refusal SEES: run on 6aaa619 (v1.15.0), by a separate driver, the four named texts DRAW.
+ *   RF7 the other TEST-ONLY options — `quiet`, `ink` and `fitAutograph` leave the public `BqrOptions` as `position` did (no consumer passes any,
+ *      surveyed): passed to `paintBqr` anyway, each changes not one byte (`quiet: 0` · `ink: "#ff0000"` · `fitAutograph: false` with an
+ *      autograph), and a TypeScript check of each against `qr/bqr.ts` reports an error. CONTROL: the internal path (`paintBqrAt`, its test-only
+ *      argument) still draws each one differently from the default, so P6's broken control, the ink sweep and S5 keep running through it; and
+ *      on 6aaa619 the runtime check is seen to FAIL (each option changed the drawing) and the type check to accept all three.
+ *   RF8 nothing else moves — every other check passes, and every count this run prints is the one 6aaa619's run printed, line by line (the
+ *      sample folders aside), but the new §refusal2 lines.
+ *   Predicted: all pass first time; the one most likely to need a second look is RF6's controls, if a consumer's text turns out dotted.
  */
 import { createRequire } from "node:module";
 import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, existsSync } from "node:fs";
