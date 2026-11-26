@@ -41,8 +41,9 @@
  * ⭐ DETERMINISTIC: the decoration is seeded from a hash of the text, so the same address always draws the same picture and the preview
  *   a person sees is the card they download.
  *
- * DEPENDENCIES: `drawBqr` / `bqrDataUrl` load `qrcode` (npm) on demand — the consumer provides it; `paintBqr` needs only a 2D context
- * with `Path2D`; the layout functions are pure. `bqr-card.ts` beside this file lays a B-QR out as a printable card.
+ * DEPENDENCIES: `drawBqr` / `bqrDataUrl` load `qrcode` (npm) on demand — the consumer provides it; `paintBqr` needs a 2D context with
+ * `Path2D` and, since v1.15.0, the encoder already loaded (`await bqrReady()` once; `drawBqr` does it), because it checks every matrix it is
+ * given against its own encoding of the text; the layout functions are pure. `bqr-card.ts` beside this file lays a B-QR out as a printable card.
  * ⛔ VENDORED, NEVER EDITED IN A CONSUMER: `brand.lock` hashes this file. Change it here, bump `data/brand.json`, re-sync each consumer.
  */
 /** The B-Emblem™ path (viewBox `0 0 24 24`), verbatim from `emblem/emblem.path.txt` (the test asserts it). */
@@ -256,10 +257,9 @@ export interface BqrOptions {
     fitAutograph?: boolean;
     /** ⭐ v1.10.0 — 96 bits in the TOP lobe, for a mark in a person's picture, in the `outline` version only (⛔ throws in `pixels`). */
     coded?: readonly number[];
-    /** ⭐ v1.11.0 — who draws it. ⛔ Only our API passes "outside"; an app never says where the middle marker stands (the address does). */
+    /** ⭐ v1.11.0 — who draws it. ⛔ Only our API passes "outside"; an app never says where the middle marker stands (the address does).
+     *  ⛔ v1.15.0: there is no `position` option; one passed anyway changes nothing (§refusal RF4). */
     by?: BqrBy;
-    /** ⛔ TEST ONLY — the position, whatever the address says. */
-    position?: BqrPosition;
     /** ⭐ v1.6.0 — the drawing's color family, drawn at `BQR_INK`'s darkness (`bqrInkFor`). Default: `BQR_INK` itself.
      *  ⛔ Products pass `owner`, never `hue`; `hue` is for the brand page following a visitor's `--emblem`. */
     hue?: string;
@@ -493,11 +493,42 @@ export function bqrPlacement(size: number, x = 0, y = 0): { k: number; tx: numbe
     return { k, tx: x + (size - EMBLEM_BOX.w * k) / 2 - EMBLEM_BOX.x * k, ty: y + (size - EMBLEM_BOX.h * k) / 2 - EMBLEM_BOX.y * k };
 }
 
-/** Paint a B-QR from a module matrix into a 2D context. Synchronous; `drawBqr` makes the matrix. */
+/**
+ * ⭐ v1.15.0 (founder 2026-11-26, *"1–6 approve"*, item 6) — THE REFUSAL IS A PROPERTY OF EVERY DRAWING, not of `drawBqr` alone. `paintBqr` takes
+ *   the matrix and the text apart, so until now a matrix of ANY address under an estate text drew our heart around a foreign code. Now it
+ *   encodes the text itself, with the package's own `qrcode` at the drawing's ECC (`ecc`, default `BQR_ECC`), and draws ITS OWN matrix, only
+ *   when the one it was given is the same module for module; anything else throws. ⛔ It never draws a matrix it could not check: before
+ *   `bqrReady()` has loaded the encoder, it throws. The encoder is held here, never taken from a caller (a caller's encoder could return
+ *   any matrix). `scripts/bqr.test.mjs` §refusal RF1–RF3.
+ */
+interface BqrEncoder { create(text: string, o: { errorCorrectionLevel: "L" | "M" | "Q" | "H" }): { modules: BqrMatrix } }
+let ENCODER: BqrEncoder | null = null;
+/** Load the encoder `paintBqr` checks with. Once is enough; `drawBqr` and `bqrDataUrl` do it themselves. */
+export async function bqrReady(): Promise<void> {
+    if (!ENCODER) ENCODER = (await import("qrcode")).default as unknown as BqrEncoder;
+}
+/** The text's own matrix, when `given` is exactly it; otherwise it throws. */
+function ownMatrix(given: BqrMatrix, seed: string, ecc: "L" | "M" | "Q" | "H"): BqrMatrix {
+    if (!ENCODER) throw new Error("B-QR: await bqrReady() before paintBqr — it checks every code against its own encoding of the address.");
+    const own = ENCODER.create(seed, { errorCorrectionLevel: ecc }).modules, n = own.size;
+    let same = !!given && given.size === n && !!given.data && given.data.length === own.data.length;
+    for (let i = 0; same && i < n * n; i++) if (!given.data[i] !== !own.data[i]) same = false;
+    if (!same) throw new Error("B-QR: that code is not this address's own (" + ecc + "): our heart frames only the code it makes from the address.");
+    return own;
+}
+
+/** Paint a B-QR from a module matrix into a 2D context. Synchronous once `bqrReady()` has run; `drawBqr` makes the matrix.
+ *  ⛔ v1.15.0 — the matrix must be the address's own, at the drawing's ECC: anything else throws (`ownMatrix`, above). */
 export function paintBqr(g: CanvasRenderingContext2D, upright: BqrMatrix, seed: string, o: BqrOptions): void {
+    paintBqrAt(g, upright, seed, o);
+}
+/** ⛔ NOT EXPORTED, on purpose (v1.15.0): `at` draws a position whatever the address says, for the tests alone. `scripts/bqr.test.mjs` exports
+ *  it in its own transpiled copy, so nothing that imports this file can reach it. */
+function paintBqrAt(g: CanvasRenderingContext2D, upright: BqrMatrix, seed: string, o: BqrOptions, at?: BqrPosition): void {
     // ⭐ v1.11.0 — turned by what the address IS (`bqrPosition`; it throws for an address outside the estate). The layout is the grid's, so the
     //   decoration and the outline do not move.
-    const where = bqrPosition(seed, o.by), mat = bqrTurned(upright, BQR_TURNS[o.position ?? where]);
+    // ⭐ v1.15.0 — and drawn from the address's OWN matrix, the one given only checked against it.
+    const where = bqrPosition(seed, o.by), mat = bqrTurned(ownMatrix(upright, seed, o.ecc ?? BQR_ECC), BQR_TURNS[at ?? where]);
     // ⭐ §4AA — one green for the whole drawing: the decoration and the outline default to the code's own ink.
     // ⭐ v1.6.0 — `hue` sets the code, the decoration and the outline at once, darkened by `bqrInkFor`; none = `BQR_INK`, verbatim.
     // ⭐ v1.7.0 — `owner` sets it from the body palette instead; ⛔ both at once throws (a product cannot pick its own color).
@@ -553,9 +584,8 @@ export function paintBqr(g: CanvasRenderingContext2D, upright: BqrMatrix, seed: 
 
 /** Make the code for `text` and paint it as a B-QR. ⭐ The renderer is loaded when needed, as everywhere else. */
 export async function drawBqr(g: CanvasRenderingContext2D, text: string, o: BqrOptions): Promise<void> {
-    const QRCode = (await import("qrcode")).default;
-    const q = QRCode.create(text, { errorCorrectionLevel: o.ecc ?? BQR_ECC });
-    paintBqr(g, q.modules, text, o);
+    await bqrReady();
+    paintBqr(g, ENCODER!.create(text, { errorCorrectionLevel: o.ecc ?? BQR_ECC }).modules, text, o);
 }
 
 /** A B-QR as a PNG data URL — the on-screen preview of a code a person may also download, so what they see is what they print. */

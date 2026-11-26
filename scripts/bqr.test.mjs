@@ -362,6 +362,11 @@
  *   RF5 nothing else moves — every other check passes, and every count this run prints is the same as v1.14.0's run, line by line (the paths of
  *      the sample folders aside); the only change to an existing check is that the ECC sweep's bare card now says the ECC it was made at.
  *   Predicted: all pass first time; RF5's diff shows only the new §refusal lines.
+ *   ✅ RESULT (2026-11-26): all pass on the first run, as predicted. On v1.14.0 (f2194e9), by a separate driver run once: RF1 drew the foreign
+ *     code under the B-Link in all 4 cases, and the public `position` turned the code in all 4 drawings (8 failures, the controls drawing);
+ *     the type check reported 0 errors for `position`. Here: 305 checks pass, 293 before; the diff of the two runs, line by line (the sample
+ *     folders aside), is the 12 new §refusal lines and nothing else, every scanning count the same. ⚠️ The order is on a stamp, not a commit:
+ *     the fixer that wrote this could not commit, so the text's sha256 and time were recorded before the first edit to `qr/` and its diff kept.
  */
 import { createRequire } from "node:module";
 import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, existsSync } from "node:fs";
@@ -407,7 +412,8 @@ function transpile(file, fixes) {
     }
     writeFileSync(join(WORK, file.replace(/\.ts$/, ".mjs")), js);
 }
-transpile("bqr.ts", [['import("qrcode")', `import(${JSON.stringify(pathToFileURL(req.resolve("qrcode")).href)})`]]);
+// ⭐ §refusal — the forced position is `paintBqrAt`, which the recipe does NOT export; only this transpiled copy does (RF4).
+transpile("bqr.ts", [['import("qrcode")', `import(${JSON.stringify(pathToFileURL(req.resolve("qrcode")).href)})`], ["function paintBqrAt(", "export function paintBqrAt("]]);
 transpile("bqr-card.ts", [['from "./bqr"', 'from "./bqr.mjs"']]);
 const B = await import(pathToFileURL(join(WORK, "bqr.mjs")).href);
 const C = await import(pathToFileURL(join(WORK, "bqr-card.mjs")).href);
@@ -418,6 +424,17 @@ const TYPED = await import(pathToFileURL(join(WORK, "script.mjs")).href);
 
 let failed = 0;
 const ok = (cond, msg) => { console.log(`${cond ? "✓" : "✗"} ${msg}`); if (!cond) failed++; };
+
+// ---- §refusal RF3 (pre-registered in the header, 2026-11-26) — before anything paints, so the encoder has not loaded yet -----------------
+console.log("\n— §refusal RF3 never unchecked");
+{
+    const t = "https://b.333.eco/ABCD1234WXYZ", m = QRCode.create(t, { errorCorrectionLevel: "M" }).modules, call = () => { try { B.paintBqr(createCanvas(64, 64).getContext("2d"), m, t, { size: 64 }); return null; } catch (e) { return e.message; } };
+    const before = call();
+    ok(before !== null && before.includes("bqrReady"), `RF3: before the encoder loads, paintBqr throws (“${before}”)`);
+    await B.bqrReady();
+    const after = call();
+    ok(after === null, `RF3 control: after bqrReady() the same call draws${after ? ` — it threw “${after}”` : ""}`);
+}
 
 // ---- P0 the path is the brand's (added 2026-10-04, on the move) ------------------------------------------------------------------
 console.log("\n— P0 the emblem path");
@@ -529,8 +546,11 @@ for (const ecc of ["L", "M", "Q", "H"]) for (const [name, text] of P) {
 
 // ---- P3 pixels + P4 determinism ---------------------------------------------------------------------------------------------------
 console.log("\n— P3 pixels · P4 determinism");
-/** §turn's `turn` and §position's positions, said in the recipe's TEST ONLY word. */
-function paint(g, m, text, { turn, ...o }) { B.paintBqr(g, m, text, turn === undefined ? o : { ...o, position: turn ? "point" : "standard" }); }
+/** §turn's `turn` and §position's positions, drawn through the recipe's UNEXPORTED `paintBqrAt` (§refusal RF4: no public option sets one). */
+function paint(g, m, text, { turn, position, ...o }) {
+    const at = position ?? (turn === undefined ? undefined : turn ? "point" : "standard");
+    if (at === undefined) B.paintBqr(g, m, text, o); else B.paintBqrAt(g, m, text, o, at);
+}
 function renderBqr(text, size, o = {}) {
     const c = createCanvas(size, size), g = c.getContext("2d");
     const q = QRCode.create(text, { errorCorrectionLevel: o.ecc ?? B.BQR_ECC });
@@ -821,6 +841,36 @@ console.log("\n— §position K1 the table · K2 the pixels · K3 refused · K4 
     }
 }
 
+// ---- §refusal RF1 · RF2 · RF4 (pre-registered in the header, 2026-11-26) -------------------------------------------------------------
+console.log("\n— §refusal RF1 a foreign matrix · RF2 any other matrix of the text · RF4 no public position");
+{
+    const SEED = "https://b.333.eco/ABCD1234WXYZ", FOREIGN = "https://example.com/x", ESTATE = "https://heartbank.ceo/x", mat = (t, ecc = "M") => QRCode.create(t, { errorCorrectionLevel: ecc }).modules;
+    const threw = (f) => { try { f(); return null; } catch (e) { return e.message; } };
+    const draw = (m, t, o = {}, at) => { const c = createCanvas(300, 300), g = c.getContext("2d"); at ? B.paintBqrAt(g, m, t, { size: 300, ...o }, at) : B.paintBqr(g, m, t, { size: 300, ...o }); return Buffer.from(g.getImageData(0, 0, 300, 300).data); };
+    for (const style of ["pixels", "outline"]) for (const by of ["us", "outside"]) {
+        const e = threw(() => draw(mat(FOREIGN), SEED, { style, by }));
+        ok(e !== null && threw(() => draw(mat(SEED), SEED, { style, by })) === null, `RF1 ${style} by ${by}: a matrix of ${FOREIGN} under ${SEED} ${e ? `throws (“${e}”)` : "DRAWS"}; CONTROL: the text's own draws`);
+    }
+    const own = mat(SEED), n = own.size, flipped = { size: n, data: Uint8Array.from(own.data, (v, i) => (i === n * n - 1 ? (v ? 0 : 1) : v ? 1 : 0)) }, smaller = { size: n - 1, data: own.data.slice(0, (n - 1) * (n - 1)) };
+    const other = [["its own at H, drawn at the default M", () => draw(mat(SEED, "H"), SEED)], ["its own with one module flipped", () => draw(flipped, SEED)], ["its own one size smaller", () => draw(smaller, SEED)], ["its own at M, drawn with ecc H", () => draw(own, SEED, { ecc: "H" })]];
+    const through = other.filter(([, f]) => threw(f) === null).map(([w]) => w);
+    ok(through.length === 0 && threw(() => draw(mat(SEED, "H"), SEED, { ecc: "H" })) === null, `RF2: ${other.length - through.length} of ${other.length} other matrices of the text throw${through.length ? ` (DRAWN: ${through.join("; ")})` : ""}; CONTROL: its own at H, drawn with ecc H, draws`);
+    for (const t of [SEED, ESTATE]) for (const style of ["pixels", "outline"]) {
+        const plain = draw(mat(t), t, { style }), all = ["standard", "point", "non-standard", "notch"], moved = all.filter((position) => !draw(mat(t), t, { style, position }).equals(plain));
+        const inner = all.map((at) => draw(mat(t), t, { style }, at)), distinct = new Set(inner.map((b) => b.toString("base64"))).size;
+        ok(moved.length === 0 && distinct === 4, `RF4 ${style} ${t}: a public \`position\` ${moved.length ? `TURNS the code (${moved.join(", ")})` : "changes not one byte"}; CONTROL: the internal path draws ${distinct} different positions of 4`);
+    }
+    // RF4, the type: a TypeScript check of a caller that passes `position`, against the recipe's own file. CONTROL: the same call without it is clean.
+    const typeErrors = (call) => {
+        const f = join(WORK, `rf4-${typeErrors.n = (typeErrors.n ?? 0) + 1}.ts`);
+        writeFileSync(f, `import { paintBqr, type BqrMatrix } from ${JSON.stringify(join(ROOT, "qr", "bqr"))};\ndeclare const g: CanvasRenderingContext2D; declare const m: BqrMatrix;\n${call}\n`);
+        const p = ts.createProgram([f], { noEmit: true, strict: true, skipLibCheck: true, target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext, moduleResolution: ts.ModuleResolutionKind.Bundler, lib: ["lib.es2022.d.ts", "lib.dom.d.ts"], types: [] });
+        return ts.getPreEmitDiagnostics(p, p.getSourceFile(f)).map((d) => `TS${d.code} ${ts.flattenDiagnosticMessageText(d.messageText, " ")}`);
+    };
+    const withIt = typeErrors(`paintBqr(g, m, "x", { size: 1, position: "notch" });`), without = typeErrors(`paintBqr(g, m, "x", { size: 1, by: "outside" });`);
+    ok(withIt.some((e) => e.includes("position")) && without.length === 0, `RF4 the type: \`position\` is ${withIt.length ? `refused (${withIt.join("; ")})` : "ACCEPTED"}; CONTROL: the same call without it, ${without.length} errors${without.length ? ` (${without.join("; ")})` : ""}`);
+}
+
 // ---- the images ------------------------------------------------------------------------------------------------------------------
 const CARD_TEXT = { title: "Home Coffee", caption: "Scan to order here", foot: "homecoffee.heartbank.ceo" };
 async function card(text, accent, style) {
@@ -883,7 +933,7 @@ function bareCard(text, { quiet, ecc = B.BQR_ECC, style = "pixels", ink, accent,
     const c = createCanvas(C.CARD.W, C.CARD.H), g = c.getContext("2d");
     g.fillStyle = "#fff"; g.fillRect(0, 0, C.CARD.W, C.CARD.H);
     const q = QRCode.create(text, { errorCorrectionLevel: ecc });
-    paint(g, q.modules, text, { ...C.CARD.code, quiet, style, ink, accent, hue, owner, turn, lobe, autograph });
+    paint(g, q.modules, text, { ...C.CARD.code, ecc, quiet, style, ink, accent, hue, owner, turn, lobe, autograph });   // §refusal: says its ECC
     return c;
 }
 /** ⭐ The SAME code pixels with the emblem cut away (code box + quiet ring copied onto white) — separates what the decoration costs
