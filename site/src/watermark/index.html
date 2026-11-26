@@ -82,7 +82,7 @@
                             <tr>
                                 <td>B-Symbol<span class="sm">&#8480;</span></td>
                                 <td>beside the artist's hand, raised or lowered</td>
-                                <td>a tiny B-Emblem, as a &trade; beside a name</td>
+                                <td>a hint beside the hand; the invisible mark carries the address</td>
                             </tr>
                         </tbody>
                     </table></div>
@@ -166,8 +166,8 @@
                         <div class="wm-pad" id="wm-pad"></div>
                         <button class="ghost" id="wm-clear" type="button">clear</button>
                     </div>
-                    <label class="wm-type">Or type a name, and it is drawn above as @name
-                        <input id="wm-type" type="text" maxlength="24" placeholder="@name" autocomplete="off" autocapitalize="off" spellcheck="false" />
+                    <label class="wm-type">Or type a name, and it is drawn above as you type it
+                        <input id="wm-type" type="text" maxlength="24" placeholder="your name" autocomplete="off" autocapitalize="off" spellcheck="false" />
                     </label>
                     <ul class="rules">
                         <li>
@@ -184,12 +184,14 @@
                         <li>
                             <strong>Drawn, or typed.</strong> A typed name is set in
                             a one-stroke script (<code>qr/script.ts</code>, Latin
-                            letters only), as strokes on the same pad.
+                            letters only), as strokes on the same pad, and never
+                            with an @ in front: nobody checks a typed name, so it
+                            must not look like a registered @name.
                         </li>
-                        <li class="no">
-                            <strong>Never on a picture made with AI.</strong> And
-                            the person chooses how it was made before adding one;
-                            nothing is filled in for them.
+                        <li>
+                            <strong>Only when its signer says the picture wasn't
+                            made with AI.</strong> The person chooses how it was
+                            made before adding one; nothing is filled in for them.
                         </li>
                         <li class="no">
                             <strong>Never in our own codes.</strong> They keep
@@ -221,7 +223,8 @@
                             read whenever the code did, at 1080 and 720 pixels,
                             and never called the right picture different. A heart
                             copied onto another varied photo was told apart 144
-                            times of 152.
+                            times of 152, and fewer, about 91 in 100, when the
+                            other pictures included look-alike screenshots.
                         </li>
                         <li class="no">
                             <strong>It can't see an edit.</strong> Thirty-six
@@ -249,8 +252,8 @@
                     <p>
                         For an artist who wants only a hint: a faint heart in a
                         corner, or the B-Symbol<span class="sm">&#8480;</span>, a
-                        tiny B-Emblem beside their own hand, as a &trade; stands
-                        beside a name. Neither carries an address, so each comes
+                        tiny B-Emblem beside their own hand, raised or lowered.
+                        Neither carries an address, so each comes
                         only with the mark you can't see, which does. Both take
                         the hand you draw or type above.
                     </p>
@@ -262,10 +265,11 @@
                             before the press; where it doesn't hold, the look is
                             refused.
                         </li>
-                        <li class="no">
-                            <strong>No hand on a picture made with AI.</strong> So
-                            no B-Symbol there. A faint heart with no hand may
-                            stand on one.
+                        <li>
+                            <strong>A hand only by choice.</strong> It appears only
+                            when its signer adds one and says the picture wasn't
+                            made with AI, so a B-Symbol appears only then too.
+                            Without a hand, a faint heart may stand on any picture.
                         </li>
                         <li>
                             <strong>Centered in the heart's bottom section</strong>,
