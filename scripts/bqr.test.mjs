@@ -398,6 +398,11 @@
  *   RF8 nothing else moves — every other check passes, and every count this run prints is the one 6aaa619's run printed, line by line (the
  *      sample folders aside), but the new §refusal2 lines.
  *   Predicted: all pass first time; the one most likely to need a second look is RF6's controls, if a consumer's text turns out dotted.
+ *   ✅ RESULT (2026-11-26): all pass on the first run, as predicted; no consumer's text was dotted. On 6aaa619 (v1.15.0), by a separate driver
+ *     run once: the four named texts and both emails DREW (`bqrKind` said "text"), each of the three levers changed the drawing through the
+ *     public `paintBqr`, and the type check accepted all three (12 failures; its 9 consumer texts drew and its public-only call was clean).
+ *     Here: 313 checks pass, 305 before; the diff of the two runs, line by line (the sample folders aside), is the 8 new §refusal2 lines and
+ *     nothing else. The pre-registration was committed before the code (d1f4aec).
  */
 import { createRequire } from "node:module";
 import { readFileSync, writeFileSync, mkdirSync, mkdtempSync, existsSync } from "node:fs";
