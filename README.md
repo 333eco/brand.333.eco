@@ -162,6 +162,12 @@ an H3QR names whom you thank, and a B-QR is how that code is drawn.
 - **v1.14.0 (founder 2026-11-25):** the faint heart's hand CENTERED in the heart's BOTTOM SECTION (from the notch to the bottom edge,
   `SILHOUETTE_CENTER` (12.74, 14.42)), in a box of the hand's own proportions (`silhouetteBox`), the heart SIZED TO THE HAND
   (`silhouetteSize`), fill and edge at 10% (§looks3 LK10–LK13; LK12's miss on a sparse drawing recorded).
+- **v2.1.0 (founder 2026-11-27 10:24, *"approve both"*; MA roadmap A740): a B-QR is ENCODED in capitals where its address ignores case** —
+  `BQR_CAPS`, a host list each host joins only after a live check that its address in capitals opens the same page: b.333.eco's link codes and
+  their `/qr` page (⛔ never an alpha stamp: case-sensitive, measured `/a/test` 301 vs `/A/TEST` 404) and 333.eco's `/B:` pages. `bqrText()` makes
+  the change, `drawBqr` and `bqrDataUrl` use it, and the layout's seed and every refusal stay on the text as written. The gain: no byte-mode
+  segment, one size smaller where it matters (§caps C2: versions 2→2 3→2 3→3 3→2 3→2 3→2). Both decoders read every capital form back (§caps C3).
+  ⛔ It decides how a NEW code is drawn; nothing already printed is reprinted. Each consumer takes it at its next brand sync.
 - **v2.0.0, MAJOR (founder 2026-11-26, *"1–6 approve"*, item 6, then *"2: agree; 3: reconcile"*): the refusal holds for every drawing, not only
   `drawBqr`'s.** MAJOR because a caller written for 1.x can break in three ways:
   · `paintBqr` THROWS until `await bqrReady()` has loaded the encoder (`drawBqr` and `bqrDataUrl` do it). It encodes the address itself with the

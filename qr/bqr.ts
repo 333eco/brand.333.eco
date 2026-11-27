@@ -424,6 +424,32 @@ export function bqrKind(text: string, hosts: readonly string[] = BQR_HOSTS): "b-
     if (u.protocol !== "https:" || u.port || u.username || u.password || !hosts.some((d) => u.hostname === d || u.hostname.endsWith("." + d))) throw new Error("B-QR: only an https address of the estate (" + u.hostname + ").");
     return u.hostname === "b.333.eco" ? "b-link" : "estate";
 }
+/**
+ * ⭐ v2.1.0 — PRINTED IN CAPITALS where the address ignores case (founder 2026-11-27 10:24, *"approve both"*; MA roadmap A740; canon MA memory
+ * project_brand_identity §bqr-caps). QR's compact (alphanumeric) mode holds only `0–9 A–Z space $ % * + - . / :`, so a whole address in capitals
+ * is one compact segment, one size smaller where it matters (measured: a B:address 29→25 modules, a 26-character B-Link 33→29).
+ * A host joins ONLY after a LIVE check that its address in capitals opens the same page, and only for the paths that check covered:
+ *   b.333.eco — a link code (7, 12 or 26 Crockford characters, a mark's hyphens allowed) and its /qr page: the same answer either case (measured
+ *               2026-11-27). ⛔ NEVER an alpha stamp `/<letter>/<id>`: case-sensitive (/a/test → 301, /A/TEST → 404, measured the same day).
+ *   333.eco   — a free address `/B:…`: one page either case (the Worker reads it case-insensitively; measured the same day).
+ * ⛔ It decides how a NEW code is drawn and nothing else: a code already printed is never reprinted. KHQR is not a B-QR and never changes.
+ */
+export const BQR_CAPS: readonly { host: string; path: RegExp }[] = [
+    { host: "b.333.eco", path: /^\/[0-9a-hjkmnp-tv-z-]{7,30}(\/qr)?$/i },
+    { host: "333.eco", path: /^\/b:[0-9a-hjkmnp-tv-z-]{12,14}$/i },
+];
+/** The text a B-QR ENCODES: `text` in capitals when it is an https address on a listed host and path (and nothing after the path), else
+ *  exactly `text`. The layout's seed and every check stay on `text` itself. */
+export function bqrText(text: string, list: readonly { host: string; path: RegExp }[] = BQR_CAPS): string {
+    const t = text.trim();
+    if (!/^https:\/\//i.test(t)) return text;
+    let u: URL;
+    try { u = new URL(t); } catch { return text; }
+    if (u.search || u.hash || u.username || u.password || u.port) return text;
+    let path = u.pathname;
+    try { path = decodeURIComponent(path); } catch { return text; }
+    return list.some((c) => u.hostname === c.host && c.path.test(path)) ? t.toUpperCase() : text;
+}
 export function bqrPosition(text: string, by: BqrBy = "us"): BqrPosition {
     return bqrKind(text) === "b-link" ? (by === "outside" ? "notch" : "point") : by === "outside" ? "non-standard" : "standard";
 }
@@ -595,7 +621,8 @@ function paintBqrAt(g: CanvasRenderingContext2D, upright: BqrMatrix, seed: strin
 /** Make the code for `text` and paint it as a B-QR. ⭐ The renderer is loaded when needed, as everywhere else. */
 export async function drawBqr(g: CanvasRenderingContext2D, text: string, o: BqrOptions): Promise<void> {
     await bqrReady();
-    paintBqr(g, ENCODER!.create(text, { errorCorrectionLevel: o.ecc ?? BQR_ECC }).modules, text, o);
+    // ⭐ v2.1.0: the ENCODED text is in capitals where its host reads either case (BQR_CAPS); `text` stays the layout's seed.
+    paintBqr(g, ENCODER!.create(bqrText(text), { errorCorrectionLevel: o.ecc ?? BQR_ECC }).modules, text, o);
 }
 
 /** A B-QR as a PNG data URL — the on-screen preview of a code a person may also download, so what they see is what they print. */

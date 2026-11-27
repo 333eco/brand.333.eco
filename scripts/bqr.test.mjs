@@ -1474,6 +1474,35 @@ for (const style of Object.keys(VERSIONS)) {
 }
 writeFileSync(join(OUT, "broken-quiet0.png"), bareCard(P[0][1], { quiet: 0 }).toBuffer("image/png"));
 writeFileSync(join(OUT, "naked-control.png"), nakedCard(P[0][1]).toBuffer("image/png"));
+// ---- §caps C1 · C2 · C3 (A740, founder 2026-11-27 10:24 "approve both"; written before this group first ran) ----------------------------
+// C1 the list: capitals only for a listed host AND path (b.333.eco's link codes and /qr page, 333.eco's /B: pages); never an alpha stamp, any
+//    other host or path, or an address with a query or fragment. Control: with the list emptied nothing changes.
+// C2 the gain: no capital form needs a byte-mode segment (compact and numeric only), and none is a larger code than the lowercase form.
+// C3 it scans: every capital form drawn as a B-QR decodes, in jsQR AND ZXing, to exactly the capital text.
+console.log("\n— §caps C1 the list · C2 the gain · C3 it scans");
+{
+    const CAPS = ["https://b.333.eco/7k2m9qx", "https://b.333.eco/7k2m-9qx4-b8t3", "https://b.333.eco/7k2m9qx4b8t3wvyz0123456789", "https://b.333.eco/7k2m9qx/qr", "https://333.eco/B:7K3M-9XD2-QH4N", "https://333.eco/b:7k3m9xd2qh4n"];
+    const KEEP = ["https://b.333.eco/a/test", "https://b.333.eco/A/Test", "https://333.eco/@thon", "https://333.eco/nike", "https://333.eco/B:7K3M-9XD2-QH4N?x=1", "https://333.eco/B:7K3M-9XD2-QH4N#t",
+        "https://b.333.eco/7k2m9qx?utm=1", "https://homecoffee.heartbank.ceo/", "https://thank.heartbank.org/b/transfer/@dara", "H3QR @dara", "7K2M-9QX4-B8T3", "http://b.333.eco/7k2m9qx"];
+    ok(CAPS.every((t) => B.bqrText(t) === t.toUpperCase()), `C1: ${CAPS.length} listed addresses encode in capitals`);
+    ok(KEEP.every((t) => B.bqrText(t) === t), `C1: ${KEEP.length} others encode exactly as written, an alpha stamp above all`);
+    ok(CAPS.every((t) => B.bqrText(t, []) === t), "C1 control: with the list emptied, nothing is capitalized");
+    const modes = (t) => QRCode.create(t, { errorCorrectionLevel: B.BQR_ECC }).segments.map((x) => x.mode.id);
+    const ver = (t) => QRCode.create(t, { errorCorrectionLevel: B.BQR_ECC }).version;
+    ok(CAPS.every((t) => !modes(B.bqrText(t)).includes("Byte")), `C2: no capital form needs a byte-mode segment (${modes(B.bqrText(CAPS[0])).join("+")})`);
+    ok(CAPS.every((t) => ver(B.bqrText(t)) <= ver(t)), `C2: never a larger code (versions ${CAPS.map((t) => `${ver(t)}→${ver(B.bqrText(t))}`).join(" ")})`);
+    ok(CAPS.some((t) => ver(B.bqrText(t)) < ver(t)), "C2: and a smaller one where it matters");
+    ok(modes("https://333.eco/B:7k3m-9xd2-qh4n").includes("Byte"), "C2 control: the lowercase form does need one");
+    let scanned = 0;
+    for (const t of CAPS) {
+        const up = B.bqrText(t), id = renderBqr(up, 600).getContext("2d").getImageData(0, 0, 600, 600);
+        const j = jsQR(id.data, id.width, id.height, { inversionAttempts: "dontInvert" })?.data ?? null;
+        const z = (await zx.readBarcodes(id, { formats: ["QRCode"], tryHarder: true, maxNumberOfSymbols: 1 }))[0]?.text ?? null;
+        if (j === up && z === up) scanned++; else console.log(`  ✗ ${up}: jsQR ${JSON.stringify(j)} · ZXing ${JSON.stringify(z)}`);
+    }
+    ok(scanned === CAPS.length, `C3: ${scanned}/${CAPS.length} capital B-QRs decode to their capital text in jsQR AND ZXing`);
+}
+
 console.log(`\nsamples → ${OUT}`);
 console.log(failed ? `\n✗ ${failed} check(s) failed` : "\n✓ all pre-registered checks passed");
 process.exit(failed ? 1 : 0);
