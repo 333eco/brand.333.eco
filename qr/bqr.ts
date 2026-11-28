@@ -438,8 +438,8 @@ export const BQR_CAPS: readonly { host: string; path: RegExp }[] = [
     { host: "b.333.eco", path: /^\/[0-9a-hjkmnp-tv-z-]{7,30}(\/qr)?$/i },
     { host: "333.eco", path: /^\/b:[0-9a-hjkmnp-tv-z-]{12,14}$/i },
 ];
-/** The text a B-QR ENCODES: `text` in capitals when it is an https address on a listed host and path (and nothing after the path), else
- *  exactly `text`. The layout's seed and every check stay on `text` itself. */
+/** The text a B-QR ENCODES, and draws from: `text` in capitals when it is an https address on a listed host and path (and nothing after the
+ *  path), else exactly `text`. */
 export function bqrText(text: string, list: readonly { host: string; path: RegExp }[] = BQR_CAPS): string {
     const t = text.trim();
     if (!/^https:\/\//i.test(t)) return text;
@@ -621,8 +621,11 @@ function paintBqrAt(g: CanvasRenderingContext2D, upright: BqrMatrix, seed: strin
 /** Make the code for `text` and paint it as a B-QR. ⭐ The renderer is loaded when needed, as everywhere else. */
 export async function drawBqr(g: CanvasRenderingContext2D, text: string, o: BqrOptions): Promise<void> {
     await bqrReady();
-    // ⭐ v2.1.0: the ENCODED text is in capitals where its host reads either case (BQR_CAPS); `text` stays the layout's seed.
-    paintBqr(g, ENCODER!.create(bqrText(text), { errorCorrectionLevel: o.ecc ?? BQR_ECC }).modules, text, o);
+    // ⭐ v2.1.1: the text in capitals where its host reads either case (BQR_CAPS) is BOTH what is encoded AND the seed: paintBqr frames only
+    //   the code it makes from its seed, so a lowercase seed beside a capital code threw for every listed address (v2.1.0's bug, found by
+    //   333.eco's browser drive 2026-11-27; §caps C4 now draws through drawBqr itself). The refusals read the capital text the same way.
+    const enc = bqrText(text);
+    paintBqr(g, ENCODER!.create(enc, { errorCorrectionLevel: o.ecc ?? BQR_ECC }).modules, enc, o);
 }
 
 /** A B-QR as a PNG data URL — the on-screen preview of a code a person may also download, so what they see is what they print. */

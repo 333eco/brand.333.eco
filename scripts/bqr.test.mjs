@@ -1501,6 +1501,19 @@ console.log("\n— §caps C1 the list · C2 the gain · C3 it scans");
         if (j === up && z === up) scanned++; else console.log(`  ✗ ${up}: jsQR ${JSON.stringify(j)} · ZXing ${JSON.stringify(z)}`);
     }
     ok(scanned === CAPS.length, `C3: ${scanned}/${CAPS.length} capital B-QRs decode to their capital text in jsQR AND ZXing`);
+    // C4 (added 2026-11-27 after v2.1.0 threw for every listed address in 333.eco's browser drive: C3 painted the capital text itself and
+    // never went through drawBqr, where the seed stayed lowercase): every listed address drawn THROUGH drawBqr draws, and decodes to its capitals.
+    await B.bqrReady();
+    let drawn = 0;
+    for (const t of CAPS.concat(KEEP.filter((x) => /^https:\/\/(b\.)?333\.eco\//.test(x) && !/[?#]/.test(x)))) {
+        const c = createCanvas(600, 600);
+        try { await B.drawBqr(c.getContext("2d"), t, { size: 600 }); } catch (e) { console.log(`  ✗ drawBqr threw for ${t}: ${e.message}`); continue; }
+        const id = c.getContext("2d").getImageData(0, 0, 600, 600), want = B.bqrText(t);
+        const z = (await zx.readBarcodes(id, { formats: ["QRCode"], tryHarder: true, maxNumberOfSymbols: 1 }))[0]?.text ?? null;
+        const j = jsQR(id.data, id.width, id.height, { inversionAttempts: "dontInvert" })?.data ?? null;
+        if (z === want && j === want) drawn++; else console.log(`  ✗ ${t}: jsQR ${JSON.stringify(j)} · ZXing ${JSON.stringify(z)}`);
+    }
+    ok(drawn === CAPS.length + 4, `C4: ${drawn} addresses drawn through drawBqr itself decode to what bqrText makes of them (capitals where listed)`);
 }
 
 console.log(`\nsamples → ${OUT}`);

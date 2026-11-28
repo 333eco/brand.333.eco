@@ -162,6 +162,10 @@ an H3QR names whom you thank, and a B-QR is how that code is drawn.
 - **v1.14.0 (founder 2026-11-25):** the faint heart's hand CENTERED in the heart's BOTTOM SECTION (from the notch to the bottom edge,
   `SILHOUETTE_CENTER` (12.74, 14.42)), in a box of the hand's own proportions (`silhouetteBox`), the heart SIZED TO THE HAND
   (`silhouetteSize`), fill and edge at 10% (§looks3 LK10–LK13; LK12's miss on a sparse drawing recorded).
+- **v2.1.1, a fix (2026-11-27): v2.1.0 threw for every listed address.** `drawBqr` encoded the capitals but passed the text as written as the
+  seed, and `paintBqr` frames only the code it makes from its seed: *"that code is not this address's own"*. Found by 333.eco's browser drive
+  (`scripts/drive-b.mjs`), the first consumer to draw one. Now the capital text is both. §caps C4 draws THROUGH `drawBqr` (C3 had painted the
+  capital text itself and could not see it); the v2.1.0 line put back fails C4 (4 of 10). No consumer had adopted 2.1.0.
 - **v2.1.0 (founder 2026-11-27 10:24, *"approve both"*; MA roadmap A740): a B-QR is ENCODED in capitals where its address ignores case** —
   `BQR_CAPS`, a host list each host joins only after a live check that its address in capitals opens the same page: b.333.eco's link codes and
   their `/qr` page (⛔ never an alpha stamp: case-sensitive, measured `/a/test` 301 vs `/A/TEST` 404) and 333.eco's `/B:` pages. `bqrText()` makes
